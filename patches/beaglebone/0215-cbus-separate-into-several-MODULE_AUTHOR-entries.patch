@@ -1,0 +1,28 @@
+From 97e107df2f62cc42785ba242ff48a6874a0f86e6 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Tue, 28 Sep 2010 12:00:29 -0700
+Subject: [PATCH 0215/1092] cbus: separate into several MODULE_AUTHOR entries
+
+will look cleaner on modinfo.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index d73d0c9..145e760 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -291,4 +291,6 @@ subsys_initcall(cbus_bus_init);
+ 
+ MODULE_DESCRIPTION("CBUS serial protocol");
+ MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Juha Yrjölä, David Weinehall, and Mikko Ylinen");
++MODULE_AUTHOR("Juha Yrjölä");
++MODULE_AUTHOR("David Weinehall");
++MODULE_AUTHOR("Mikko Ylinen");
+-- 
+1.7.11.2
+

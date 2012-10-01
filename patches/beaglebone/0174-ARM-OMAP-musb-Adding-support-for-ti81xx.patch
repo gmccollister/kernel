@@ -1,0 +1,34 @@
+From e73ee396acdc765c75fc034dad5e075302a25659 Mon Sep 17 00:00:00 2001
+From: Ravi Babu <ravibabu@ti.com>
+Date: Tue, 13 Dec 2011 10:50:58 -0800
+Subject: [PATCH 0174/1092] ARM: OMAP: musb: Adding support for ti81xx
+
+Added musb support for ti81xx platform which has two instances of musb
+interface and uses CPPI4.1 DMA. The current patch set adds support for
+single instance and in PIO mode only.
+
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Ravi Babu <ravibabu@ti.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/usb-musb.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
+index 2679750..8d5ed77 100644
+--- a/arch/arm/mach-omap2/usb-musb.c
++++ b/arch/arm/mach-omap2/usb-musb.c
+@@ -93,6 +93,9 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
+ 	if (cpu_is_omap3517() || cpu_is_omap3505()) {
+ 		oh_name = "am35x_otg_hs";
+ 		name = "musb-am35x";
++	} else if (cpu_is_ti81xx()) {
++		oh_name = "usb_otg_hs";
++		name = "musb-ti81xx";
+ 	} else {
+ 		oh_name = "usb_otg_hs";
+ 		name = "musb-omap2430";
+-- 
+1.7.11.2
+

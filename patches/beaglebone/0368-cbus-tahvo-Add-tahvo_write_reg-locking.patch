@@ -1,0 +1,37 @@
+From 995306f0e6b9f93fc5e5f8cfeb17729cdf388d28 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20B=C3=BCsch?= <m@bues.ch>
+Date: Sat, 5 Nov 2011 17:19:54 +0100
+Subject: [PATCH 0368/1092] cbus-tahvo: Add tahvo_write_reg locking
+
+tahvo_write_reg() needs to take the mutex to avoid a race
+condition with tahvo_set_clear_reg_bits:
+
+tahvo_set_clear_reg_bits():   |  tahvo_write_reg():
+    __tahvo_read_reg()        |
+                              |      __tahvo_write_reg() <-- race here
+    __tahvo_write_reg()       |
+
+Signed-off-by: Michael Buesch <m@bues.ch>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 0387721..5e6e679 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -104,7 +104,9 @@ void tahvo_write_reg(struct device *child, unsigned reg, u16 val)
+ {
+ 	struct tahvo		*tahvo = dev_get_drvdata(child->parent);
+ 
++	mutex_lock(&tahvo->mutex);
+ 	__tahvo_write_reg(tahvo, reg, val);
++	mutex_unlock(&tahvo->mutex);
+ }
+ EXPORT_SYMBOL(tahvo_write_reg);
+ 
+-- 
+1.7.11.2
+

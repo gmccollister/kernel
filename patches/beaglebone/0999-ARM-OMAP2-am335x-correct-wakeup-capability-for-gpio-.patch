@@ -1,0 +1,35 @@
+From 66bf6b2d94a7998101ef5fa88cc936009a59e503 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Fri, 18 May 2012 15:12:44 +0530
+Subject: [PATCH 0999/1092] ARM: OMAP2+: am335x: correct wakeup capability for
+ gpio keys
+
+Wakeup capability is only for GPIO bank 0. Fix the same when configuring
+the GPIO-Keys
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index b234275..35e6964 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1712,12 +1712,12 @@ static struct gpio_keys_button am335x_evm_gpio_buttons[] = {
+ 		.code                   = BTN_2,
+ 		.gpio                   = GPIO_TO_PIN(0, 30),
+ 		.desc                   = "SW3",
++		.wakeup                 = 1,
+ 	},
+ 	{
+ 		.code                   = BTN_3,
+ 		.gpio                   = GPIO_TO_PIN(2, 5),
+ 		.desc                   = "SW4",
+-		.wakeup                 = 1,
+ 	},
+ };
+ 
+-- 
+1.7.11.2
+

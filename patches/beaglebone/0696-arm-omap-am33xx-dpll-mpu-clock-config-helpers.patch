@@ -1,0 +1,32 @@
+From 76aec182431c90665a63e339b828da8e41730897 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Thu, 29 Dec 2011 15:18:23 +0530
+Subject: [PATCH 0696/1092] arm:omap:am33xx: dpll mpu clock config helpers
+
+Add set_rate & round_rate for MPU PLL, this is
+required to configure MPU PLL for CPUFREQ
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ arch/arm/mach-omap2/clock33xx_data.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/clock33xx_data.c b/arch/arm/mach-omap2/clock33xx_data.c
+index db97e62..61814a1 100644
+--- a/arch/arm/mach-omap2/clock33xx_data.c
++++ b/arch/arm/mach-omap2/clock33xx_data.c
+@@ -1323,8 +1323,10 @@ static struct clk dpll_mpu_ck = {
+ 	.parent		= &sys_clkin_ck,
+ 	.dpll_data	= &dpll_mpu_dd,
+ 	.init		= &omap2_init_dpll_parent,
+-	.ops		= &clkops_null,
++	.ops		= &clkops_omap3_noncore_dpll_ops,
+ 	.recalc		= &omap3_dpll_recalc,
++	.round_rate     = &omap2_dpll_round_rate,
++	.set_rate       = &omap3_noncore_dpll_set_rate,
+ };
+ 
+ 
+-- 
+1.7.11.2
+

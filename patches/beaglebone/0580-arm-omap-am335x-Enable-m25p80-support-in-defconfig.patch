@@ -1,0 +1,31 @@
+From 838e5a460b732c4f26ba2d95aab4e9b44f9c65a5 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Wed, 5 Oct 2011 00:22:19 +0530
+Subject: [PATCH 0580/1092] arm:omap:am335x: Enable m25p80 support in
+ defconfig
+
+Support for SPI flash driver m25p80 is enabled through
+am335x_evm_defconfig config file.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 6a37cce..ce772e9 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -73,6 +73,7 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_OOPS=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_INTELEXT=y
++CONFIG_MTD_M25P80=y
+ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_OMAP2=y
+ CONFIG_MTD_ONENAND=y
+-- 
+1.7.11.2
+

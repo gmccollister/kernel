@@ -1,0 +1,62 @@
+From 25564fb53ebdbda52cbe9f8fdfb543c103fb3b62 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:54 +0300
+Subject: [PATCH 0355/1092] cbus: tahvo: drop more unused interfaces
+
+we have the IRQ chip which is the standard
+way of handling IRQs.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 34 ----------------------------------
+ 1 file changed, 34 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 2597672..8192a24 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -129,40 +129,6 @@ void tahvo_set_clear_reg_bits(unsigned reg, u16 set, u16 clear)
+ 	mutex_unlock(&tahvo->mutex);
+ }
+ 
+-void tahvo_disable_irq(int id)
+-{
+-	struct tahvo		*tahvo = the_tahvo;
+-	u16			mask;
+-
+-	mutex_lock(&tahvo->mutex);
+-	mask = __tahvo_read_reg(tahvo, TAHVO_REG_IMR);
+-	mask |= 1 << id;
+-	__tahvo_write_reg(tahvo, TAHVO_REG_IMR, mask);
+-	mutex_unlock(&tahvo->mutex);
+-}
+-EXPORT_SYMBOL(tahvo_disable_irq);
+-
+-void tahvo_enable_irq(int id)
+-{
+-	struct tahvo		*tahvo = the_tahvo;
+-	u16			mask;
+-
+-	mutex_lock(&tahvo->mutex);
+-	mask = __tahvo_read_reg(tahvo, TAHVO_REG_IMR);
+-	mask &= ~(1 << id);
+-	__tahvo_write_reg(tahvo, TAHVO_REG_IMR, mask);
+-	mutex_unlock(&tahvo->mutex);
+-}
+-EXPORT_SYMBOL(tahvo_enable_irq);
+-
+-void tahvo_ack_irq(int id)
+-{
+-	struct tahvo		*tahvo = the_tahvo;
+-
+-	__tahvo_write_reg(tahvo, TAHVO_REG_IDR, 1 << id);
+-}
+-EXPORT_SYMBOL(tahvo_ack_irq);
+-
+ int tahvo_get_backlight_level(void)
+ {
+ 	struct tahvo		*tahvo = the_tahvo;
+-- 
+1.7.11.2
+

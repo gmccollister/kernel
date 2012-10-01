@@ -1,0 +1,58 @@
+From b458729adc1b20e3a8f38bca91bac70e1eab3825 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Tue, 14 Sep 2010 08:30:16 +0000
+Subject: [PATCH 0270/1092] cbus: tahvo: avoid section mismatch
+
+... by removing references to init section from
+platform_driver structure
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 8e41758..2ae1ac4 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -301,7 +301,7 @@ EXPORT_SYMBOL(tahvo_free_irq);
+  * Probe for the Tahvo ASIC and allocate memory
+  * for its device-struct if found
+  */
+-static int __devinit tahvo_probe(struct platform_device *pdev)
++static int __init tahvo_probe(struct platform_device *pdev)
+ {
+ 	int rev, id, ret;
+ 	int irq;
+@@ -350,7 +350,7 @@ static int __devinit tahvo_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __devexit tahvo_remove(struct platform_device *pdev)
++static int __exit tahvo_remove(struct platform_device *pdev)
+ {
+ 	int irq;
+ 
+@@ -368,8 +368,7 @@ static int __devexit tahvo_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver tahvo_driver = {
+-	.probe		= tahvo_probe,
+-	.remove		= __devexit_p(tahvo_remove),
++	.remove		= __exit_p(tahvo_remove),
+ 	.driver		= {
+ 		.name	= "tahvo",
+ 	},
+@@ -425,7 +424,7 @@ static int __init tahvo_init(void)
+ 
+ 	tahvo_resource[0].start = gpio_to_irq(tahvo_irq_pin);
+ 
+-	ret = platform_driver_register(&tahvo_driver);
++	ret = platform_driver_probe(&tahvo_driver, tahvo_probe);
+ 	if (ret)
+ 		goto err1;
+ 
+-- 
+1.7.11.2
+

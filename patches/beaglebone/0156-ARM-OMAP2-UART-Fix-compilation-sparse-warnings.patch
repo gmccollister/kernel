@@ -1,0 +1,47 @@
+From ad856d1d7af0e01aaa23a068ae44989a79ed04de Mon Sep 17 00:00:00 2001
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Date: Wed, 14 Dec 2011 21:24:11 +0530
+Subject: [PATCH 0156/1092] ARM: OMAP2+: UART: Fix compilation/sparse warnings
+
+Fixes below compilation warning.
+
+drivers/tty/serial/omap-serial.c: In function 'serial_omap_irq':
+drivers/tty/serial/omap-serial.c:228:29: warning: 'ch' may be used uninitialized in this function [-Wuninitialized]
+
+Fix below sparse warning.
+
+drivers/tty/serial/omap-serial.c:392:52: warning: incorrect type in argument 2 (different signedness)
+drivers/tty/serial/omap-serial.c:392:52:    expected int *status
+drivers/tty/serial/omap-serial.c:392:52:    got unsigned int *<noident>
+
+Reported-by: Kevin Hilman <khilman@ti.com>
+Signed-off-by: Govindraj.R <govindraj.raja@ti.com>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de> (for drivers/tty changes)
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ drivers/tty/serial/omap-serial.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
+index f3ff0ca..7b0303d 100644
+--- a/drivers/tty/serial/omap-serial.c
++++ b/drivers/tty/serial/omap-serial.c
+@@ -166,11 +166,12 @@ static void serial_omap_stop_rx(struct uart_port *port)
+ 	pm_runtime_put_autosuspend(&up->pdev->dev);
+ }
+ 
+-static inline void receive_chars(struct uart_omap_port *up, int *status)
++static inline void receive_chars(struct uart_omap_port *up,
++		unsigned int *status)
+ {
+ 	struct tty_struct *tty = up->port.state->port.tty;
+-	unsigned int flag;
+-	unsigned char ch, lsr = *status;
++	unsigned int flag, lsr = *status;
++	unsigned char ch = 0;
+ 	int max_count = 256;
+ 
+ 	do {
+-- 
+1.7.11.2
+

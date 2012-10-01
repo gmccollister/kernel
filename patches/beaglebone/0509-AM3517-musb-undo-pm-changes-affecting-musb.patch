@@ -1,0 +1,37 @@
+From 8907d4b6c0dd2e2aead31f5842b52fbe020f006c Mon Sep 17 00:00:00 2001
+From: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Date: Tue, 5 Jan 2010 09:55:35 +0530
+Subject: [PATCH 0509/1092] AM3517: musb: undo pm changes affecting musb
+
+musb becomes unusable due to below pm patch in AM3517.
+
+------------------------------------------------
+commit 53f18cf6026bc6a0152ea445f6b54de7fbea1b3c
+Author: Tero Kristo <tero.kristo@nokia.com>
+OMAP3: PM: Enable system control module autoidle
+------------------------------------------------
+
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/pm34xx.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/pm34xx.c b/arch/arm/mach-omap2/pm34xx.c
+index 04af372..1c2e2eb 100644
+--- a/arch/arm/mach-omap2/pm34xx.c
++++ b/arch/arm/mach-omap2/pm34xx.c
+@@ -605,7 +605,9 @@ static void __init prcm_setup_regs(void)
+ 					OMAP3630_GRPSEL_UART4_MASK : 0;
+ 
+ 	/* XXX This should be handled by hwmod code or SCM init code */
+-	omap_ctrl_writel(OMAP3430_AUTOIDLE_MASK, OMAP2_CONTROL_SYSCONFIG);
++	/* This causes MUSB failure on AM3517 so disable it. */
++	if (!cpu_is_omap3517() && !cpu_is_omap3505())
++		omap_ctrl_writel(OMAP3430_AUTOIDLE_MASK, OMAP2_CONTROL_SYSCONFIG);
+ 
+ 	/*
+ 	 * Enable control of expternal oscillator through
+-- 
+1.7.11.2
+

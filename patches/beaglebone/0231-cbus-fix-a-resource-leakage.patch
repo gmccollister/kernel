@@ -1,0 +1,27 @@
+From 6b95d9391c9ae159553ab75286fc251b65947a8d Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:20:29 -0700
+Subject: [PATCH 0231/1092] cbus: fix a resource leakage
+
+sel_gpio was never freed on previous code, free it.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/cbus.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 67c59ba..1cc5487 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -199,6 +199,7 @@ static void __exit cbus_bus_remove(struct platform_device *pdev)
+ {
+ 	struct cbus_host	*chost = platform_get_drvdata(pdev);
+ 
++	gpio_free(chost->sel_gpio);
+ 	gpio_free(chost->dat_gpio);
+ 	gpio_free(chost->clk_gpio);
+ 
+-- 
+1.7.11.2
+

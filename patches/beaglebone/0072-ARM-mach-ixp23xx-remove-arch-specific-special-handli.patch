@@ -1,0 +1,55 @@
+From f09357f9736835b81be340d3fe15333171be6cbe Mon Sep 17 00:00:00 2001
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Wed, 14 Sep 2011 17:06:22 -0400
+Subject: [PATCH 0072/1092] ARM: mach-ixp23xx: remove arch specific special
+ handling for ioremap
+
+A generic version should replace this later.
+
+Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+Reviewed-by: Deepak Saxena <dsaxena@linaro.org>
+---
+ arch/arm/mach-ixp23xx/include/mach/io.h | 29 -----------------------------
+ 1 file changed, 29 deletions(-)
+
+diff --git a/arch/arm/mach-ixp23xx/include/mach/io.h b/arch/arm/mach-ixp23xx/include/mach/io.h
+index a1749d0..4ce4353 100644
+--- a/arch/arm/mach-ixp23xx/include/mach/io.h
++++ b/arch/arm/mach-ixp23xx/include/mach/io.h
+@@ -20,33 +20,4 @@
+ #define __io(p)		((void __iomem*)((p) + IXP23XX_PCI_IO_VIRT))
+ #define __mem_pci(a)	(a)
+ 
+-static inline void __iomem *
+-ixp23xx_ioremap(unsigned long addr, unsigned long size, unsigned int mtype)
+-{
+-	if (addr >= IXP23XX_PCI_MEM_START &&
+-		addr <= IXP23XX_PCI_MEM_START + IXP23XX_PCI_MEM_SIZE) {
+-		if (addr + size > IXP23XX_PCI_MEM_START + IXP23XX_PCI_MEM_SIZE)
+-			return NULL;
+-
+-		return (void __iomem *)
+- 			((addr - IXP23XX_PCI_MEM_START) + IXP23XX_PCI_MEM_VIRT);
+-	}
+-
+-	return __arm_ioremap(addr, size, mtype);
+-}
+-
+-static inline void
+-ixp23xx_iounmap(void __iomem *addr)
+-{
+-	if ((((u32)addr) >= IXP23XX_PCI_MEM_VIRT) &&
+-	    (((u32)addr) < IXP23XX_PCI_MEM_VIRT + IXP23XX_PCI_MEM_SIZE))
+-		return;
+-
+-	__iounmap(addr);
+-}
+-
+-#define __arch_ioremap	ixp23xx_ioremap
+-#define __arch_iounmap	ixp23xx_iounmap
+-
+-
+ #endif
+-- 
+1.7.11.2
+

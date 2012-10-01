@@ -1,0 +1,78 @@
+From 89ddfcab02a5f81a98bead683e53fadb35102a62 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Wed, 23 Nov 2011 16:00:47 +0200
+Subject: [PATCH 0375/1092] cbus: tahvo: move irq_chip to our context
+ structure
+
+in theory, we could have many tahvo devices connected
+to different CBUS buses. Let's allow that to happen.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 7f7c712..819111a 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -44,6 +44,8 @@ struct tahvo {
+ 	struct mutex	mutex;
+ 	struct device	*dev;
+ 
++	struct irq_chip	irq_chip;
++
+ 	int		irq_base;
+ 	int		irq_end;
+ 	int		irq;
+@@ -199,14 +201,6 @@ static void tahvo_irq_unmask(struct irq_data *data)
+ 	tahvo->mask_pending = true;
+ }
+ 
+-static struct irq_chip tahvo_irq_chip = {
+-	.name			= "tahvo",
+-	.irq_bus_lock		= tahvo_irq_bus_lock,
+-	.irq_bus_sync_unlock	= tahvo_irq_bus_sync_unlock,
+-	.irq_mask		= tahvo_irq_mask,
+-	.irq_unmask		= tahvo_irq_unmask,
+-};
+-
+ static inline void tahvo_irq_setup(int irq)
+ {
+ #ifdef CONFIG_ARM
+@@ -224,7 +218,7 @@ static void tahvo_irq_init(struct tahvo *tahvo)
+ 
+ 	for (irq = base; irq < end; irq++) {
+ 		irq_set_chip_data(irq, tahvo);
+-		irq_set_chip(irq, &tahvo_irq_chip);
++		irq_set_chip(irq, &tahvo->irq_chip);
+ 		irq_set_nested_thread(irq, 1);
+ 		tahvo_irq_setup(irq);
+ 	}
+@@ -297,6 +291,7 @@ static int tahvo_allocate_children(struct device *parent, int irq_base)
+ 
+ static int __devinit tahvo_probe(struct platform_device *pdev)
+ {
++	struct irq_chip		*chip;
+ 	struct tahvo		*tahvo;
+ 	int			rev;
+ 	int			ret;
+@@ -321,6 +316,14 @@ static int __devinit tahvo_probe(struct platform_device *pdev)
+ 		goto err1;
+ 	}
+ 
++	chip = &tahvo->irq_chip;
++
++	chip->name	= "tahvo",
++	chip->irq_bus_lock = tahvo_irq_bus_lock,
++	chip->irq_bus_sync_unlock = tahvo_irq_bus_sync_unlock,
++	chip->irq_mask	= tahvo_irq_mask,
++	chip->irq_unmask = tahvo_irq_unmask,
++
+ 	tahvo->irq_base	= ret;
+ 	tahvo->irq_end	= ret + MAX_TAHVO_IRQ_HANDLERS;
+ 	tahvo->dev	= &pdev->dev;
+-- 
+1.7.11.2
+

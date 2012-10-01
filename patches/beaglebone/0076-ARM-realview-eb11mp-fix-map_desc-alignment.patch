@@ -1,0 +1,33 @@
+From 3de575a5e333af0eecba204e31690ebca72bf4d7 Mon Sep 17 00:00:00 2001
+From: Rob Herring <rob.herring@calxeda.com>
+Date: Thu, 29 Sep 2011 19:46:18 -0500
+Subject: [PATCH 0076/1092] ARM: realview-eb11mp: fix map_desc alignment
+
+REALVIEW_EB11MP_GIC_CPU_BASE is not 4KB aligned which causes an
+overlapping mapping. Use REALVIEW_EB11MP_SCU_BASE instead which is
+aligned.
+
+Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+---
+ arch/arm/mach-realview/realview_eb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-realview/realview_eb.c b/arch/arm/mach-realview/realview_eb.c
+index 10ef2e7..1ca944a 100644
+--- a/arch/arm/mach-realview/realview_eb.c
++++ b/arch/arm/mach-realview/realview_eb.c
+@@ -91,8 +91,8 @@ static struct map_desc realview_eb_io_desc[] __initdata = {
+ 
+ static struct map_desc realview_eb11mp_io_desc[] __initdata = {
+ 	{
+-		.virtual	= IO_ADDRESS(REALVIEW_EB11MP_GIC_CPU_BASE),
+-		.pfn		= __phys_to_pfn(REALVIEW_EB11MP_GIC_CPU_BASE),
++		.virtual	= IO_ADDRESS(REALVIEW_EB11MP_SCU_BASE),
++		.pfn		= __phys_to_pfn(REALVIEW_EB11MP_SCU_BASE),
+ 		.length		= SZ_4K,
+ 		.type		= MT_DEVICE,
+ 	}, {
+-- 
+1.7.11.2
+

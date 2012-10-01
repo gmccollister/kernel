@@ -1,0 +1,30 @@
+From 271418ab21d8985f9e5afe4188bb82a3b3c28e9b Mon Sep 17 00:00:00 2001
+From: Michael Buesch <mb@bu3sch.de>
+Date: Sun, 27 Feb 2011 17:17:01 +0000
+Subject: [PATCH 0315/1092] cbus-retu: Fix nested IRQ handling
+
+handle_nested_irq() expects a global IRQ number, so
+the irq_base has to be added to the RETU irq number.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 702e821..968d907 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -207,7 +207,7 @@ static irqreturn_t retu_irq_handler(int irq, void *_retu)
+ 		return IRQ_NONE;
+ 	}
+ 
+-	for (i = 0; idr != 0; i++, idr >>= 1) {
++	for (i = retu->irq_base; idr != 0; i++, idr >>= 1) {
+ 		if (!(idr & 1))
+ 			continue;
+ 
+-- 
+1.7.11.2
+

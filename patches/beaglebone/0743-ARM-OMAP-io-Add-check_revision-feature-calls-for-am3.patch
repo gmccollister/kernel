@@ -1,0 +1,26 @@
+From 808bb5f0268e8ead2f259363046a8af14cd29344 Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Mon, 23 Jan 2012 11:37:51 +0530
+Subject: [PATCH 0743/1092] ARM: OMAP: io: Add check_revision/feature calls
+ for am33xx_init
+
+---
+ arch/arm/mach-omap2/io.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index a914925..d891084 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -471,6 +471,8 @@ void __init ti81xx_init_early(void)
+ void __init am33xx_init_early(void)
+ {
+ 	omap2_set_globals_am33xx();
++	omap3xxx_check_revision();
++	ti81xx_check_features();
+ 	omap_common_init_early();
+ 	am33xx_voltagedomains_init();
+ 	am33xx_powerdomains_init();
+-- 
+1.7.11.2
+

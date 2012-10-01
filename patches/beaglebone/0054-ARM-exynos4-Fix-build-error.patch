@@ -1,0 +1,32 @@
+From d963cbbd5f05268b016d8a05234154eec01fc26f Mon Sep 17 00:00:00 2001
+From: Axel Lin <axel.lin@gmail.com>
+Date: Thu, 1 Dec 2011 23:25:45 +0800
+Subject: [PATCH 0054/1092] ARM: exynos4: Fix build error
+
+Trivial fix to fix below build error:
+
+  CC      arch/arm/mach-exynos/mach-universal_c210.o
+arch/arm/mach-exynos/mach-universal_c210.c:24: error: expected identifier or '(' before '<' token
+
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/mach-exynos/mach-universal_c210.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-exynos/mach-universal_c210.c b/arch/arm/mach-exynos/mach-universal_c210.c
+index 48e85b0..cfc7d50 100644
+--- a/arch/arm/mach-exynos/mach-universal_c210.c
++++ b/arch/arm/mach-exynos/mach-universal_c210.c
+@@ -21,7 +21,7 @@
+ #include <linux/mmc/host.h>
+ #include <linux/i2c-gpio.h>
+ #include <linux/i2c/mcs.h>
+- <linux/i2c/atmel_mxt_ts.h>
++#include <linux/i2c/atmel_mxt_ts.h>
+ 
+ #include <asm/mach/arch.h>
+ #include <asm/hardware/gic.h>
+-- 
+1.7.11.2
+

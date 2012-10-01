@@ -1,0 +1,41 @@
+From 217035695ac8da2c571d131c645e79f7dd1c06a1 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Mon, 20 Aug 2012 17:49:42 +0530
+Subject: [PATCH 1060/1092] input: TSC: ti_tscadc: Remove definition of End Of
+ Interrupt
+
+The touchscreen IP uses level sensitive interrupts rather
+than edge sensitive interrupts and therefore the is no need
+to use the EOI register to have the module re-strobe the
+interrupt line if there pending interrupts exist.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ drivers/input/touchscreen/ti_tscadc.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/input/touchscreen/ti_tscadc.c b/drivers/input/touchscreen/ti_tscadc.c
+index 51d2e70..55be46a 100644
+--- a/drivers/input/touchscreen/ti_tscadc.c
++++ b/drivers/input/touchscreen/ti_tscadc.c
+@@ -28,7 +28,6 @@
+ #include <linux/delay.h>
+ #include <linux/pm_runtime.h>
+ 
+-#define TSCADC_REG_IRQEOI		0x020
+ #define TSCADC_REG_RAWIRQSTATUS		0x024
+ #define TSCADC_REG_IRQSTATUS		0x028
+ #define TSCADC_REG_IRQENABLE		0x02C
+@@ -370,9 +369,6 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
+ 
+ 	tscadc_writel(ts_dev, TSCADC_REG_IRQSTATUS, irqclr);
+ 
+-	/* check pending interrupts */
+-	tscadc_writel(ts_dev, TSCADC_REG_IRQEOI, 0x0);
+-
+ 	tscadc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB);
+ 	return IRQ_HANDLED;
+ }
+-- 
+1.7.11.2
+

@@ -1,0 +1,46 @@
+From 4b40806ffe79f32de35521d62c6e1e891c9d44c1 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:35:00 +0300
+Subject: [PATCH 0361/1092] cbus: fix compile issue on tahvo and retu
+
+set_irq_noprobe has been renamed to irq_set_noprobe
+on commit a0cd9ca2b907d7ee26575e7b63ac92dad768a75e
+(genirq: Namespace cleanup) and cbus drivers were
+left with broken compilation. Fix it.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c  | 2 +-
+ drivers/cbus/tahvo.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index e749c0e..444a21e 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -279,7 +279,7 @@ static inline void retu_irq_setup(int irq)
+ #ifdef CONFIG_ARM
+ 	set_irq_flags(irq, IRQF_VALID);
+ #else
+-	set_irq_noprobe(irq);
++	irq_set_noprobe(irq);
+ #endif
+ }
+ 
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 623dacb..c16e27d 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -224,7 +224,7 @@ static inline void tahvo_irq_setup(int irq)
+ #ifdef CONFIG_ARM
+ 	set_irq_flags(irq, IRQF_VALID);
+ #else
+-	set_irq_noprobe(irq);
++	irq_set_noprobe(irq);
+ #endif
+ }
+ 
+-- 
+1.7.11.2
+

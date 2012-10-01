@@ -1,0 +1,31 @@
+From 6cdbc00b03ef9c646f5531756026677556fba3a5 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 10 Feb 2011 12:21:20 +0200
+Subject: [PATCH 0291/1092] cbus: retu: pwrbutton: grab IRQ via struct
+ resource
+
+now that we pass IRQ via struct resource, we can
+simply use it.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-pwrbutton.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu-pwrbutton.c b/drivers/cbus/retu-pwrbutton.c
+index 24efdee..593a73a 100644
+--- a/drivers/cbus/retu-pwrbutton.c
++++ b/drivers/cbus/retu-pwrbutton.c
+@@ -83,7 +83,7 @@ static int __init retubutton_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	pwr->irq = CBUS_RETU_IRQ_BASE + RETU_INT_PWR;
++	pwr->irq = platform_get_irq(pdev, 0);
+ 	platform_set_drvdata(pdev, pwr);
+ 
+ 	ret = request_threaded_irq(pwr->irq, NULL, retubutton_irq, 0,
+-- 
+1.7.11.2
+

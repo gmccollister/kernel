@@ -1,0 +1,30 @@
+From 4475594fc89b1ad83ec8e9cc0e6abfb304e31753 Mon Sep 17 00:00:00 2001
+From: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Date: Wed, 4 Jul 2012 10:47:14 +0530
+Subject: [PATCH 1046/1092] usb: musb: gadget: fix kernel crash after rmmod
+
+musb->gadget_driver was not getting reset to NULL after the gadget
+driver is removed. This leads to kernel panic while doing proc read
+when it tries to print the gadget driver name.
+
+Fixing the same by resetting the musb->gadget_driver to NULL when
+gadget driver is removed.
+---
+ drivers/usb/musb/musb_gadget.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+index b392703..e7120f8 100644
+--- a/drivers/usb/musb/musb_gadget.c
++++ b/drivers/usb/musb/musb_gadget.c
+@@ -2059,6 +2059,7 @@ static int musb_gadget_stop(struct usb_gadget *g,
+ 	if (!is_otg_enabled(musb))
+ 		musb_stop(musb);
+ 
++	musb->gadget_driver = NULL;
+ 	pm_runtime_put(musb->controller);
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

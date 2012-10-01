@@ -1,0 +1,30 @@
+From b67888ae8f1a67dab38bb2b9601290ef2e9bd827 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Wed, 18 Jan 2012 17:26:24 +0530
+Subject: [PATCH 0719/1092] Backlight - Brightness scale is changed.
+
+Brightness scale is changed to 0-100, from 0-250.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 2a4da66..93885e7 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -126,8 +126,8 @@ static const struct display_panel disp_panel = {
+ };
+ 
+ /* LCD backlight platform Data */
+-#define AM335X_BACKLIGHT_MAX_BRIGHTNESS        250
+-#define AM335X_BACKLIGHT_DEFAULT_BRIGHTNESS    250
++#define AM335X_BACKLIGHT_MAX_BRIGHTNESS        100
++#define AM335X_BACKLIGHT_DEFAULT_BRIGHTNESS    100
+ #define AM335X_PWM_PERIOD_NANO_SECONDS        (10000 * 10)
+ 
+ #define PWM_DEVICE_ID   "ecap.0"
+-- 
+1.7.11.2
+

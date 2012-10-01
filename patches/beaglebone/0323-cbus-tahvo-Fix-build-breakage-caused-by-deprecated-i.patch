@@ -1,0 +1,45 @@
+From c104b93866f1614376a39f63537381e169e34a8b Mon Sep 17 00:00:00 2001
+From: Jarkko Nikula <jhnikula@gmail.com>
+Date: Mon, 18 Apr 2011 19:21:30 +0000
+Subject: [PATCH 0323/1092] cbus: tahvo: Fix build breakage caused by
+ deprecated initializer removal
+
+Use DEFINE_SPINLOCK() for static spinlock initialization as the commit
+d04fa5a "locking: Remove deprecated lock initializers" removes the
+deprecated SPIN_LOCK_UNLOCKED. Since tahvo_lock is not used elsewhere than
+tahvo.c it can be removed from tahvo.h too.
+
+Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 2 +-
+ drivers/cbus/tahvo.h | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 8e2e669..45318d9 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -53,7 +53,7 @@ static int tahvo_initialized;
+ static int tahvo_is_betty;
+ 
+ static struct tasklet_struct tahvo_tasklet;
+-spinlock_t tahvo_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(tahvo_lock);
+ 
+ struct tahvo_irq_handler_desc {
+ 	int (*func)(unsigned long);
+diff --git a/drivers/cbus/tahvo.h b/drivers/cbus/tahvo.h
+index 6cb6600..e5ed990 100644
+--- a/drivers/cbus/tahvo.h
++++ b/drivers/cbus/tahvo.h
+@@ -63,6 +63,4 @@ int tahvo_get_backlight_level(void);
+ int tahvo_get_max_backlight_level(void);
+ void tahvo_set_backlight_level(int level);
+ 
+-extern spinlock_t tahvo_lock;
+-
+ #endif /* __DRIVERS_CBUS_TAHVO_H */
+-- 
+1.7.11.2
+

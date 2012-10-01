@@ -1,0 +1,81 @@
+From decdef347012943a1b922842a5f141c3e1b689d8 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 17 Oct 2011 23:50:43 +0300
+Subject: [PATCH 0367/1092] cbus: retu: drop useless platform_data
+
+there's no need for that at all.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c | 7 -------
+ arch/arm/mach-omap2/board-n8x0.c     | 7 -------
+ include/linux/platform_data/cbus.h   | 6 ------
+ 3 files changed, 20 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index dca8e91..f0dfc51 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -107,19 +107,12 @@ static struct resource retu_resource[] = {
+ 	},
+ };
+ 
+-static struct cbus_retu_platform_data nokia770_retu_data = {
+-	.irq_base	= CBUS_RETU_IRQ_BASE,
+-	.irq_end	= CBUS_RETU_IRQ_END,
+-	.devid		= CBUS_RETU_DEVICE_ID,
+-};
+-
+ static struct platform_device retu_device = {
+ 	.name		= "retu",
+ 	.id		= -1,
+ 	.resource	= retu_resource,
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
+ 	.dev		= {
+-		.platform_data = &nokia770_retu_data,
+ 		.parent	= &nokia770_cbus_device.dev,
+ 	},
+ };
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 377492b..8126620 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -218,19 +218,12 @@ static struct resource retu_resource[] = {
+ 	},
+ };
+ 
+-static struct cbus_retu_platform_data n8x0_retu_data = {
+-	.irq_base	= CBUS_RETU_IRQ_BASE,
+-	.irq_end	= CBUS_RETU_IRQ_END,
+-	.devid		= CBUS_RETU_DEVICE_ID,
+-};
+-
+ static struct platform_device retu_device = {
+ 	.name		= "retu",
+ 	.id		= -1,
+ 	.resource	= retu_resource,
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
+ 	.dev		= {
+-		.platform_data = &n8x0_retu_data,
+ 		.parent	= &n8x0_cbus_device.dev,
+ 	},
+ };
+diff --git a/include/linux/platform_data/cbus.h b/include/linux/platform_data/cbus.h
+index dfc99f6..7a977e1 100644
+--- a/include/linux/platform_data/cbus.h
++++ b/include/linux/platform_data/cbus.h
+@@ -28,10 +28,4 @@ struct cbus_host_platform_data {
+ 	int	sel_gpio;
+ };
+ 
+-struct cbus_retu_platform_data {
+-	int	irq_base;
+-	int	irq_end;
+-	int	devid;
+-};
+-
+ #endif /* __INCLUDE_LINUX_CBUS_H */
+-- 
+1.7.11.2
+

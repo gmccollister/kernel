@@ -1,0 +1,27 @@
+From 6ee0e5c7ca52e2e926847deb0b6167d98ba790c0 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Thu, 12 Jan 2012 17:04:58 +0530
+Subject: [PATCH 0715/1092] pwm-backlight - Enabled in am335x config file
+
+PWM backlight is enabled in am335x defconfig
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index d22b310..6ae4688 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1591,6 +1591,7 @@ CONFIG_LCD_PLATFORM=y
+ # CONFIG_LCD_AMS369FG06 is not set
+ CONFIG_BACKLIGHT_CLASS_DEVICE=y
+ # CONFIG_BACKLIGHT_GENERIC is not set
++CONFIG_BACKLIGHT_PWM=y
+ # CONFIG_BACKLIGHT_ADP8860 is not set
+ # CONFIG_BACKLIGHT_ADP8870 is not set
+ CONFIG_BACKLIGHT_TLC59108=y
+-- 
+1.7.11.2
+

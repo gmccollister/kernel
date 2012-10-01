@@ -1,0 +1,29 @@
+From 5e869ee4eff14b685b965bff9e82d74dfde54dd6 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Fri, 6 Jan 2012 14:31:03 +0530
+Subject: [PATCH 0711/1092] arm:omap:am33xx - enabled PWM in defconfig
+
+eHRPWM and eCAP enabled in am335x config file.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 75d1041..d22b310 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1336,6 +1336,9 @@ CONFIG_GPIO_SYSFS=y
+ #
+ # MODULbus GPIO expanders:
+ #
++CONFIG_GENERIC_PWM=y
++CONFIG_DAVINCI_EHRPWM=y
++CONFIG_ECAP_PWM=y
+ # CONFIG_W1 is not set
+ # CONFIG_POWER_SUPPLY is not set
+ CONFIG_HWMON=y
+-- 
+1.7.11.2
+

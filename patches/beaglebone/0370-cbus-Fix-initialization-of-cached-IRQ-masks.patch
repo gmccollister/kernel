@@ -1,0 +1,46 @@
+From 34e6c9f7bd45f83fe7d388e223ec362a482578da Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Michael=20B=C3=BCsch?= <m@bues.ch>
+Date: Fri, 18 Nov 2011 11:31:32 +0100
+Subject: [PATCH 0370/1092] cbus: Fix initialization of cached IRQ masks
+
+This fixes the initialization of retu/tahvo cached IRQ masks.
+
+Signed-off-by: Michael Buesch <m@bues.ch>
+Reviewed-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c  | 3 ++-
+ drivers/cbus/tahvo.c | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 2fd3ba7..437a309 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -447,7 +447,8 @@ static int __devinit retu_probe(struct platform_device *pdev)
+ 			(rev >> 4) & 0x07, rev & 0x0f);
+ 
+ 	/* Mask all RETU interrupts */
+-	__retu_write_reg(retu, RETU_REG_IMR, 0xffff);
++	retu->mask = 0xffff;
++	__retu_write_reg(retu, RETU_REG_IMR, retu->mask);
+ 
+ 	ret = request_threaded_irq(retu->irq, NULL, retu_irq_handler,
+ 			IRQF_ONESHOT, "retu", retu);
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index cd2bc1f..5de3d8d 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -346,7 +346,8 @@ static int __devinit tahvo_probe(struct platform_device *pdev)
+ 			(rev >> 4) & 0x0f, rev & 0x0f);
+ 
+ 	/* Mask all TAHVO interrupts */
+-	__tahvo_write_reg(tahvo, TAHVO_REG_IMR, 0xffff);
++	tahvo->mask = 0xffff;
++	__tahvo_write_reg(tahvo, TAHVO_REG_IMR, tahvo->mask);
+ 
+ 	ret = request_threaded_irq(irq, NULL, tahvo_irq_handler,
+ 			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+-- 
+1.7.11.2
+

@@ -1,0 +1,72 @@
+From 1f8af865c7b3d727a7e839f00e309cb7a6a46083 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:28 -0700
+Subject: [PATCH 0240/1092] cbus: retu: convert printk to dev_*
+
+during probe(), we have a dev * available, and we
+can use that for pretty printing with dev_* macros.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 8382694..8b85221 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -350,13 +350,13 @@ static int __devinit retu_probe(struct device *dev)
+ 			machine_is_nokia_n810_wimax()) {
+ 		retu_irq_pin = 108;
+ 	} else {
+-		printk(KERN_ERR "cbus: Unsupported board for tahvo\n");
++		dev_err(dev, "cbus: Unsupported board for tahvo\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	ret = gpio_request(retu_irq_pin, "RETU irq");
+ 	if (ret < 0) {
+-		printk(KERN_ERR PFX "Unable to reserve IRQ GPIO\n");
++		dev_err(dev, "Unable to reserve IRQ GPIO\n");
+ 		return ret;
+ 	}
+ 
+@@ -372,7 +372,7 @@ static int __devinit retu_probe(struct device *dev)
+ 	if (rev & (1 << 7))
+ 		retu_is_vilma = 1;
+ 
+-	printk(KERN_INFO "%s v%d.%d found\n", retu_is_vilma ? "Vilma" : "Retu",
++	dev_info(dev, "%s v%d.%d found\n", retu_is_vilma ? "Vilma" : "Retu",
+ 	       (rev >> 4) & 0x07, rev & 0x0f);
+ 
+ 	/* Mask all RETU interrupts */
+@@ -381,7 +381,7 @@ static int __devinit retu_probe(struct device *dev)
+ 	ret = request_irq(gpio_to_irq(retu_irq_pin), retu_irq_handler, 0,
+ 			  "retu", 0);
+ 	if (ret < 0) {
+-		printk(KERN_ERR PFX "Unable to register IRQ handler\n");
++		dev_err(dev, "Unable to register IRQ handler\n");
+ 		gpio_free(retu_irq_pin);
+ 		return ret;
+ 	}
+@@ -393,7 +393,7 @@ static int __devinit retu_probe(struct device *dev)
+ #ifdef CONFIG_CBUS_RETU_USER
+ 	/* Initialize user-space interface */
+ 	if (retu_user_init() < 0) {
+-		printk(KERN_ERR "Unable to initialize driver\n");
++		dev_err(dev, "Unable to initialize driver\n");
+ 		free_irq(gpio_to_irq(retu_irq_pin), 0);
+ 		gpio_free(retu_irq_pin);
+ 		return ret;
+@@ -450,8 +450,6 @@ static int __init retu_init(void)
+ 		machine_is_nokia_n810() || machine_is_nokia_n810_wimax()))
+ 			return -ENODEV;
+ 
+-	printk(KERN_INFO "Retu/Vilma driver initialising\n");
+-
+ 	init_completion(&device_release);
+ 
+ 	ret = driver_register(&retu_driver);
+-- 
+1.7.11.2
+

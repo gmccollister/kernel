@@ -1,0 +1,78 @@
+From 93d1a11873466e17f14f37dc0c6d637057fc4314 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Thu, 8 Sep 2011 16:29:39 +0530
+Subject: [PATCH 0398/1092] arm:omap:am33xx: Skip parts where
+ cpu_is_omap34xx() is true but NA for AM33XX
+
+Add an explicit check for cpu_is_am33xx() to prevent the block inside
+cpu_is_omap34xx() from executing which would otherwise fail/cause
+aborts on AM33XX.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/gpmc.c     | 5 ++++-
+ arch/arm/mach-omap2/omap_twl.c | 2 +-
+ arch/arm/mach-omap2/pm34xx.c   | 2 +-
+ arch/arm/plat-omap/sram.c      | 3 +++
+ 4 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/gpmc.c b/arch/arm/mach-omap2/gpmc.c
+index dfffbbf..4ee2e90 100644
+--- a/arch/arm/mach-omap2/gpmc.c
++++ b/arch/arm/mach-omap2/gpmc.c
+@@ -711,7 +711,10 @@ static int __init gpmc_init(void)
+ 		gpmc_irq = INT_34XX_GPMC_IRQ;
+ 	} else if (cpu_is_omap34xx()) {
+ 		ck = "gpmc_fck";
+-		l = OMAP34XX_GPMC_BASE;
++		if (cpu_is_am33xx())
++			l = OMAP44XX_GPMC_BASE;
++		else
++			l = OMAP34XX_GPMC_BASE;
+ 		gpmc_irq = INT_34XX_GPMC_IRQ;
+ 	} else if (cpu_is_omap44xx()) {
+ 		ck = "gpmc_ck";
+diff --git a/arch/arm/mach-omap2/omap_twl.c b/arch/arm/mach-omap2/omap_twl.c
+index f515a1a..91f3c2e 100644
+--- a/arch/arm/mach-omap2/omap_twl.c
++++ b/arch/arm/mach-omap2/omap_twl.c
+@@ -285,7 +285,7 @@ int __init omap3_twl_init(void)
+ {
+ 	struct voltagedomain *voltdm;
+ 
+-	if (!cpu_is_omap34xx())
++	if (!cpu_is_omap34xx() || cpu_is_am33xx())
+ 		return -ENODEV;
+ 
+ 	if (cpu_is_omap3630()) {
+diff --git a/arch/arm/mach-omap2/pm34xx.c b/arch/arm/mach-omap2/pm34xx.c
+index fc69875..04af372 100644
+--- a/arch/arm/mach-omap2/pm34xx.c
++++ b/arch/arm/mach-omap2/pm34xx.c
+@@ -790,7 +790,7 @@ static int __init omap3_pm_init(void)
+ 	struct clockdomain *neon_clkdm, *per_clkdm, *mpu_clkdm, *core_clkdm;
+ 	int ret;
+ 
+-	if (!cpu_is_omap34xx())
++	if (!cpu_is_omap34xx() || cpu_is_am33xx())
+ 		return -ENODEV;
+ 
+ 	if (!omap3_has_io_chain_ctrl())
+diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
+index 4243bdc..c702425 100644
+--- a/arch/arm/plat-omap/sram.c
++++ b/arch/arm/plat-omap/sram.c
+@@ -370,6 +370,9 @@ static inline int omap34xx_sram_init(void)
+ 
+ int __init omap_sram_init(void)
+ {
++	if (cpu_is_am33xx())
++		return 0;
++
+ 	omap_detect_sram();
+ 	omap_map_sram();
+ 
+-- 
+1.7.11.2
+

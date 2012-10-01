@@ -1,0 +1,27 @@
+From 053ff2a8de109c103ec7fe605d4f1d9ca8fa8d29 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 2 Jan 2012 16:53:08 +0530
+Subject: [PATCH 0667/1092] cpsw: Merge cpsw modules to build as single driver
+
+Merge 2 cpsw drivers (cpsw_ale & cpsw) as one so as to avoid module
+build issues.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ drivers/net/ethernet/ti/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/ti/Makefile b/drivers/net/ethernet/ti/Makefile
+index 42d2e5d..91bd8bb 100644
+--- a/drivers/net/ethernet/ti/Makefile
++++ b/drivers/net/ethernet/ti/Makefile
+@@ -7,4 +7,5 @@ obj-$(CONFIG_CPMAC) += cpmac.o
+ obj-$(CONFIG_TI_DAVINCI_EMAC) += davinci_emac.o
+ obj-$(CONFIG_TI_DAVINCI_MDIO) += davinci_mdio.o
+ obj-$(CONFIG_TI_DAVINCI_CPDMA) += davinci_cpdma.o
+-obj-$(CONFIG_TI_CPSW) += cpsw_ale.o cpsw.o
++obj-$(CONFIG_TI_CPSW) += ti_cpsw.o
++ti_cpsw-y := cpsw_ale.o cpsw.o
+-- 
+1.7.11.2
+

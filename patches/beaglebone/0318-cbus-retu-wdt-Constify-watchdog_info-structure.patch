@@ -1,0 +1,30 @@
+From d6cfc19ad35c26b0983ec68da663742bc06c6a6b Mon Sep 17 00:00:00 2001
+From: Michael Buesch <mb@bu3sch.de>
+Date: Fri, 4 Mar 2011 15:33:27 +0000
+Subject: [PATCH 0318/1092] cbus-retu-wdt: Constify watchdog_info structure
+
+Nobody modifies the watchdog_info structure, so make it const.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-wdt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index a87c873..3eb388f 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -149,7 +149,7 @@ static long retu_wdt_ioctl(struct file *file, unsigned int cmd,
+ 	struct retu_wdt_dev *wdev = container_of(mdev, struct retu_wdt_dev, miscdev);
+ 	int new_margin;
+ 
+-	static struct watchdog_info ident = {
++	static const struct watchdog_info ident = {
+ 		.identity = "Retu Watchdog",
+ 		.options = WDIOF_SETTIMEOUT,
+ 		.firmware_version = 0,
+-- 
+1.7.11.2
+

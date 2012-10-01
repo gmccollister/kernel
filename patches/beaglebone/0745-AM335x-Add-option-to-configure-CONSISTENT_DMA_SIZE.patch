@@ -1,0 +1,66 @@
+From d0f89fea7d789d6e2d0acc41640be3d4ba9e1d7a Mon Sep 17 00:00:00 2001
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 24 Jan 2012 12:33:02 +0530
+Subject: [PATCH 0745/1092] AM335x: Add option to configure
+ CONSISTENT_DMA_SIZE
+
+This is temporary workaround patch required for SGX model as it fails to
+get DMA memory using get_free_pages. So patch configures CONSISTENT_DMA_SIZE
+via configurable option FB_DA8XX_CONSISTENT_DMA_SIZE.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ arch/arm/mm/dma-mapping.c | 13 +++++++++++++
+ drivers/video/Kconfig     | 11 +++++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index 1aa664a..98d64fa 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -128,7 +128,20 @@ static void __dma_free_buffer(struct page *page, size_t size)
+  */
+ static pte_t **consistent_pte;
+ 
++#ifdef CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE
++
++#if (CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE == 0)
++#undef CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE
++#define CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE 2
++#endif
++
++#define DEFAULT_CONSISTENT_DMA_SIZE \
++	(((CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE + 1) & ~1) * 1024 * 1024)
++
++#else
+ #define DEFAULT_CONSISTENT_DMA_SIZE SZ_2M
++#endif
++
+ 
+ unsigned long consistent_base = CONSISTENT_END - DEFAULT_CONSISTENT_DMA_SIZE;
+ 
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 6c9863a..f66bf0e 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2238,6 +2238,17 @@ config FB_DA8XX
+ 	  found on DA8xx/OMAP-L1xx SoCs.
+ 	  If unsure, say N.
+ 
++config FB_DA8XX_CONSISTENT_DMA_SIZE
++	int "Consistent DMA memory size (MB)"
++	depends on (FB_DA8XX && MACH_AM335XEVM)
++	range 1 14
++	default 4
++	help
++	  Increase the DMA consistent memory size according to your video
++	  memory needs, for example if you want to use multiple planes.
++	  The size must be 2MB aligned.
++	  If unsure say 1.
++
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
+-- 
+1.7.11.2
+

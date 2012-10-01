@@ -1,0 +1,29 @@
+From 680765a994ace0b4e1eb5b7d8cbf40fe9d4f9ee0 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:19:41 -0700
+Subject: [PATCH 0224/1092] cbus: NULL global variable on exit
+
+just to be sure, let's set it to NULL.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/cbus.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 5517541..9b85774 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -280,7 +280,9 @@ static void __exit cbus_bus_remove(struct platform_device *pdev)
+ 
+ 	gpio_free(chost->dat_gpio);
+ 	gpio_free(chost->clk_gpio);
++
+ 	kfree(chost);
++	cbus_host = NULL;
+ }
+ 
+ static struct platform_driver cbus_driver = {
+-- 
+1.7.11.2
+

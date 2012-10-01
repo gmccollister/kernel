@@ -1,0 +1,35 @@
+From 55087473a2e62f42825c18a2adf0cef0f4e9e747 Mon Sep 17 00:00:00 2001
+From: AnilKumar Ch <anilkumar@ti.com>
+Date: Fri, 20 Jan 2012 16:47:26 +0545
+Subject: [PATCH 0735/1092] am335x: Add tps65217 config to am335x def config
+
+This patch adds the tps65217 configuration to am335x_evm_defconfig
+
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 5a3f564..e52b895 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1476,6 +1476,7 @@ CONFIG_MFD_SUPPORT=y
+ # CONFIG_TPS6105X is not set
+ # CONFIG_TPS65010 is not set
+ # CONFIG_TPS6507X is not set
++CONFIG_MFD_TPS65217=y
+ # CONFIG_MFD_TPS6586X is not set
+ CONFIG_MFD_TPS65910=y
+ # CONFIG_MFD_TPS65912_I2C is not set
+@@ -1525,6 +1526,7 @@ CONFIG_REGULATOR_TPS65910=y
+ # CONFIG_REGULATOR_LP3972 is not set
+ # CONFIG_REGULATOR_TPS65023 is not set
+ # CONFIG_REGULATOR_TPS6507X is not set
++CONFIG_REGULATOR_TPS65217=y
+ # CONFIG_REGULATOR_ISL6271A is not set
+ # CONFIG_REGULATOR_AD5398 is not set
+ # CONFIG_REGULATOR_TPS6524X is not set
+-- 
+1.7.11.2
+

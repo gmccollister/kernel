@@ -1,0 +1,70 @@
+From c9a139b5a82252ec28a44b3304bff98f6a61f3f3 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Wed, 19 Oct 2011 15:21:43 +0530
+Subject: [PATCH 0603/1092] arm:omap:am335x: CPSW autonegotiates to 10 mbps
+ for beaglebone
+
+This patch is added as an workaround for cpsw in case of beaglebone
+board to autonegotiates to 10 mbps speed even if it is connected to
+100 mbps link. The reason for this is to overcome hardware issue of
+100 mbps speed. However, CPSW works fine for both 10 and 100 mbps
+speed in case of am335x evm.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 552a564..351b453 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -28,6 +28,7 @@
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/wl12xx.h>
++#include <linux/ethtool.h>
+ 
+ /* LCD controller is similar to DA850 */
+ #include <video/da8xx-fb.h>
+@@ -59,6 +60,10 @@
+ #define TLK110_PHY_ID		0x2000A201
+ #define TLK110_PHY_MASK		0xfffffff0
+ 
++/* BBB PHY IDs */
++#define BBB_PHY_ID		0x7c0f1
++#define BBB_PHY_MASK		0xfffffffe
++
+ /* TLK110 PHY register offsets */
+ #define TLK110_COARSEGAIN_REG	0x00A3
+ #define TLK110_LPFHPF_REG	0x00AC
+@@ -1064,6 +1069,15 @@ static void spi1_init(int evm_id, int profile)
+ 	return;
+ }
+ 
++
++static int beaglebone_phy_fixup(struct phy_device *phydev)
++{
++	phydev->supported &= ~(SUPPORTED_100baseT_Half |
++				SUPPORTED_100baseT_Full);
++
++	return 0;
++}
++
+ #ifdef CONFIG_TLK110_WORKAROUND
+ static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
+ {
+@@ -1279,6 +1293,9 @@ static void setup_beaglebone_old(void)
+ 	am335x_mmc[0].gpio_wp = -EINVAL;
+ 
+ 	_configure_device(LOW_COST_EVM, beaglebone_old_dev_cfg, PROFILE_NONE);
++
++	phy_register_fixup_for_uid(BBB_PHY_ID, BBB_PHY_MASK,
++					beaglebone_phy_fixup);
+ }
+ 
+ /* BeagleBone after Rev A3 */
+-- 
+1.7.11.2
+

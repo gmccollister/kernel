@@ -1,0 +1,50 @@
+From 8bf4d20085977a799d58d86cdab5d743b732c99b Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 3 Feb 2011 12:20:18 +0200
+Subject: [PATCH 0278/1092] cbus: retu: move module_* close to the matching
+ symbol
+
+Just to make checkpatch.pl a bit happier, move
+subsys_initcall() and module_exit() closer to
+the init and exit functions of the driver.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 39d4fa4..0053d43 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -498,25 +498,16 @@ static struct platform_driver retu_driver = {
+ 	},
+ };
+ 
+-/**
+- * retu_init - initialise Retu driver
+- *
+- * Initialise the Retu driver and return 0 if everything worked ok
+- */
+ static int __init retu_init(void)
+ {
+ 	return platform_driver_probe(&retu_driver, retu_probe);
+ }
++subsys_initcall(retu_init);
+ 
+-/*
+- * Cleanup
+- */
+ static void __exit retu_exit(void)
+ {
+ 	platform_driver_unregister(&retu_driver);
+ }
+-
+-subsys_initcall(retu_init);
+ module_exit(retu_exit);
+ 
+ MODULE_DESCRIPTION("Retu ASIC control");
+-- 
+1.7.11.2
+

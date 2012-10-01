@@ -1,0 +1,29 @@
+From 6f23de70efaacad9f924db4cbf1d345ae8337866 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Wed, 22 Aug 2012 12:31:53 +0530
+Subject: [PATCH 1062/1092] ARM: OMAP: AM335x: update TSC call in defconfig
+
+Since the touchscreen file has been renamed,
+updating the same in defconfig.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 877db63..f568dd0 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1198,7 +1198,7 @@ CONFIG_INPUT_TOUCHSCREEN=y
+ # CONFIG_TOUCHSCREEN_PENMOUNT is not set
+ # CONFIG_TOUCHSCREEN_TOUCHRIGHT is not set
+ # CONFIG_TOUCHSCREEN_TOUCHWIN is not set
+-CONFIG_TOUCHSCREEN_TI_TSCADC=y
++CONFIG_TOUCHSCREEN_TI_TSC=y
+ # CONFIG_TOUCHSCREEN_USB_COMPOSITE is not set
+ # CONFIG_TOUCHSCREEN_TOUCHIT213 is not set
+ # CONFIG_TOUCHSCREEN_TSC_SERIO is not set
+-- 
+1.7.11.2
+

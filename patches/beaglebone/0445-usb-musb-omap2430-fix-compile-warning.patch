@@ -1,0 +1,36 @@
+From 9b9a12b19045f3c5b040f9f852c79a1600117cfd Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 24 Nov 2011 15:42:10 +0200
+Subject: [PATCH 0445/1092] usb: musb: omap2430: fix compile warning
+
+fix the following compile warning:
+
+drivers/usb/musb/omap2430.c: In function 'musb_otg_notifier_work':
+drivers/usb/musb/omap2430.c:279:3: warning: 'return' with a value, in
+	function returning void
+drivers/usb/musb/omap2430.c:282:2: warning: 'return' with a value, in
+	function returning void
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/omap2430.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index f4e29ce..6d3bb16 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -283,10 +283,7 @@ static void musb_otg_notifier_work(struct work_struct *data_notifier_work)
+ 		break;
+ 	default:
+ 		dev_dbg(musb->controller, "ID float\n");
+-		return NOTIFY_DONE;
+ 	}
+-
+-	return NOTIFY_OK;
+ }
+ 
+ static int omap2430_musb_init(struct musb *musb)
+-- 
+1.7.11.2
+

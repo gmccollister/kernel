@@ -1,0 +1,54 @@
+From 8554eff999b87ef5b8e7de7d2191d688cfe977e7 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:22:58 -0700
+Subject: [PATCH 0254/1092] cbus: retu-rtc: move retu_rtc_barrier up on source
+ code
+
+... and drop the function prototype.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu-rtc.c | 20 +++++++++-----------
+ 1 file changed, 9 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index b99c227..90d199e 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -57,7 +57,15 @@ struct retu_rtc {
+ 
+ #define work_to_rtc(r)	(container_of(r, struct retu_rtc, work))
+ 
+-static void retu_rtc_barrier(struct retu_rtc *rtc);
++/* This function provides syncronization with the RTCS interrupt handler */
++static void retu_rtc_barrier(struct retu_rtc *rtc)
++{
++	INIT_COMPLETION(rtc->sync);
++	retu_ack_irq(RETU_INT_RTCS);
++	retu_enable_irq(RETU_INT_RTCS);
++	wait_for_completion(&rtc->sync);
++	retu_disable_irq(RETU_INT_RTCS);
++}
+ 
+ static ssize_t retu_rtc_time_show(struct device *dev, struct device_attribute *attr,
+ 				  char *buf)
+@@ -476,16 +484,6 @@ static struct platform_driver retu_rtc_driver = {
+ 	},
+ };
+ 
+-/* This function provides syncronization with the RTCS interrupt handler */
+-static void retu_rtc_barrier(struct retu_rtc *rtc)
+-{
+-	INIT_COMPLETION(rtc->sync);
+-	retu_ack_irq(RETU_INT_RTCS);
+-	retu_enable_irq(RETU_INT_RTCS);
+-	wait_for_completion(&rtc->sync);
+-	retu_disable_irq(RETU_INT_RTCS);
+-}
+-
+ static int __init retu_rtc_init(void)
+ {
+ 	return platform_driver_register(&retu_rtc_driver);
+-- 
+1.7.11.2
+

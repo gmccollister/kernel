@@ -1,0 +1,64 @@
+From 48054aa73d9a9bdc14cd680eb13704f5b649eed5 Mon Sep 17 00:00:00 2001
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Wed, 14 Sep 2011 17:06:22 -0400
+Subject: [PATCH 0067/1092] ARM: mach-tegra: remove arch specific special
+ handling for ioremap
+
+A generic version should replace this later.
+
+Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+Tested-by: Stephen Warren <swarren@nvidia.com>
+---
+ arch/arm/mach-tegra/include/mach/io.h |  6 ------
+ arch/arm/mach-tegra/io.c              | 21 ---------------------
+ 2 files changed, 27 deletions(-)
+
+diff --git a/arch/arm/mach-tegra/include/mach/io.h b/arch/arm/mach-tegra/include/mach/io.h
+index 35a011f..f15deff 100644
+--- a/arch/arm/mach-tegra/include/mach/io.h
++++ b/arch/arm/mach-tegra/include/mach/io.h
+@@ -71,12 +71,6 @@
+ 
+ #ifndef __ASSEMBLER__
+ 
+-#define __arch_ioremap		tegra_ioremap
+-#define __arch_iounmap		tegra_iounmap
+-
+-void __iomem *tegra_ioremap(unsigned long phys, size_t size, unsigned int type);
+-void tegra_iounmap(volatile void __iomem *addr);
+-
+ #define IO_ADDRESS(n) (IO_TO_VIRT(n))
+ 
+ #ifdef CONFIG_TEGRA_PCI
+diff --git a/arch/arm/mach-tegra/io.c b/arch/arm/mach-tegra/io.c
+index 5489f8b..d23ee2d 100644
+--- a/arch/arm/mach-tegra/io.c
++++ b/arch/arm/mach-tegra/io.c
+@@ -60,24 +60,3 @@ void __init tegra_map_common_io(void)
+ {
+ 	iotable_init(tegra_io_desc, ARRAY_SIZE(tegra_io_desc));
+ }
+-
+-/*
+- * Intercept ioremap() requests for addresses in our fixed mapping regions.
+- */
+-void __iomem *tegra_ioremap(unsigned long p, size_t size, unsigned int type)
+-{
+-	void __iomem *v = IO_ADDRESS(p);
+-	if (v == NULL)
+-		v = __arm_ioremap(p, size, type);
+-	return v;
+-}
+-EXPORT_SYMBOL(tegra_ioremap);
+-
+-void tegra_iounmap(volatile void __iomem *addr)
+-{
+-	unsigned long virt = (unsigned long)addr;
+-
+-	if (virt >= VMALLOC_START && virt < VMALLOC_END)
+-		__iounmap(addr);
+-}
+-EXPORT_SYMBOL(tegra_iounmap);
+-- 
+1.7.11.2
+

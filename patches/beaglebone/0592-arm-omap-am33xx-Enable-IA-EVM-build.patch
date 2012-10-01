@@ -1,0 +1,29 @@
+From af68996fbe9bedc8be0d4ea7e8af9cc6c6015f1e Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Wed, 17 Aug 2011 11:17:48 +0530
+Subject: [PATCH 0592/1092] arm:omap:am33xx: Enable IA EVM build
+
+Enable IA EVM build in am335x_evm_defconfig
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index a003669..4b0aa19 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -315,6 +315,7 @@ CONFIG_MACH_OMAP3_BEAGLE=y
+ # CONFIG_MACH_SBC3530 is not set
+ # CONFIG_MACH_OMAP_3630SDP is not set
+ CONFIG_MACH_AM335XEVM=y
++CONFIG_MACH_AM335XIAEVM=y
+ # CONFIG_OMAP3_EMU is not set
+ # CONFIG_OMAP3_SDRC_AC_TIMING is not set
+ CONFIG_OMAP3_EDMA=y
+-- 
+1.7.11.2
+

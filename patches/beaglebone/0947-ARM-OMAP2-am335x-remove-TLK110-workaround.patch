@@ -1,0 +1,174 @@
+From 509de293f9a10c9d3317454be67c8e2ce96f4153 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Wed, 25 Apr 2012 15:12:30 +0530
+Subject: [PATCH 0947/1092] ARM: OMAP2+: am335x: remove TLK110 workaround.
+
+Since Industrial Automation boards doesnt support PHY TLK110 Ver 1.0
+(anymore), remove them from the code. This patch retains support for
+only PHY TLK110 Ver 1.1.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig |   1 -
+ arch/arm/mach-omap2/board-am335xevm.c | 115 ----------------------------------
+ 2 files changed, 116 deletions(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 56d8b10..8f23cca 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1052,7 +1052,6 @@ CONFIG_NET_VENDOR_TI=y
+ CONFIG_TI_DAVINCI_MDIO=y
+ CONFIG_TI_DAVINCI_CPDMA=y
+ CONFIG_TI_CPSW=y
+-CONFIG_TLK110_WORKAROUND=y
+ CONFIG_PHYLIB=y
+ 
+ #
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index fd4c0fc..e43cdba 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -70,62 +70,10 @@
+ /* Convert GPIO signal to GPIO pin number */
+ #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
+ 
+-/* TLK PHY IDs */
+-#define TLK110_PHY_ID		0x2000A201
+-#define TLK110_PHY_MASK		0xfffffff0
+-
+ /* BBB PHY IDs */
+ #define BBB_PHY_ID		0x7c0f1
+ #define BBB_PHY_MASK		0xfffffffe
+ 
+-/* TLK110 PHY register offsets */
+-#define TLK110_COARSEGAIN_REG	0x00A3
+-#define TLK110_LPFHPF_REG	0x00AC
+-#define TLK110_SPAREANALOG_REG	0x00B9
+-#define TLK110_VRCR_REG		0x00D0
+-#define TLK110_SETFFE_REG	0x0107
+-#define TLK110_FTSP_REG		0x0154
+-#define TLK110_ALFATPIDL_REG	0x002A
+-#define TLK110_PSCOEF21_REG	0x0096
+-#define TLK110_PSCOEF3_REG	0x0097
+-#define TLK110_ALFAFACTOR1_REG	0x002C
+-#define TLK110_ALFAFACTOR2_REG	0x0023
+-#define TLK110_CFGPS_REG	0x0095
+-#define TLK110_FTSPTXGAIN_REG	0x0150
+-#define TLK110_SWSCR3_REG	0x000B
+-#define TLK110_SCFALLBACK_REG	0x0040
+-#define TLK110_PHYRCR_REG	0x001F
+-
+-/* TLK110 register writes values */
+-#define TLK110_COARSEGAIN_VAL	0x0000
+-#define TLK110_LPFHPF_VAL	0x8000
+-#define TLK110_SPANALOG_VAL	0x0000
+-#define TLK110_VRCR_VAL		0x0008
+-#define TLK110_SETFFE_VAL	0x0605
+-#define TLK110_FTSP_VAL		0x0255
+-#define TLK110_ALFATPIDL_VAL	0x7998
+-#define TLK110_PSCOEF21_VAL	0x3A20
+-#define TLK110_PSCOEF3_VAL	0x003F
+-#define TLK110_ALFACTOR1_VAL	0xFF80
+-#define TLK110_ALFACTOR2_VAL	0x021C
+-#define TLK110_CFGPS_VAL	0x0000
+-#define TLK110_FTSPTXGAIN_VAL	0x6A88
+-#define TLK110_SWSCR3_VAL	0x0000
+-#define TLK110_SCFALLBACK_VAL	0xC11D
+-#define TLK110_PHYRCR_VAL	0x4000
+-
+-#if defined(CONFIG_TLK110_WORKAROUND) || \
+-		defined(CONFIG_TLK110_WORKAROUND_MODULE)
+-#define am335x_tlk110_phy_init()\
+-	do {	\
+-		phy_register_fixup_for_uid(TLK110_PHY_ID,\
+-					TLK110_PHY_MASK,\
+-					am335x_tlk110_phy_fixup);\
+-	} while (0);
+-#else
+-#define am335x_tlk110_phy_init() do { } while (0);
+-#endif
+-
+ static const struct display_panel disp_panel = {
+ 	WVGA,
+ 	32,
+@@ -1705,65 +1653,6 @@ static int beaglebone_phy_fixup(struct phy_device *phydev)
+ 	return 0;
+ }
+ 
+-#if defined(CONFIG_TLK110_WORKAROUND) || \
+-			defined(CONFIG_TLK110_WORKAROUND_MODULE)
+-static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
+-{
+-	unsigned int val;
+-
+-	/* This is done as a workaround to support TLK110 rev1.0 phy */
+-	val = phy_read(phydev, TLK110_COARSEGAIN_REG);
+-	phy_write(phydev, TLK110_COARSEGAIN_REG, (val | TLK110_COARSEGAIN_VAL));
+-
+-	val = phy_read(phydev, TLK110_LPFHPF_REG);
+-	phy_write(phydev, TLK110_LPFHPF_REG, (val | TLK110_LPFHPF_VAL));
+-
+-	val = phy_read(phydev, TLK110_SPAREANALOG_REG);
+-	phy_write(phydev, TLK110_SPAREANALOG_REG, (val | TLK110_SPANALOG_VAL));
+-
+-	val = phy_read(phydev, TLK110_VRCR_REG);
+-	phy_write(phydev, TLK110_VRCR_REG, (val | TLK110_VRCR_VAL));
+-
+-	val = phy_read(phydev, TLK110_SETFFE_REG);
+-	phy_write(phydev, TLK110_SETFFE_REG, (val | TLK110_SETFFE_VAL));
+-
+-	val = phy_read(phydev, TLK110_FTSP_REG);
+-	phy_write(phydev, TLK110_FTSP_REG, (val | TLK110_FTSP_VAL));
+-
+-	val = phy_read(phydev, TLK110_ALFATPIDL_REG);
+-	phy_write(phydev, TLK110_ALFATPIDL_REG, (val | TLK110_ALFATPIDL_VAL));
+-
+-	val = phy_read(phydev, TLK110_PSCOEF21_REG);
+-	phy_write(phydev, TLK110_PSCOEF21_REG, (val | TLK110_PSCOEF21_VAL));
+-
+-	val = phy_read(phydev, TLK110_PSCOEF3_REG);
+-	phy_write(phydev, TLK110_PSCOEF3_REG, (val | TLK110_PSCOEF3_VAL));
+-
+-	val = phy_read(phydev, TLK110_ALFAFACTOR1_REG);
+-	phy_write(phydev, TLK110_ALFAFACTOR1_REG, (val | TLK110_ALFACTOR1_VAL));
+-
+-	val = phy_read(phydev, TLK110_ALFAFACTOR2_REG);
+-	phy_write(phydev, TLK110_ALFAFACTOR2_REG, (val | TLK110_ALFACTOR2_VAL));
+-
+-	val = phy_read(phydev, TLK110_CFGPS_REG);
+-	phy_write(phydev, TLK110_CFGPS_REG, (val | TLK110_CFGPS_VAL));
+-
+-	val = phy_read(phydev, TLK110_FTSPTXGAIN_REG);
+-	phy_write(phydev, TLK110_FTSPTXGAIN_REG, (val | TLK110_FTSPTXGAIN_VAL));
+-
+-	val = phy_read(phydev, TLK110_SWSCR3_REG);
+-	phy_write(phydev, TLK110_SWSCR3_REG, (val | TLK110_SWSCR3_VAL));
+-
+-	val = phy_read(phydev, TLK110_SCFALLBACK_REG);
+-	phy_write(phydev, TLK110_SCFALLBACK_REG, (val | TLK110_SCFALLBACK_VAL));
+-
+-	val = phy_read(phydev, TLK110_PHYRCR_REG);
+-	phy_write(phydev, TLK110_PHYRCR_REG, (val | TLK110_PHYRCR_VAL));
+-
+-	return 0;
+-}
+-#endif
+-
+ static void profibus_init(int evm_id, int profile)
+ {
+ 	setup_pin_mux(profibus_pin_mux);
+@@ -1881,10 +1770,6 @@ static void setup_ind_auto_motor_ctrl_evm(void)
+ 	/* Fillup global evmid */
+ 	am33xx_evmid_fillup(IND_AUT_MTR_EVM);
+ 
+-	/* Initialize TLK110 PHY registers for phy version 1.0 */
+-	am335x_tlk110_phy_init();
+-
+-
+ }
+ 
+ /* BeagleBone < Rev A3 */
+-- 
+1.7.11.2
+

@@ -1,0 +1,36 @@
+From 200661dd1009963b6605008b739971f42f4d9b8b Mon Sep 17 00:00:00 2001
+From: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Date: Fri, 28 May 2010 18:01:30 +0530
+Subject: [PATCH 0482/1092] musb: Inform user when gadget cable is
+ disconnected
+
+Currently we don't see any message to inform user that gadget cable is
+successfully disconnected leading to suspicion if everything is fine at
+driver therefore adding an informative print message in gadget
+disconnect path.
+
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_core.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 0f78d39..7592cb5 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -782,6 +782,10 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
+ 			/* FALLTHROUGH */
+ 		case OTG_STATE_B_PERIPHERAL:
+ 		case OTG_STATE_B_IDLE:
++			printk(KERN_INFO "musb %s gadget disconnected.\n",
++				musb->gadget_driver
++				? musb->gadget_driver->driver.name
++				: "");
+ 			musb_g_disconnect(musb);
+ 			break;
+ 		default:
+-- 
+1.7.11.2
+

@@ -1,0 +1,109 @@
+From e23382be8bea5b72fcc2cfe5f9260b71a32ea9fd Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:22:07 -0700
+Subject: [PATCH 0247/1092] cbus: retu: allocate platform_device for Retu's
+ children
+
+after this patch, Retu's children can start moving to
+platform_driver infrastructure.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu.c | 74 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index ea09c17..bc81a9b 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -330,6 +330,67 @@ static void retu_power_off(void)
+ }
+ 
+ /**
++ * retu_allocate_child - Allocates one Retu child
++ * @name: name of new child
++ * @parent: parent device for this child
++ */
++static struct device *retu_allocate_child(char *name, struct device *parent)
++{
++	struct platform_device		*pdev;
++	int				status;
++
++	pdev = platform_device_alloc(name, -1);
++	if (!pdev) {
++		dev_dbg(parent, "can't allocate %s\n", name);
++		goto err;
++	}
++
++	pdev->dev.parent = parent;
++
++	status = platform_device_add(pdev);
++	if (status < 0) {
++		dev_dbg(parent, "can't add %s\n", name);
++		goto err;
++	}
++
++	return &pdev->dev;
++
++err:
++	platform_device_put(pdev);
++	return NULL;
++}
++
++/**
++ * retu_allocate_children - Allocates Retu's children
++ */
++static int retu_allocate_children(struct device *parent)
++{
++	struct device	*child;
++
++	child = retu_allocate_child("retu-pwrbutton", parent);
++	if (!child)
++		return -ENOMEM;
++
++	child = retu_allocate_child("retu-headset", parent);
++	if (!child)
++		return -ENOMEM;
++
++	child = retu_allocate_child("retu-rtc", parent);
++	if (!child)
++		return -ENOMEM;
++
++	child = retu_allocate_child("retu-user", parent);
++	if (!child)
++		return -ENOMEM;
++
++	child = retu_allocate_child("retu-wdt", parent);
++	if (!child)
++		return -ENOMEM;
++
++	return 0;
++}
++
++/**
+  * retu_probe - Probe for Retu ASIC
+  * @dev: the Retu device
+  *
+@@ -400,6 +461,19 @@ static int __devinit retu_probe(struct platform_device *pdev)
+ 	}
+ #endif
+ 
++	ret = retu_allocate_children(&pdev->dev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Unable to allocate Retu children\n");
++#ifdef CONFIG_CBUS_RETU_USER
++		retu_user_cleanup();
++#endif
++		retu_write_reg(RETU_REG_IMR, 0xffff);
++		free_irq(gpio_to_irq(retu_irq_pin), 0);
++		gpio_free(retu_irq_pin);
++		tasklet_kill(&retu_tasklet);
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.11.2
+

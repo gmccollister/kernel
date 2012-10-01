@@ -1,0 +1,42 @@
+From ded486e80316757ae81d8e0b5560d18711115426 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 20 Dec 2011 16:51:13 +0530
+Subject: [PATCH 0654/1092] omap: mailbox: Fix the address calculation macros
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/mailbox.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+index 609ea2d..45a324e 100644
+--- a/arch/arm/mach-omap2/mailbox.c
++++ b/arch/arm/mach-omap2/mailbox.c
+@@ -20,15 +20,15 @@
+ #include <mach/irqs.h>
+ 
+ #define MAILBOX_REVISION		0x000
+-#define MAILBOX_MESSAGE(m)		(0x040 + 4 * (m))
+-#define MAILBOX_FIFOSTATUS(m)		(0x080 + 4 * (m))
+-#define MAILBOX_MSGSTATUS(m)		(0x0c0 + 4 * (m))
+-#define MAILBOX_IRQSTATUS(u)		(0x100 + 8 * (u))
+-#define MAILBOX_IRQENABLE(u)		(0x104 + 8 * (u))
+-
+-#define OMAP4_MAILBOX_IRQSTATUS(u)	(0x104 + 10 * (u))
+-#define OMAP4_MAILBOX_IRQENABLE(u)	(0x108 + 10 * (u))
+-#define OMAP4_MAILBOX_IRQENABLE_CLR(u)	(0x10c + 10 * (u))
++#define MAILBOX_MESSAGE(m)		(0x040 + 0x4 * (m))
++#define MAILBOX_FIFOSTATUS(m)		(0x080 + 0x4 * (m))
++#define MAILBOX_MSGSTATUS(m)		(0x0c0 + 0x4 * (m))
++#define MAILBOX_IRQSTATUS(u)		(0x100 + 0x8 * (u))
++#define MAILBOX_IRQENABLE(u)		(0x104 + 0x8 * (u))
++
++#define OMAP4_MAILBOX_IRQSTATUS(u)	(0x104 + 0x10 * (u))
++#define OMAP4_MAILBOX_IRQENABLE(u)	(0x108 + 0x10 * (u))
++#define OMAP4_MAILBOX_IRQENABLE_CLR(u)	(0x10c + 0x10 * (u))
+ 
+ #define MAILBOX_IRQ_NEWMSG(m)		(1 << (2 * (m)))
+ #define MAILBOX_IRQ_NOTFULL(m)		(1 << (2 * (m) + 1))
+-- 
+1.7.11.2
+

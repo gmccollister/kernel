@@ -1,0 +1,45 @@
+From 6620a3c7e7455ac07abe912c0dfc8f6c1db5cc92 Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Thu, 23 Dec 2010 23:13:40 +0800
+Subject: [PATCH 0455/1092] usb: musb: introduce read_fifo/write_fifo callback
+ in glue ops
+
+This patch introduces read_fifo/write_fifo callback in glue ops,
+so that we can make musb in one single images working on multiple
+boards.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_core.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index d6d1c8d..8b31569 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -207,6 +207,8 @@ enum musb_g_ep0_state {
+  * struct musb_platform_ops - Operations passed to musb_core by HW glue layer
+  * @init:	turns on clocks, sets up platform-specific registers, etc
+  * @exit:	undoes @init
++ * @read_fifo: read data from musb fifo in PIO
++ * @write_fifo: write data into musb fifo in PIO
+  * @set_mode:	forcefully changes operating mode
+  * @try_ilde:	tries to idle the IP
+  * @get_hw_revision: get hardware revision
+@@ -221,6 +223,9 @@ struct musb_platform_ops {
+ 	void	(*enable)(struct musb *musb);
+ 	void	(*disable)(struct musb *musb);
+ 
++	void (*read_fifo)(struct musb_hw_ep *hw_ep, u16 len, u8 *buf);
++	void (*write_fifo)(struct musb_hw_ep *hw_ep, u16 len, const u8 *buf);
++
+ 	int	(*set_mode)(struct musb *musb, u8 mode);
+ 	void	(*try_idle)(struct musb *musb, unsigned long timeout);
+ 
+-- 
+1.7.11.2
+

@@ -1,0 +1,45 @@
+From 420d1a9cf40fcc7fe4883dcdb68f76b8883d0138 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 16 Jun 2011 11:27:18 +0000
+Subject: [PATCH 0335/1092] cbus: move cbus under drivers/Kconfig
+
+all drivers should appear under "Device Drivers"
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/Kconfig | 4 ----
+ drivers/Kconfig  | 2 ++
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index c7b8769..9fdc151 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -2248,10 +2248,6 @@ source "net/Kconfig"
+ 
+ source "drivers/Kconfig"
+ 
+-if ARCH_OMAP
+-source "drivers/cbus/Kconfig"
+-endif
+-
+ source "fs/Kconfig"
+ 
+ source "arch/arm/Kconfig.debug"
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index b5e6f24..323feef 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -2,6 +2,8 @@ menu "Device Drivers"
+ 
+ source "drivers/base/Kconfig"
+ 
++source "drivers/cbus/Kconfig"
++
+ source "drivers/connector/Kconfig"
+ 
+ source "drivers/mtd/Kconfig"
+-- 
+1.7.11.2
+

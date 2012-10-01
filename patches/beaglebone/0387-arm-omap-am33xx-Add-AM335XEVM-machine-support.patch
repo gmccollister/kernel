@@ -1,0 +1,135 @@
+From 15cf3e1db5551c4277105ab0f398c67fe9168412 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 9 Aug 2011 14:29:41 +0530
+Subject: [PATCH 0387/1092] arm:omap:am33xx: Add AM335XEVM machine support
+
+This patch adds minimal support for AM335X EVM.
+The approach taken here is to add AM335X EVM support
+to AM3517EVM, considering the fact that with device tree
+developement we will get rid of board-*.c.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+[Changed ti816x_init_irq=>ti81xx_init_irq, due to recent acceptance of patches]
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/Kconfig           |  5 +++++
+ arch/arm/mach-omap2/Makefile          |  1 +
+ arch/arm/mach-omap2/board-am3517evm.c | 22 ++++++++++++++++++++++
+ arch/arm/mach-omap2/common.h          |  2 ++
+ arch/arm/mach-omap2/io.c              |  7 +++++++
+ arch/arm/mach-omap2/timer.c           |  2 ++
+ 6 files changed, 39 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index 0eb27b2..0053edd 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -332,6 +332,11 @@ config MACH_TI8148EVM
+ 	depends on SOC_OMAPTI81XX
+ 	default y
+ 
++config MACH_AM335XEVM
++	bool "AM335X Evaluation Module"
++	depends on SOC_OMAPAM33XX
++	default y
++
+ config MACH_OMAP_4430SDP
+ 	bool "OMAP 4430 SDP board"
+ 	default y
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index fc9b238..74ae499 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -238,6 +238,7 @@ obj-$(CONFIG_MACH_CRANEBOARD)		+= board-am3517crane.o
+ obj-$(CONFIG_MACH_SBC3530)		+= board-omap3stalker.o
+ obj-$(CONFIG_MACH_TI8168EVM)		+= board-ti8168evm.o
+ obj-$(CONFIG_MACH_TI8148EVM)		+= board-ti8168evm.o
++obj-$(CONFIG_MACH_AM335XEVM)		+= board-am3517evm.o
+ 
+ # Platform specific device init code
+ 
+diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
+index 3a44f07..263ca7d 100644
+--- a/arch/arm/mach-omap2/board-am3517evm.c
++++ b/arch/arm/mach-omap2/board-am3517evm.c
+@@ -517,3 +517,25 @@ MACHINE_START(OMAP3517EVM, "OMAP3517/AM3517 EVM")
+ 	.init_machine	= am3517_evm_init,
+ 	.timer		= &omap3_timer,
+ MACHINE_END
++
++static struct omap_board_config_kernel am335x_evm_config[] __initdata = {
++};
++
++static void __init am335x_evm_init(void)
++{
++	omap_serial_init();
++	omap_sdrc_init(NULL, NULL);
++	omap_board_config = am335x_evm_config;
++	omap_board_config_size = ARRAY_SIZE(am335x_evm_config);
++}
++
++MACHINE_START(AM335XEVM, "am335xevm")
++	/* Maintainer: Texas Instruments */
++	.atag_offset	= 0x100,
++	.map_io		= am33xx_map_io,
++	.init_early	= am33xx_init_early,
++	.init_irq	= ti81xx_init_irq,
++	.handle_irq	= omap3_intc_handle_irq,
++	.timer		= &omap3_am33xx_timer,
++	.init_machine	= am335x_evm_init,
++MACHINE_END
+diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
+index 45224b2..4f161fc 100644
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -83,6 +83,7 @@ extern void omap2_init_common_infrastructure(void);
+ extern struct sys_timer omap2_timer;
+ extern struct sys_timer omap3_timer;
+ extern struct sys_timer omap3_secure_timer;
++extern struct sys_timer omap3_am33xx_timer;
+ extern struct sys_timer omap4_timer;
+ 
+ void omap2420_init_early(void);
+@@ -93,6 +94,7 @@ void omap3630_init_early(void);
+ void omap3_init_early(void);	/* Do not use this one */
+ void am35xx_init_early(void);
+ void ti81xx_init_early(void);
++void am33xx_init_early(void);
+ void omap4430_init_early(void);
+ 
+ /*
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 81cf60f..5c180de 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -467,6 +467,13 @@ void __init ti81xx_init_early(void)
+ 	omap_hwmod_init_postsetup();
+ 	omap3xxx_clk_init();
+ }
++
++void __init am33xx_init_early(void)
++{
++	omap2_set_globals_am33xx();
++	omap_common_init_early();
++	omap3xxx_clk_init();
++}
+ #endif
+ 
+ #ifdef CONFIG_ARCH_OMAP4
+diff --git a/arch/arm/mach-omap2/timer.c b/arch/arm/mach-omap2/timer.c
+index 9edcd52..bfae81b 100644
+--- a/arch/arm/mach-omap2/timer.c
++++ b/arch/arm/mach-omap2/timer.c
+@@ -333,6 +333,8 @@ OMAP_SYS_TIMER(3)
+ OMAP_SYS_TIMER_INIT(3_secure, OMAP3_SECURE_TIMER, OMAP3_CLKEV_SOURCE,
+ 			2, OMAP3_MPU_SOURCE)
+ OMAP_SYS_TIMER(3_secure)
++OMAP_SYS_TIMER_INIT(3_am33xx, 1, OMAP4_MPU_SOURCE, 2, OMAP4_MPU_SOURCE)
++OMAP_SYS_TIMER(3_am33xx)
+ #endif
+ 
+ #ifdef CONFIG_ARCH_OMAP4
+-- 
+1.7.11.2
+

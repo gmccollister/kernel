@@ -1,0 +1,46 @@
+From 61255bd309399e3099868081daf717e5bc7d47bb Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Thu, 12 Jan 2012 21:48:25 +0530
+Subject: [PATCH 0690/1092] arm:omap:gpio - add proper #if check for am335x
+
+few #if check for am335x were missing. This patch adds the same.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ drivers/gpio/gpio-omap.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpio/gpio-omap.c b/drivers/gpio/gpio-omap.c
+index 86ed001..8952897 100644
+--- a/drivers/gpio/gpio-omap.c
++++ b/drivers/gpio/gpio-omap.c
+@@ -627,7 +627,7 @@ static void omap_gpio_free(struct gpio_chip *chip, unsigned offset)
+ 		__raw_writel(1 << offset, reg);
+ 	}
+ #endif
+-#ifdef CONFIG_ARCH_OMAP4
++#if defined(CONFIG_ARCH_OMAP4) || defined(CONFIG_SOC_OMAPAM33XX)
+ 	if (bank->method == METHOD_GPIO_44XX) {
+ 		/* Disable wake-up during idle for dynamic tick */
+ 		void __iomem *reg = bank->base + OMAP4_GPIO_IRQWAKEN0;
+@@ -1265,7 +1265,7 @@ static int omap_gpio_suspend(void)
+ 			wake_set = bank->base + OMAP24XX_GPIO_SETWKUENA;
+ 			break;
+ #endif
+-#ifdef CONFIG_ARCH_OMAP4
++#if defined(CONFIG_ARCH_OMAP4) || defined(CONFIG_SOC_OMAPAM33XX)
+ 		case METHOD_GPIO_44XX:
+ 			wake_status = bank->base + OMAP4_GPIO_IRQWAKEN0;
+ 			wake_clear = bank->base + OMAP4_GPIO_IRQWAKEN0;
+@@ -1312,7 +1312,7 @@ static void omap_gpio_resume(void)
+ 			wake_set = bank->base + OMAP24XX_GPIO_SETWKUENA;
+ 			break;
+ #endif
+-#ifdef CONFIG_ARCH_OMAP4
++#if defined(CONFIG_ARCH_OMAP4) || defined(CONFIG_SOC_OMAPAM33XX)
+ 		case METHOD_GPIO_44XX:
+ 			wake_clear = bank->base + OMAP4_GPIO_IRQWAKEN0;
+ 			wake_set = bank->base + OMAP4_GPIO_IRQWAKEN0;
+-- 
+1.7.11.2
+

@@ -1,0 +1,258 @@
+From 4d60ff04dcc77e587e8fa093f32735e1dcdf4080 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Tue, 6 Sep 2011 13:27:10 +0100
+Subject: [PATCH 0040/1092] ARM: GIC: Make MULTI_IRQ_HANDLER mandatory
+
+Now that MULTI_IRQ_HANDLER is selected by all the in-tree
+GIC users, make it mandatory and remove the unused macros.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/Kconfig                                |  6 ---
+ arch/arm/common/Kconfig                         |  1 +
+ arch/arm/common/gic.c                           |  5 ---
+ arch/arm/include/asm/hardware/entry-macro-gic.S | 60 -------------------------
+ arch/arm/include/asm/hardware/gic.h             |  1 -
+ arch/arm/mach-msm/Kconfig                       |  2 -
+ arch/arm/mach-omap2/Kconfig                     |  1 +
+ arch/arm/mach-tegra/Kconfig                     |  1 -
+ arch/arm/mach-ux500/Kconfig                     |  1 -
+ arch/arm/plat-omap/Kconfig                      |  1 -
+ 10 files changed, 2 insertions(+), 77 deletions(-)
+ delete mode 100644 arch/arm/include/asm/hardware/entry-macro-gic.S
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 86f91ed..9fdc151 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -279,7 +279,6 @@ config ARCH_REALVIEW
+ 	select ARM_TIMER_SP804
+ 	select GPIO_PL061 if GPIOLIB
+ 	select NEED_MACH_MEMORY_H
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  This enables support for ARM Ltd RealView boards.
+ 
+@@ -312,7 +311,6 @@ config ARCH_VEXPRESS
+ 	select ICST
+ 	select PLAT_VERSATILE
+ 	select PLAT_VERSATILE_CLCD
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  This enables support for the ARM Ltd Versatile Express boards.
+ 
+@@ -348,7 +346,6 @@ config ARCH_HIGHBANK
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_ARM_SCU
+ 	select USE_OF
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  Support for the Calxeda Highbank SoC based boards.
+ 
+@@ -367,7 +364,6 @@ config ARCH_CNS3XXX
+ 	select ARM_GIC
+ 	select MIGHT_HAVE_PCI
+ 	select PCI_DOMAINS if PCI
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  Support for Cavium Networks CNS3XXX platform.
+ 
+@@ -856,7 +852,6 @@ config ARCH_EXYNOS
+ 	select HAVE_S3C2410_I2C if I2C
+ 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
+ 	select NEED_MACH_MEMORY_H
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  Support for SAMSUNG's EXYNOS SoCs (EXYNOS4/5)
+ 
+@@ -980,7 +975,6 @@ config ARCH_ZYNQ
+ 	select ARM_AMBA
+ 	select ICST
+ 	select USE_OF
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  Support for Xilinx Zynq ARM Cortex A9 Platform
+ endchoice
+diff --git a/arch/arm/common/Kconfig b/arch/arm/common/Kconfig
+index a3beda1..a11cee5 100644
+--- a/arch/arm/common/Kconfig
++++ b/arch/arm/common/Kconfig
+@@ -1,5 +1,6 @@
+ config ARM_GIC
+ 	select IRQ_DOMAIN
++	select MULTI_IRQ_HANDLER
+ 	bool
+ 
+ config GIC_NON_BANKED
+diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
+index 0a5482e..b2dc2dd 100644
+--- a/arch/arm/common/gic.c
++++ b/arch/arm/common/gic.c
+@@ -71,9 +71,6 @@ struct gic_chip_data {
+ 
+ static DEFINE_RAW_SPINLOCK(irq_controller_lock);
+ 
+-/* Address of GIC 0 CPU interface */
+-void __iomem *gic_cpu_base_addr __read_mostly;
+-
+ /*
+  * Supported arch specific GIC irq extension.
+  * Default make them NULL.
+@@ -702,8 +699,6 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
+ 	 */
+ 	domain->hwirq_base = 32;
+ 	if (gic_nr == 0) {
+-		gic_cpu_base_addr = cpu_base;
+-
+ 		if ((irq_start & 31) > 0) {
+ 			domain->hwirq_base = 16;
+ 			if (irq_start != -1)
+diff --git a/arch/arm/include/asm/hardware/entry-macro-gic.S b/arch/arm/include/asm/hardware/entry-macro-gic.S
+deleted file mode 100644
+index 74ebc80..0000000
+--- a/arch/arm/include/asm/hardware/entry-macro-gic.S
++++ /dev/null
+@@ -1,60 +0,0 @@
+-/*
+- * arch/arm/include/asm/hardware/entry-macro-gic.S
+- *
+- * Low-level IRQ helper macros for GIC
+- *
+- * This file is licensed under  the terms of the GNU General Public
+- * License version 2. This program is licensed "as is" without any
+- * warranty of any kind, whether express or implied.
+- */
+-
+-#include <asm/hardware/gic.h>
+-
+-#ifndef HAVE_GET_IRQNR_PREAMBLE
+-	.macro	get_irqnr_preamble, base, tmp
+-	ldr	\base, =gic_cpu_base_addr
+-	ldr	\base, [\base]
+-	.endm
+-#endif
+-
+-/*
+- * The interrupt numbering scheme is defined in the
+- * interrupt controller spec.  To wit:
+- *
+- * Interrupts 0-15 are IPI
+- * 16-31 are local.  We allow 30 to be used for the watchdog.
+- * 32-1020 are global
+- * 1021-1022 are reserved
+- * 1023 is "spurious" (no interrupt)
+- *
+- * A simple read from the controller will tell us the number of the highest
+- * priority enabled interrupt.  We then just need to check whether it is in the
+- * valid range for an IRQ (30-1020 inclusive).
+- */
+-
+-	.macro  get_irqnr_and_base, irqnr, irqstat, base, tmp
+-
+-	ldr     \irqstat, [\base, #GIC_CPU_INTACK]
+-	/* bits 12-10 = src CPU, 9-0 = int # */
+-
+-	ldr	\tmp, =1021
+-	bic     \irqnr, \irqstat, #0x1c00
+-	cmp     \irqnr, #15
+-	cmpcc	\irqnr, \irqnr
+-	cmpne	\irqnr, \tmp
+-	cmpcs	\irqnr, \irqnr
+-	.endm
+-
+-/* We assume that irqstat (the raw value of the IRQ acknowledge
+- * register) is preserved from the macro above.
+- * If there is an IPI, we immediately signal end of interrupt on the
+- * controller, since this requires the original irqstat value which
+- * we won't easily be able to recreate later.
+- */
+-
+-	.macro test_for_ipi, irqnr, irqstat, base, tmp
+-	bic	\irqnr, \irqstat, #0x1c00
+-	cmp	\irqnr, #16
+-	strcc	\irqstat, [\base, #GIC_CPU_EOI]
+-	cmpcs	\irqnr, \irqnr
+-	.endm
+diff --git a/arch/arm/include/asm/hardware/gic.h b/arch/arm/include/asm/hardware/gic.h
+index ecf7c02..4bdfe00 100644
+--- a/arch/arm/include/asm/hardware/gic.h
++++ b/arch/arm/include/asm/hardware/gic.h
+@@ -36,7 +36,6 @@
+ #include <linux/irqdomain.h>
+ struct device_node;
+ 
+-extern void __iomem *gic_cpu_base_addr;
+ extern struct irq_chip gic_arch_extn;
+ 
+ void gic_init_bases(unsigned int, int, void __iomem *, void __iomem *,
+diff --git a/arch/arm/mach-msm/Kconfig b/arch/arm/mach-msm/Kconfig
+index ba36b74..ebde97f 100644
+--- a/arch/arm/mach-msm/Kconfig
++++ b/arch/arm/mach-msm/Kconfig
+@@ -50,7 +50,6 @@ config ARCH_MSM8X60
+ 	select GPIO_MSM_V2
+ 	select MSM_GPIOMUX
+ 	select MSM_SCM if SMP
+-	select MULTI_IRQ_HANDLER
+ 
+ config ARCH_MSM8960
+ 	bool "MSM8960"
+@@ -61,7 +60,6 @@ config ARCH_MSM8960
+ 	select MSM_V2_TLMM
+ 	select MSM_GPIOMUX
+ 	select MSM_SCM if SMP
+-	select MULTI_IRQ_HANDLER
+ 
+ endchoice
+ 
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index b4ab49e..b662513 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -37,6 +37,7 @@ config ARCH_OMAP3
+ 	select ARCH_HAS_OPP
+ 	select PM_OPP if PM
+ 	select ARM_CPU_SUSPEND if PM
++	select MULTI_IRQ_HANDLER
+ 
+ config ARCH_OMAP4
+ 	bool "TI OMAP4"
+diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
+index 023f5ab..379cdc7 100644
+--- a/arch/arm/mach-tegra/Kconfig
++++ b/arch/arm/mach-tegra/Kconfig
+@@ -20,7 +20,6 @@ config ARCH_TEGRA_2x_SOC
+ 	select ARM_ERRATA_764369
+ 	select PL310_ERRATA_727915 if CACHE_L2X0
+ 	select PL310_ERRATA_769419 if CACHE_L2X0
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  Support for NVIDIA Tegra AP20 and T20 processors, based on the
+ 	  ARM CortexA9MP CPU and the ARM PL310 L2 cache controller
+diff --git a/arch/arm/mach-ux500/Kconfig b/arch/arm/mach-ux500/Kconfig
+index b41ae54..52af004 100644
+--- a/arch/arm/mach-ux500/Kconfig
++++ b/arch/arm/mach-ux500/Kconfig
+@@ -8,7 +8,6 @@ config UX500_SOC_COMMON
+ 	select ARM_ERRATA_753970
+ 	select ARM_ERRATA_754322
+ 	select ARM_ERRATA_764369
+-	select MULTI_IRQ_HANDLER
+ 
+ menu "Ux500 SoC"
+ 
+diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+index 4a1cc58..aa59f42 100644
+--- a/arch/arm/plat-omap/Kconfig
++++ b/arch/arm/plat-omap/Kconfig
+@@ -24,7 +24,6 @@ config ARCH_OMAP2PLUS
+ 	select CLKDEV_LOOKUP
+ 	select GENERIC_IRQ_CHIP
+ 	select OMAP_DM_TIMER
+-	select MULTI_IRQ_HANDLER
+ 	help
+ 	  "Systems based on OMAP2, OMAP3 or OMAP4"
+ 
+-- 
+1.7.11.2
+

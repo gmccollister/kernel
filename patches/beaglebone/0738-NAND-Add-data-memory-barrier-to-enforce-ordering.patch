@@ -1,0 +1,34 @@
+From 8ca09971ed3a1bb9b7c2ecffd14b0b8045b27c64 Mon Sep 17 00:00:00 2001
+From: Sriramakrishnan <srk@ti.com>
+Date: Wed, 3 Mar 2010 14:58:03 +0530
+Subject: [PATCH 0738/1092] NAND : Add data memory barrier to enforce ordering
+
+When using delay loop for wait states, need to ascertain that
+the write to OMAP HW register is reflected befor the delay
+loop starts. This patch adds a dmb() instruction to this effect.
+Without this fix, NAND read failures reported with mtd_oobtests.
+
+Signed-off-by: Sriramakrishnan <srk@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: George McCollister <george.mccollister@gmail.com>
+---
+ drivers/mtd/nand/nand_base.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 3ed9c5e..52dce59 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -723,6 +723,9 @@ static void nand_command_lp(struct mtd_info *mtd, unsigned int command,
+ 			       NAND_NCE | NAND_CLE | NAND_CTRL_CHANGE);
+ 		chip->cmd_ctrl(mtd, NAND_CMD_NONE,
+ 			       NAND_NCE | NAND_CTRL_CHANGE);
++#ifdef CONFIG_ARCH_OMAP
++		dmb();
++#endif
+ 
+ 		/* This applies to read commands */
+ 	default:
+-- 
+1.7.11.2
+

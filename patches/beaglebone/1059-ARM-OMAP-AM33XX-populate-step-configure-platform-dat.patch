@@ -1,0 +1,83 @@
+From f4bb71a0b8393d88cca69838dad0fdac1ab3c6a5 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Fri, 17 Aug 2012 14:16:34 +0530
+Subject: [PATCH 1059/1092] ARM: OMAP: AM33XX: populate step configure
+ platform data
+
+Add another member in Touchscreen related platform data
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c |  1 +
+ drivers/input/touchscreen/ti_tscadc.c | 11 ++++++-----
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index b3d8b06..ed73f98 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -150,6 +150,7 @@ struct da8xx_lcdc_platform_data  NHD_480272MF_ATXI_pdata = {
+ static struct tsc_data am335x_touchscreen_data  = {
+ 	.wires  = 4,
+ 	.x_plate_resistance = 200,
++	.steps_to_configure = 5,
+ };
+ 
+ static u8 am335x_iis_serializer_direction1[] = {
+diff --git a/drivers/input/touchscreen/ti_tscadc.c b/drivers/input/touchscreen/ti_tscadc.c
+index 7973060..51d2e70 100644
+--- a/drivers/input/touchscreen/ti_tscadc.c
++++ b/drivers/input/touchscreen/ti_tscadc.c
+@@ -64,6 +64,7 @@
+ #define TSCADC_STPENB_STEPENB		TSCADC_STEPENB(0x7FFF)
+ 
+ /* IRQ enable */
++#define TSCADC_IRQENB_FIFO0THRES	BIT(2)
+ #define TSCADC_IRQENB_FIFO1THRES	BIT(5)
+ #define TSCADC_IRQENB_PENUP		BIT(9)
+ #define TSCADC_IRQENB_HW_PEN		BIT(0)
+@@ -267,7 +268,7 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
+ 
+ 	status = tscadc_readl(ts_dev, TSCADC_REG_IRQSTATUS);
+ 
+-	if (status & TSCADC_IRQENB_FIFO1THRES) {
++	if (status & TSCADC_IRQENB_FIFO0THRES) {
+ 		fifo0count = tscadc_readl(ts_dev, TSCADC_REG_FIFO0CNT);
+ 		fifo1count = tscadc_readl(ts_dev, TSCADC_REG_FIFO1CNT);
+ 		for (i = 0; i < (fifo0count-1); i++) {
+@@ -344,7 +345,7 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
+ 				}
+ 			}
+ 		}
+-		irqclr |= TSCADC_IRQENB_FIFO1THRES;
++		irqclr |= TSCADC_IRQENB_FIFO0THRES;
+ 	}
+ 
+ 	udelay(315);
+@@ -486,12 +487,12 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
+ 	tsc_idle_config(ts_dev);
+ 
+ 	/* IRQ Enable */
+-	irqenable = TSCADC_IRQENB_FIFO1THRES;
++	irqenable = TSCADC_IRQENB_FIFO0THRES;
+ 	tscadc_writel(ts_dev, TSCADC_REG_IRQENABLE, irqenable);
+ 
+ 	tsc_step_config(ts_dev);
+ 
+-	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, ts_dev->steps_to_config);
++	tscadc_writel(ts_dev, TSCADC_REG_FIFO0THR, ts_dev->steps_to_config);
+ 
+ 	ctrl |= TSCADC_CNTRLREG_TSCSSENB;
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL, ctrl);
+@@ -602,7 +603,7 @@ static int tscadc_resume(struct platform_device *pdev)
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL, restore);
+ 	tsc_idle_config(ts_dev);
+ 	tsc_step_config(ts_dev);
+-	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, ts_dev->steps_to_config);
++	tscadc_writel(ts_dev, TSCADC_REG_FIFO0THR, ts_dev->steps_to_config);
+ 	restore = tscadc_readl(ts_dev, TSCADC_REG_CTRL);
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL,
+ 			(restore | TSCADC_CNTRLREG_TSCSSENB));
+-- 
+1.7.11.2
+

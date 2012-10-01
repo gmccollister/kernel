@@ -1,0 +1,49 @@
+From 3077ba5ffa58301e74ffbf62b52b0c0104c0b613 Mon Sep 17 00:00:00 2001
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Fri, 4 Nov 2011 15:05:24 +0000
+Subject: [PATCH 0011/1092] ARM: restart: add restart hook to machine_desc
+ record
+
+Add a restart hook to the machine_desc record so we don't have to
+populate all platforms with init_early methods to initialize the
+arm_pm_restart function pointer.
+
+Acked-by: Nicolas Pitre <nico@linaro.org>
+Acked-by: Will Deacon <will.deacon@arm.com>
+Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/arm/include/asm/mach/arch.h | 1 +
+ arch/arm/kernel/setup.c          | 3 +++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/arch/arm/include/asm/mach/arch.h b/arch/arm/include/asm/mach/arch.h
+index 2b0efc3..61ae6bb 100644
+--- a/arch/arm/include/asm/mach/arch.h
++++ b/arch/arm/include/asm/mach/arch.h
+@@ -46,6 +46,7 @@ struct machine_desc {
+ #ifdef CONFIG_MULTI_IRQ_HANDLER
+ 	void			(*handle_irq)(struct pt_regs *);
+ #endif
++	void			(*restart)(char, const char *);
+ };
+ 
+ /*
+diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
+index 8fc2c8f..d662dca 100644
+--- a/arch/arm/kernel/setup.c
++++ b/arch/arm/kernel/setup.c
+@@ -928,6 +928,9 @@ void __init setup_arch(char **cmdline_p)
+ 	paging_init(mdesc);
+ 	request_standard_resources(mdesc);
+ 
++	if (mdesc->restart)
++		arm_pm_restart = mdesc->restart;
++
+ 	unflatten_device_tree();
+ 
+ #ifdef CONFIG_SMP
+-- 
+1.7.11.2
+

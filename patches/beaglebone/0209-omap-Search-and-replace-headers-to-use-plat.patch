@@ -1,0 +1,74 @@
+From 5e9c4b3f8c0bb39a2ee74ef000322c3490b41ec5 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 28 Sep 2010 12:00:26 -0700
+Subject: [PATCH 0209/1092] omap: Search and replace headers to use plat
+
+Search and replace headers to use plat
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c      | 2 +-
+ drivers/cbus/retu.c      | 4 ++--
+ drivers/cbus/tahvo-usb.c | 2 +-
+ drivers/cbus/tahvo.c     | 4 ++--
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 774acce..286b7ff 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -30,7 +30,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/gpio.h>
+ 
+-#include <mach/board.h>
++#include <plat/board.h>
+ #include <mach/board-nokia.h>
+ 
+ #include <asm/io.h>
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 84d7840..ebdc2a0 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -39,8 +39,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-#include <mach/mux.h>
+-#include <mach/board.h>
++#include <plat/mux.h>
++#include <plat/board.h>
+ #include <mach/board-nokia.h>
+ 
+ #include "cbus.h"
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index d8ad836..c08f08d 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -45,7 +45,7 @@
+ #include <linux/mutex.h>
+ 
+ #include <asm/irq.h>
+-#include <mach/usb.h>
++#include <plat/usb.h>
+ 
+ #include "cbus.h"
+ #include "tahvo.h"
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index e734c4c..b262bf6 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -39,8 +39,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-#include <mach/mux.h>
+-#include <mach/board.h>
++#include <plat/mux.h>
++#include <plat/board.h>
+ #include <mach/board-nokia.h>
+ 
+ #include "cbus.h"
+-- 
+1.7.11.2
+

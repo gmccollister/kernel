@@ -1,0 +1,29 @@
+From b74f54032e7b52f7dfc63b3a83f28f6356cd5cc3 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Fri, 11 May 2012 15:55:02 +0530
+Subject: [PATCH 0963/1092] ARM: OMAP2+: am335x-mux: add clkout1 sting entry
+
+clkout1 is used as mclk by audio module on EVM-SK. Add the pin-mux name
+in the am335x mux entry
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/mux33xx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/mux33xx.c b/arch/arm/mach-omap2/mux33xx.c
+index 928aa9b..68f9146 100644
+--- a/arch/arm/mach-omap2/mux33xx.c
++++ b/arch/arm/mach-omap2/mux33xx.c
+@@ -354,7 +354,7 @@ static struct omap_mux __initdata am33xx_muxmodes[] = {
+ 		"mcasp0_ahclkx", NULL, "mcasp0_axr3", "mcasp1_axr1",
+ 		NULL, NULL, NULL, "gpio3_21"),
+ 	_AM33XX_MUXENTRY(XDMA_EVENT_INTR0, 0,
+-		"xdma_event_intr0", NULL, NULL, NULL,
++		"xdma_event_intr0", NULL, NULL, "clkout1",
+ 		"spi1_cs1", NULL, NULL, "gpio0_19"),
+ 	_AM33XX_MUXENTRY(XDMA_EVENT_INTR1, 0,
+ 		"xdma_event_intr1", NULL, NULL, "clkout2",
+-- 
+1.7.11.2
+

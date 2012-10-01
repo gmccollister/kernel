@@ -1,0 +1,49 @@
+From 604059c018caf0552c245bf9ede8a54859a00dcd Mon Sep 17 00:00:00 2001
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Date: Tue, 18 Oct 2011 16:32:14 +0530
+Subject: [PATCH 0151/1092] ARM: OMAP2+: UART: remove temporary variable used
+ to count uart instance
+
+Reuse the num_uarts variable itself to count number of uarts.
+
+Signed-off-by: Govindraj.R <govindraj.raja@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/serial.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index 5dd9289..8e0d006 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -266,15 +266,13 @@ static void omap_serial_fill_default_pads(struct omap_board_data *bdata) {}
+ 
+ static int __init omap_serial_early_init(void)
+ {
+-	int i = 0;
+-
+ 	do {
+ 		char oh_name[MAX_UART_HWMOD_NAME_LEN];
+ 		struct omap_hwmod *oh;
+ 		struct omap_uart_state *uart;
+ 
+ 		snprintf(oh_name, MAX_UART_HWMOD_NAME_LEN,
+-			 "uart%d", i + 1);
++			 "uart%d", num_uarts + 1);
+ 		oh = omap_hwmod_lookup(oh_name);
+ 		if (!oh)
+ 			break;
+@@ -284,9 +282,8 @@ static int __init omap_serial_early_init(void)
+ 			return -ENODEV;
+ 
+ 		uart->oh = oh;
+-		uart->num = i++;
++		uart->num = num_uarts++;
+ 		list_add_tail(&uart->node, &uart_list);
+-		num_uarts++;
+ 
+ 		/*
+ 		 * NOTE: omap_hwmod_setup*() has not yet been called,
+-- 
+1.7.11.2
+

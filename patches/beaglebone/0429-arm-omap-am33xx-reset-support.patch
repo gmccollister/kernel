@@ -1,0 +1,39 @@
+From e8c9b126d34f3a7f94c18080a9cc5d59a0a63831 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 4 Oct 2011 19:54:19 +0530
+Subject: [PATCH 0429/1092] arm:omap:am33xx: reset support
+
+Global cold reset on machine reboot
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/prcm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/prcm.c b/arch/arm/mach-omap2/prcm.c
+index c35e5ce..267d07c 100644
+--- a/arch/arm/mach-omap2/prcm.c
++++ b/arch/arm/mach-omap2/prcm.c
+@@ -35,6 +35,7 @@
+ #include "cm2xxx_3xxx.h"
+ #include "prm2xxx_3xxx.h"
+ #include "prm44xx.h"
++#include "prm33xx.h"
+ #include "prminst44xx.h"
+ #include "prm-regbits-24xx.h"
+ #include "prm-regbits-44xx.h"
+@@ -67,6 +68,10 @@ static void omap_prcm_arch_reset(char mode, const char *cmd)
+ 		omap2xxx_clk_prepare_for_reboot();
+ 
+ 		prcm_offs = WKUP_MOD;
++	} else if (cpu_is_am33xx()) {
++		prcm_offs = AM33XX_PRM_DEVICE_MOD;
++		omap2_prm_set_mod_reg_bits(OMAP4430_RST_GLOBAL_COLD_SW_MASK,
++					prcm_offs, AM33XX_PRM_RSTCTRL_OFFSET);
+ 	} else if (cpu_is_omap34xx()) {
+ 		prcm_offs = OMAP3430_GR_MOD;
+ 		omap3_ctrl_write_boot_mode((cmd ? (u8)*cmd : 0));
+-- 
+1.7.11.2
+

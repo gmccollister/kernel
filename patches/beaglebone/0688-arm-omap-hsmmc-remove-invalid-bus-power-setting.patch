@@ -1,0 +1,33 @@
+From 4c921aef73e42f4f14e514f35572b6d97e20981b Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Tue, 10 Jan 2012 18:24:46 +0530
+Subject: [PATCH 0688/1092] arm:omap:hsmmc - remove invalid bus power setting
+
+SD bus Power was setup at a wrong sequence inside irq code. This Commit
+removes the same.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ drivers/mmc/host/omap_hsmmc.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 5588565..703013c 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -1185,12 +1185,6 @@ static irqreturn_t omap_hsmmc_irq(int irq, void *dev_id)
+ {
+ 	struct omap_hsmmc_host *host = dev_id;
+ 	int status;
+-	struct omap_mmc_platform_data *pdata = host->pdata;
+-
+-	if (pdata->version == MMC_CTRL_VERSION_2) {
+-		OMAP_HSMMC_WRITE(host->base, HCTL,
+-			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
+-	}
+ 
+ 	status = OMAP_HSMMC_READ(host->base, STAT);
+ 	do {
+-- 
+1.7.11.2
+

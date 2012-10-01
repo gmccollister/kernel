@@ -1,0 +1,37 @@
+From f4ede896d4c40c7722b55955880c0cafd5ecb65b Mon Sep 17 00:00:00 2001
+From: Michael Buesch <mb@bu3sch.de>
+Date: Mon, 28 Feb 2011 16:06:08 +0000
+Subject: [PATCH 0316/1092] cbus-retu: Add locking around register access in
+ irq handler
+
+This adds locking around the register access in the
+interrupt service routine.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Reported-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 968d907..f271e57 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -198,10 +198,12 @@ static irqreturn_t retu_irq_handler(int irq, void *_retu)
+ 	u16			idr;
+ 	u16			imr;
+ 
++	mutex_lock(&retu->mutex);
+ 	idr = __retu_read_reg(retu, RETU_REG_IDR);
+ 	imr = __retu_read_reg(retu, RETU_REG_IMR);
+-	idr &= ~imr;
++	mutex_unlock(&retu->mutex);
+ 
++	idr &= ~imr;
+ 	if (!idr) {
+ 		dev_vdbg(retu->dev, "No IRQ, spurious?\n");
+ 		return IRQ_NONE;
+-- 
+1.7.11.2
+

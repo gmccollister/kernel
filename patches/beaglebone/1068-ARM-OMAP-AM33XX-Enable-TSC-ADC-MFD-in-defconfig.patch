@@ -1,0 +1,27 @@
+From f03ed24aa9320725cc67f02fbf8f6d0dfc449fba Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Fri, 31 Aug 2012 10:27:54 +0530
+Subject: [PATCH 1068/1092] ARM: OMAP: AM33XX: Enable TSC/ADC MFD in defconfig
+
+Enable TSC / ADC in am335x defconfig file
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index f568dd0..f1471bc 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1543,6 +1543,7 @@ CONFIG_MFD_CORE=y
+ # CONFIG_TPS6105X is not set
+ # CONFIG_TPS65010 is not set
+ # CONFIG_TPS6507X is not set
++CONFIG_MFD_TI_TSCADC=y
+ CONFIG_MFD_TPS65217=y
+ # CONFIG_MFD_TPS6586X is not set
+ CONFIG_MFD_TPS65910=y
+-- 
+1.7.11.2
+

@@ -1,0 +1,46 @@
+From ff32fb824d94ca5b9800b34b980806870b0fd2da Mon Sep 17 00:00:00 2001
+From: AnilKumar Ch <anilkumar@ti.com>
+Date: Sun, 27 Nov 2011 22:56:32 +0530
+Subject: [PATCH 0636/1092] am335x: tsl2550: Add ambient light sensor support
+
+This patch enables the TAOS, ambient light sensor of am335x
+
+Also adds the tsl2550, ambient light sensor configuration to
+default am335x_evm_defconfig kernel configuration
+
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 2 +-
+ arch/arm/mach-omap2/board-am335xevm.c | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 6edf162..06c060e 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -861,7 +861,7 @@ CONFIG_MISC_DEVICES=y
+ # CONFIG_APDS9802ALS is not set
+ # CONFIG_ISL29003 is not set
+ # CONFIG_ISL29020 is not set
+-# CONFIG_SENSORS_TSL2550 is not set
++CONFIG_SENSORS_TSL2550=y
+ # CONFIG_SENSORS_BH1780 is not set
+ # CONFIG_SENSORS_BH1770 is not set
+ # CONFIG_SENSORS_APDS990X is not set
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index c8613b0..38535fa 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1093,6 +1093,9 @@ static struct i2c_board_info am335x_i2c_boardinfo1[] = {
+ 		.platform_data = &lis331dlh_pdata,
+ 	},
+ 	{
++		I2C_BOARD_INFO("tsl2550", 0x39),
++	},
++	{
+ 		I2C_BOARD_INFO("tmp275", 0x48),
+ 	},
+ };
+-- 
+1.7.11.2
+

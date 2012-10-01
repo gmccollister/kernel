@@ -1,0 +1,76 @@
+From d8b31dda8636f4ee5f0344ec1e851ecc5a7f334f Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:56 -0700
+Subject: [PATCH 0245/1092] cbus: tahvo: convert printk into dev_*
+
+during probe() we have a device * available so we
+can use dev_* macros instead of printk.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/tahvo.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index fc25a89..9bc3f56 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -322,11 +322,11 @@ static int __devinit tahvo_probe(struct device *dev)
+ 		tahvo_is_betty = 1;
+ 		tahvo_7bit_backlight = 1;
+ 	} else {
+-		printk(KERN_ERR "Tahvo/Betty chip not found");
++		dev_err(dev, "Tahvo/Betty chip not found");
+ 		return -ENODEV;
+ 	}
+ 
+-	printk(KERN_INFO "%s v%d.%d found\n", tahvo_is_betty ? "Betty" : "Tahvo",
++	dev_err(dev, "%s v%d.%d found\n", tahvo_is_betty ? "Betty" : "Tahvo",
+ 	       (rev >> 4) & 0x0f, rev & 0x0f);
+ 
+ 	/* REVISIT: Pass these from board-*.c files in platform_data */
+@@ -336,13 +336,13 @@ static int __devinit tahvo_probe(struct device *dev)
+ 			machine_is_nokia_n810_wimax()) {
+ 		tahvo_irq_pin = 111;
+ 	} else {
+-		printk(KERN_ERR "cbus: Unsupported board for tahvo\n");
++		dev_err(dev, "cbus: Unsupported board for tahvo\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	ret = gpio_request(tahvo_irq_pin, "TAHVO irq");
+ 	if (ret) {
+-		printk(KERN_ERR PFX "Unable to reserve IRQ GPIO\n");
++		dev_err(dev, "Unable to reserve IRQ GPIO\n");
+ 		return ret;
+ 	}
+ 
+@@ -358,14 +358,14 @@ static int __devinit tahvo_probe(struct device *dev)
+ 	ret = request_irq(gpio_to_irq(tahvo_irq_pin), tahvo_irq_handler, 0,
+ 			  "tahvo", 0);
+ 	if (ret < 0) {
+-		printk(KERN_ERR PFX "Unable to register IRQ handler\n");
++		dev_err(dev, "Unable to register IRQ handler\n");
+ 		gpio_free(tahvo_irq_pin);
+ 		return ret;
+ 	}
+ #ifdef CONFIG_CBUS_TAHVO_USER
+ 	/* Initialize user-space interface */
+ 	if (tahvo_user_init() < 0) {
+-		printk(KERN_ERR "Unable to initialize driver\n");
++		dev_err(dev, "Unable to initialize driver\n");
+ 		free_irq(gpio_to_irq(tahvo_irq_pin), 0);
+ 		gpio_free(tahvo_irq_pin);
+ 		return ret;
+@@ -421,8 +421,6 @@ static int __init tahvo_init(void)
+ 		machine_is_nokia_n810() || machine_is_nokia_n810_wimax()))
+ 			return -ENODEV;
+ 
+-	printk(KERN_INFO "Tahvo/Betty driver initialising\n");
+-
+ 	init_completion(&device_release);
+ 
+ 	ret = driver_register(&tahvo_driver);
+-- 
+1.7.11.2
+

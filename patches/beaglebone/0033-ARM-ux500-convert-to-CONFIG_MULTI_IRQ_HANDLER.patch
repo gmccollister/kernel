@@ -1,0 +1,99 @@
+From deea1c7552b1d67b9c5d8d7e7eaaa2499dd4da72 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Tue, 6 Sep 2011 10:23:45 +0100
+Subject: [PATCH 0033/1092] ARM: ux500: convert to CONFIG_MULTI_IRQ_HANDLER
+
+Convert the ux500 platforms to be using the gic_handle_irq
+function as their primary interrupt handler.
+
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/mach-ux500/Kconfig                    | 1 +
+ arch/arm/mach-ux500/board-mop500.c             | 4 ++++
+ arch/arm/mach-ux500/board-u5500.c              | 2 ++
+ arch/arm/mach-ux500/include/mach/entry-macro.S | 2 --
+ 4 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-ux500/Kconfig b/arch/arm/mach-ux500/Kconfig
+index 52af004..b41ae54 100644
+--- a/arch/arm/mach-ux500/Kconfig
++++ b/arch/arm/mach-ux500/Kconfig
+@@ -8,6 +8,7 @@ config UX500_SOC_COMMON
+ 	select ARM_ERRATA_753970
+ 	select ARM_ERRATA_754322
+ 	select ARM_ERRATA_764369
++	select MULTI_IRQ_HANDLER
+ 
+ menu "Ux500 SoC"
+ 
+diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
+index bdd7b80..de1f5f8 100644
+--- a/arch/arm/mach-ux500/board-mop500.c
++++ b/arch/arm/mach-ux500/board-mop500.c
+@@ -33,6 +33,7 @@
+ #include <linux/leds.h>
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
++#include <asm/hardware/gic.h>
+ 
+ #include <plat/i2c.h>
+ #include <plat/ste_dma40.h>
+@@ -695,6 +696,7 @@ MACHINE_START(U8500, "ST-Ericsson MOP500 platform")
+ 	.init_irq	= ux500_init_irq,
+ 	/* we re-use nomadik timer here */
+ 	.timer		= &ux500_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= mop500_init_machine,
+ MACHINE_END
+ 
+@@ -703,6 +705,7 @@ MACHINE_START(HREFV60, "ST-Ericsson U8500 Platform HREFv60+")
+ 	.map_io		= u8500_map_io,
+ 	.init_irq	= ux500_init_irq,
+ 	.timer		= &ux500_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= hrefv60_init_machine,
+ MACHINE_END
+ 
+@@ -712,5 +715,6 @@ MACHINE_START(SNOWBALL, "Calao Systems Snowball platform")
+ 	.init_irq	= ux500_init_irq,
+ 	/* we re-use nomadik timer here */
+ 	.timer		= &ux500_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= snowball_init_machine,
+ MACHINE_END
+diff --git a/arch/arm/mach-ux500/board-u5500.c b/arch/arm/mach-ux500/board-u5500.c
+index 82025ba..fe1569b 100644
+--- a/arch/arm/mach-ux500/board-u5500.c
++++ b/arch/arm/mach-ux500/board-u5500.c
+@@ -12,6 +12,7 @@
+ #include <linux/i2c.h>
+ #include <linux/mfd/ab5500/ab5500.h>
+ 
++#include <asm/hardware/gic.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach-types.h>
+ 
+@@ -149,5 +150,6 @@ MACHINE_START(U5500, "ST-Ericsson U5500 Platform")
+ 	.map_io		= u5500_map_io,
+ 	.init_irq	= ux500_init_irq,
+ 	.timer		= &ux500_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= u5500_init_machine,
+ MACHINE_END
+diff --git a/arch/arm/mach-ux500/include/mach/entry-macro.S b/arch/arm/mach-ux500/include/mach/entry-macro.S
+index 071bba9..e16299e 100644
+--- a/arch/arm/mach-ux500/include/mach/entry-macro.S
++++ b/arch/arm/mach-ux500/include/mach/entry-macro.S
+@@ -10,8 +10,6 @@
+  * License version 2. This program is licensed "as is" without any
+  * warranty of any kind, whether express or implied.
+  */
+-#include <mach/hardware.h>
+-#include <asm/hardware/entry-macro-gic.S>
+ 
+ 		.macro	disable_fiq
+ 		.endm
+-- 
+1.7.11.2
+

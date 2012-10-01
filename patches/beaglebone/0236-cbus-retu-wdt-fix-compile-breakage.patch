@@ -1,0 +1,37 @@
+From 7f9b4c8d0e6603ca045b2b4dd8a3057409cdf98a Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:01 -0700
+Subject: [PATCH 0236/1092] cbus: retu-wdt: fix compile breakage
+
+fix compile breakage on retu-wdt driver.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu-wdt.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index 79585d8..03aa576 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -244,7 +244,6 @@ static int __init retu_wdt_ping(void)
+ 
+ 	return 0;
+ }
+-late_initcall(retu_wdt_ping);
+ 
+ static const struct file_operations retu_wdt_fops = {
+ 	.owner = THIS_MODULE,
+@@ -370,7 +369,8 @@ static int __init retu_wdt_init(void)
+ 	}
+ 
+ 	printk(KERN_INFO "Retu watchdog driver initialized\n");
+-	return ret;
++
++	return retu_wdt_ping();
+ 
+ exit1:
+ 	driver_unregister(&retu_wdt_driver);
+-- 
+1.7.11.2
+

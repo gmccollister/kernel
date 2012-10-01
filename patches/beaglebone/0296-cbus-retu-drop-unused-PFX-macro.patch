@@ -1,0 +1,28 @@
+From a36815879462d98b2af87e1ed06163fa4debdc91 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 14 Feb 2011 19:19:52 +0200
+Subject: [PATCH 0296/1092] cbus: retu: drop unused PFX macro
+
+That's not used anywhere in the code,
+so simply drop it.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/cbus/retu.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 82d22b8..b1c8e57 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -50,7 +50,6 @@
+ #include "retu.h"
+ 
+ #define RETU_ID			0x01
+-#define PFX			"retu: "
+ 
+ struct retu {
+ 	/* Device lock */
+-- 
+1.7.11.2
+

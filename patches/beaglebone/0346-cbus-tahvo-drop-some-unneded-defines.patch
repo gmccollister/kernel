@@ -1,0 +1,54 @@
+From 180226c971f79b64aad16c0b5c00ecde042249cb Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:45 +0300
+Subject: [PATCH 0346/1092] cbus: tahvo: drop some unneded defines
+
+no functional changes.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 04b8203..a538f13 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -33,14 +33,12 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
++#include <linux/platform_data/cbus.h>
+ #include <linux/mutex.h>
+ 
+ #include "cbus.h"
+ #include "tahvo.h"
+ 
+-#define TAHVO_ID		0x02
+-#define PFX			"tahvo: "
+-
+ struct tahvo {
+ 	/* device lock */
+ 	struct mutex	mutex;
+@@ -73,7 +71,7 @@ EXPORT_SYMBOL(tahvo_get_status);
+  */
+ static int __tahvo_read_reg(struct tahvo *tahvo, unsigned reg)
+ {
+-	return cbus_read_reg(tahvo->dev, TAHVO_ID, reg);
++	return cbus_read_reg(tahvo->dev, CBUS_TAHVO_DEVICE_ID, reg);
+ }
+ 
+ /**
+@@ -84,7 +82,7 @@ static int __tahvo_read_reg(struct tahvo *tahvo, unsigned reg)
+  */
+ static void __tahvo_write_reg(struct tahvo *tahvo, unsigned reg, u16 val)
+ {
+-	cbus_write_reg(tahvo->dev, TAHVO_ID, reg, val);
++	cbus_write_reg(tahvo->dev, CBUS_TAHVO_DEVICE_ID, reg, val);
+ }
+ 
+ /**
+-- 
+1.7.11.2
+

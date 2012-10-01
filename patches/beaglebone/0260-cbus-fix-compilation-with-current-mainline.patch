@@ -1,0 +1,50 @@
+From babd76bb66ecb037d9aa2d3ac9d7a8de70e854a4 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <me@felipebalbi.com>
+Date: Sat, 1 May 2010 18:01:09 +0000
+Subject: [PATCH 0260/1092] cbus: fix compilation with current mainline
+
+commit 5a0e3ad6af8660be21ca98a971cd00f331318c05 broke
+compilation of the retu-pwrbutton driver when it dropped
+implicit inclusion of slab.h and gfp.h.
+
+Fix it by including slab.h on retu-pwrbutton.c, while at
+that, also include slab.h on retu-rtc.c to avoid later
+problems with implicit inclusion of that being dropped.
+
+Compile tested with n770_defconfig and n8x0_defconfig
+
+Signed-off-by: Felipe Balbi <me@felipebalbi.com>
+Acked-by: Jarkko Nikula <jhnikula@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-pwrbutton.c | 1 +
+ drivers/cbus/retu-rtc.c       | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/retu-pwrbutton.c b/drivers/cbus/retu-pwrbutton.c
+index 2d8cf40..f0cd056 100644
+--- a/drivers/cbus/retu-pwrbutton.c
++++ b/drivers/cbus/retu-pwrbutton.c
+@@ -34,6 +34,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/bitops.h>
+ #include <linux/platform_device.h>
++#include <linux/slab.h>
+ 
+ #include "retu.h"
+ 
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index b0a0f3d..b3974e2 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -36,6 +36,7 @@
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/completion.h>
+ #include <linux/platform_device.h>
+-- 
+1.7.11.2
+

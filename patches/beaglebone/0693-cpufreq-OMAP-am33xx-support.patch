@@ -1,0 +1,32 @@
+From 22f75b27ddc3ebce0b82bce54895114c07ce7840 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Mon, 2 Jan 2012 17:47:31 +0530
+Subject: [PATCH 0693/1092] cpufreq: OMAP: am33xx support
+
+am33xx mpu pll clock name is "dpll_mpu_ck",
+same as that of omap44xx()
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ drivers/cpufreq/omap-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index a897a9e..f3e1922 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -329,9 +329,9 @@ static int __init omap_cpufreq_init(void)
+ {
+ 	if (cpu_is_omap24xx())
+ 		mpu_clk_name = "virt_prcm_set";
+-	else if (cpu_is_omap34xx())
++	else if (cpu_is_omap34xx() && !cpu_is_am33xx())
+ 		mpu_clk_name = "dpll1_ck";
+-	else if (cpu_is_omap44xx())
++	else if (cpu_is_omap44xx() || cpu_is_am33xx())
+ 		mpu_clk_name = "dpll_mpu_ck";
+ 
+ 	if (!mpu_clk_name) {
+-- 
+1.7.11.2
+

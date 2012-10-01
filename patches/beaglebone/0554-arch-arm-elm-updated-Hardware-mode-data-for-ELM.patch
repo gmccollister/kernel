@@ -1,0 +1,145 @@
+From 97ebe2162a463ecc354fab8154233d2ec3fc034a Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Wed, 30 Nov 2011 17:28:15 +0530
+Subject: [PATCH 0554/1092] arch:arm:elm - updated Hardware mode data for ELM
+
+Hardware mode data is updated for ELM module
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/devices.c              | 28 +++++++++++++++++++++
+ arch/arm/mach-omap2/omap_hwmod_33xx_data.c | 40 ++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/plat/am33xx.h   |  2 ++
+ 3 files changed, 70 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 00ce654..0ecef25 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -454,6 +454,33 @@ static void omap_init_mcspi(void)
+ static inline void omap_init_mcspi(void) {}
+ #endif
+ 
++#ifdef CONFIG_SOC_OMAPAM33XX
++
++static int omap_elm_init(struct omap_hwmod *oh, void *unused)
++{
++	struct platform_device *pdev;
++	char *name = "omap2_elm";
++	static int elm_num;
++
++
++	elm_num++;
++	pdev = omap_device_build(name, elm_num, oh, NULL,
++				0,	NULL,
++				0, 0);
++	return 0;
++}
++
++static void omap_init_elm(void)
++{
++
++	omap_hwmod_for_each_by_class("elm", omap_elm_init, NULL);
++}
++
++#else
++static void omap_init_elm(void) {}
++#endif
++
++
+ static struct resource omap2_pmu_resource = {
+ 	.start	= 3,
+ 	.end	= 3,
+@@ -995,6 +1022,7 @@ static int __init omap2_init_devices(void)
+ 	omap_init_camera();
+ 	omap_init_mbox();
+ 	omap_init_mcspi();
++	omap_init_elm();
+ 	omap_init_pmu();
+ 	omap_hdq_init();
+ 	omap_init_sti();
+diff --git a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+index 3ced291..7dbcb7c 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+@@ -65,6 +65,7 @@ static struct omap_hwmod am33xx_mmc1_hwmod;
+ static struct omap_hwmod am33xx_mmc2_hwmod;
+ static struct omap_hwmod am33xx_spi0_hwmod;
+ static struct omap_hwmod am33xx_spi1_hwmod;
++static struct omap_hwmod am33xx_elm_hwmod;
+ 
+ /*
+  * Interconnects hwmod structures
+@@ -442,17 +443,56 @@ static struct omap_hwmod am33xx_debugss_hwmod = {
+ 	},
+ };
+ 
++static struct omap_hwmod_class_sysconfig am33xx_elm_sysc = {
++	.rev_offs	= 0x0000,
++	.sysc_offs	= 0x0010,
++	.syss_offs	= 0x0014,
++	.sysc_flags	= (SYSC_HAS_CLOCKACTIVITY | SYSC_HAS_SIDLEMODE |
++				SYSC_HAS_SOFTRESET |
++				SYSS_HAS_RESET_STATUS),
++	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
++	.sysc_fields	= &omap_hwmod_sysc_type1,
++};
+ /* 'elm' class */
+ static struct omap_hwmod_class am33xx_elm_hwmod_class = {
+ 	.name		= "elm",
++	.sysc		= &am33xx_elm_sysc,
++};
++
++static struct omap_hwmod_irq_info am33xx_elm_irqs[] = {
++	{ .irq = AM33XX_IRQ_ELM },
++	{ .irq = -1 }
++};
++
++struct omap_hwmod_addr_space am33xx_elm_addr_space[] = {
++	{
++		.pa_start	= AM33XX_ELM_BASE,
++		.pa_end		= AM33XX_ELM_BASE + SZ_8K - 1,
++		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
++	},
++	{ }
++};
++
++struct omap_hwmod_ocp_if am33xx_l4_core__elm = {
++	.master		= &am33xx_l4per_hwmod,
++	.slave		= &am33xx_elm_hwmod,
++	.addr		= am33xx_elm_addr_space,
++	.user		= OCP_USER_MPU,
++};
++
++static struct omap_hwmod_ocp_if *am33xx_elm_slaves[] = {
++	&am33xx_l4_core__elm,
+ };
+ 
+ /* elm */
+ static struct omap_hwmod am33xx_elm_hwmod = {
+ 	.name		= "elm",
+ 	.class		= &am33xx_elm_hwmod_class,
++	.mpu_irqs       = am33xx_elm_irqs,
+ 	.main_clk	= "elm_fck",
+ 	.clkdm_name	= "l4ls_clkdm",
++	.slaves		= am33xx_elm_slaves,
++	.slaves_cnt	= ARRAY_SIZE(am33xx_elm_slaves),
+ 	.prcm		= {
+ 		.omap4	= {
+ 			.clkctrl_offs	= AM33XX_CM_PER_ELM_CLKCTRL_OFFSET,
+diff --git a/arch/arm/plat-omap/include/plat/am33xx.h b/arch/arm/plat-omap/include/plat/am33xx.h
+index 1162d82..4a8816a 100644
+--- a/arch/arm/plat-omap/include/plat/am33xx.h
++++ b/arch/arm/plat-omap/include/plat/am33xx.h
+@@ -62,4 +62,6 @@
+ #define AM33XX_USB0_BASE	0x47401000
+ #define AM33XX_USB1_BASE	0x47401800
+ 
++#define AM33XX_ELM_BASE		0x48080000
++
+ #endif /* __ASM_ARCH_AM33XX_H */
+-- 
+1.7.11.2
+

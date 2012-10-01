@@ -1,0 +1,67 @@
+From cb9ad2b8f7594ae3d79309b8e831f8c3afeda9c7 Mon Sep 17 00:00:00 2001
+From: Ravi B <ravibabu@ti.com>
+Date: Wed, 12 Oct 2011 11:29:23 +0530
+Subject: [PATCH 0598/1092] musb:gadget: use pio mode for zero byte transfer
+ in gadget mode
+
+The cppi41 txdma is unable to transfer zero byte length, this
+workaround uses pio mode to transfer zero byte length.
+
+Signed-off-by: Ravi B <ravibabu@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_gadget.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+index c69087b..64b9a09 100644
+--- a/drivers/usb/musb/musb_gadget.c
++++ b/drivers/usb/musb/musb_gadget.c
+@@ -406,8 +406,13 @@ static void txstate(struct musb *musb, struct musb_request *req)
+ 		} else if (is_cppi_enabled(musb) || is_cppi41_enabled(musb)) {
+ 			/* program endpoint CSR first, then setup DMA */
+ 			csr &= ~(MUSB_TXCSR_P_UNDERRUN | MUSB_TXCSR_TXPKTRDY);
+-			csr |= MUSB_TXCSR_DMAENAB | MUSB_TXCSR_DMAMODE |
+-			       MUSB_TXCSR_MODE;
++
++			if (request_size == 0)
++				csr &= ~(MUSB_TXCSR_DMAENAB |
++					MUSB_TXCSR_DMAMODE);
++			else
++				csr |= MUSB_TXCSR_DMAENAB | MUSB_TXCSR_DMAMODE |
++				       MUSB_TXCSR_MODE;
+ 			musb_writew(epio, MUSB_TXCSR,
+ 				(MUSB_TXCSR_P_WZC_BITS & ~MUSB_TXCSR_P_UNDERRUN)
+ 					| csr);
+@@ -426,17 +431,22 @@ static void txstate(struct musb *musb, struct musb_request *req)
+ 			 * unreliable except for the last-packet-is-already-
+ 			 * short case.
+ 			 */
+-			use_dma = use_dma && c->channel_program(
++			/* for zero byte transfer use pio mode */
++			if (request_size == 0)
++				use_dma = 0;
++			else {
++				use_dma = use_dma && c->channel_program(
+ 					musb_ep->dma, musb_ep->packet_sz,
+ 					0,
+ 					request->dma + request->actual,
+ 					request_size);
+-			if (!use_dma) {
+-				c->channel_release(musb_ep->dma);
+-				musb_ep->dma = NULL;
+-				csr &= ~MUSB_TXCSR_DMAENAB;
+-				musb_writew(epio, MUSB_TXCSR, csr);
++				if (!use_dma) {
++					c->channel_release(musb_ep->dma);
++					musb_ep->dma = NULL;
++					csr &= ~MUSB_TXCSR_DMAENAB;
++					musb_writew(epio, MUSB_TXCSR, csr);
+ 				/* invariant: prequest->buf is non-null */
++				}
+ 			}
+ 		} else if (tusb_dma_omap(musb)) {
+ 			use_dma = use_dma && c->channel_program(
+-- 
+1.7.11.2
+

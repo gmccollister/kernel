@@ -1,0 +1,70 @@
+From 2d0cb3196a1be7c5b85b1be6458f67826a89e6bf Mon Sep 17 00:00:00 2001
+From: Eliad Peller <eliad@wizery.com>
+Date: Tue, 22 Nov 2011 16:02:18 +0200
+Subject: [PATCH 0178/1092] ARM: OMAP: hsmmc: add pm_caps field
+
+Add pm_caps field to omap2_hsmmc_info and omap_mmc_slot_data
+structs, so we will be able to indicate mmc pm capabilities
+in the board file.
+
+Signed-off-by: Eliad Peller <eliad@wizery.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/hsmmc.c           | 1 +
+ arch/arm/mach-omap2/hsmmc.h           | 1 +
+ arch/arm/plat-omap/include/plat/mmc.h | 1 +
+ drivers/mmc/host/omap_hsmmc.c         | 2 ++
+ 4 files changed, 5 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/hsmmc.c b/arch/arm/mach-omap2/hsmmc.c
+index f4a1020..97dfedc 100644
+--- a/arch/arm/mach-omap2/hsmmc.c
++++ b/arch/arm/mach-omap2/hsmmc.c
+@@ -296,6 +296,7 @@ static int __init omap_hsmmc_pdata_init(struct omap2_hsmmc_info *c,
+ 	mmc->slots[0].name = hc_name;
+ 	mmc->nr_slots = 1;
+ 	mmc->slots[0].caps = c->caps;
++	mmc->slots[0].pm_caps = c->pm_caps;
+ 	mmc->slots[0].internal_clock = !c->ext_clock;
+ 	mmc->dma_mask = 0xffffffff;
+ 	if (cpu_is_omap44xx())
+diff --git a/arch/arm/mach-omap2/hsmmc.h b/arch/arm/mach-omap2/hsmmc.h
+index f757e78..c440973 100644
+--- a/arch/arm/mach-omap2/hsmmc.h
++++ b/arch/arm/mach-omap2/hsmmc.h
+@@ -12,6 +12,7 @@ struct omap2_hsmmc_info {
+ 	u8	mmc;		/* controller 1/2/3 */
+ 	u32	caps;		/* 4/8 wires and any additional host
+ 				 * capabilities OR'd (ref. linux/mmc/host.h) */
++	u32	pm_caps;	/* PM capabilities */
+ 	bool	transceiver;	/* MMC-2 option */
+ 	bool	ext_clock;	/* use external pin for input clock */
+ 	bool	cover_only;	/* No card detect - just cover switch */
+diff --git a/arch/arm/plat-omap/include/plat/mmc.h b/arch/arm/plat-omap/include/plat/mmc.h
+index 94cf70a..f75946c 100644
+--- a/arch/arm/plat-omap/include/plat/mmc.h
++++ b/arch/arm/plat-omap/include/plat/mmc.h
+@@ -96,6 +96,7 @@ struct omap_mmc_platform_data {
+ 		 */
+ 		u8  wires;	/* Used for the MMC driver on omap1 and 2420 */
+ 		u32 caps;	/* Used for the MMC driver on 2430 and later */
++		u32 pm_caps;	/* PM capabilities of the mmc */
+ 
+ 		/*
+ 		 * nomux means "standard" muxing is wrong on this board, and
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 1df9739..d1fb561 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -1991,6 +1991,8 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
+ 	if (mmc_slot(host).nonremovable)
+ 		mmc->caps |= MMC_CAP_NONREMOVABLE;
+ 
++	mmc->pm_caps = mmc_slot(host).pm_caps;
++
+ 	omap_hsmmc_conf_bus_power(host);
+ 
+ 	/* Select DMA lines */
+-- 
+1.7.11.2
+

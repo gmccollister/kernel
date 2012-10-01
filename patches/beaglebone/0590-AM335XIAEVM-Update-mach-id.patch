@@ -1,0 +1,27 @@
+From 8bd9a1df30c165469348ef1c460bce5dc4be29ec Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Wed, 17 Aug 2011 10:32:54 +0530
+Subject: [PATCH 0590/1092] AM335XIAEVM: Update mach-id
+
+Use machine-id for IA board registered at
+http://www.arm.linux.org.uk/developer/machines/
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/tools/mach-types | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
+index ead93da..217ea76 100644
+--- a/arch/arm/tools/mach-types
++++ b/arch/arm/tools/mach-types
+@@ -1127,3 +1127,4 @@ m28evk			MACH_M28EVK		M28EVK			3613
+ smdk4212		MACH_SMDK4212		SMDK4212		3638
+ smdk4412		MACH_SMDK4412		SMDK4412		3765
+ am335xevm		MACH_AM335XEVM		AM335XEVM		3589
++am335xiaevm		MACH_AM335XIAEVM	AM335XIAEVM		3684
+-- 
+1.7.11.2
+

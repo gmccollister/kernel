@@ -1,0 +1,44 @@
+From 8a77e992f8373f494948e3b1d1c5d07a5a7cebd9 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:58 +0300
+Subject: [PATCH 0359/1092] cbus: tahvo: prepare for children without IRQ
+
+not all tahvo children have a dedicated IRQ
+so don't add a resource for those.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 43f6d6a..1540042 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -266,13 +266,15 @@ static struct device *tahvo_allocate_child(const char *name,
+ 
+ 	pdev->dev.parent = parent;
+ 
+-	generic_resources[0].start = irq;
+-
+-	ret = platform_device_add_resources(pdev,
+-			generic_resources, ARRAY_SIZE(generic_resources));
+-	if (ret < 0) {
+-		dev_dbg(parent, "can't add resources to %s\n", name);
+-		goto err1;
++	if (irq > 0) {
++		generic_resources[0].start = irq;
++
++		ret = platform_device_add_resources(pdev, generic_resources,
++				ARRAY_SIZE(generic_resources));
++		if (ret < 0) {
++			dev_dbg(parent, "can't add resources to %s\n", name);
++			goto err1;
++		}
+ 	}
+ 
+ 	ret = platform_device_add(pdev);
+-- 
+1.7.11.2
+

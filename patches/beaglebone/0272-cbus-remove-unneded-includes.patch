@@ -1,0 +1,37 @@
+From e7adf305ddff3e70df9d8488c3cf04abab267d31 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Tue, 19 Oct 2010 07:29:15 +0000
+Subject: [PATCH 0272/1092] cbus: remove unneded includes
+
+we don't use anything from those headers,
+thus removing them.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 9e745bb..a8bbf42 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -30,15 +30,10 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+-#include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
+ 
+-#include <asm/io.h>
+-#include <asm/mach-types.h>
+-
+-#include <plat/board.h>
+ #include <plat/cbus.h>
+ 
+ #include "cbus.h"
+-- 
+1.7.11.2
+

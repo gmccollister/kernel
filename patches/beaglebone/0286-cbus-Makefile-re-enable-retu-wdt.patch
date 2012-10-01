@@ -1,0 +1,31 @@
+From ea2d3db6e501af1108debb73533860468253c269 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 3 Feb 2011 12:20:27 +0200
+Subject: [PATCH 0286/1092] cbus: Makefile: re-enable retu-wdt
+
+Now that all conversions have been made,
+reenable retu-wdt driver.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/cbus/Makefile b/drivers/cbus/Makefile
+index 7bfd997..c5c3940a 100644
+--- a/drivers/cbus/Makefile
++++ b/drivers/cbus/Makefile
+@@ -8,8 +8,7 @@ obj-$(CONFIG_CBUS_RETU)		+= retu.o
+ obj-$(CONFIG_CBUS_TAHVO_USB)	+= tahvo-usb.o
+ obj-$(CONFIG_CBUS_TAHVO_USER)	+= tahvo-user.o
+ 
+-## Disable Retu children until converted to threaded IRQ
+ obj-$(CONFIG_CBUS_RETU_POWERBUTTON) += retu-pwrbutton.o
+ obj-$(CONFIG_CBUS_RETU_RTC)	+= retu-rtc.o
+-#obj-$(CONFIG_CBUS_RETU_WDT)	+= retu-wdt.o
++obj-$(CONFIG_CBUS_RETU_WDT)	+= retu-wdt.o
+ obj-$(CONFIG_CBUS_RETU_HEADSET)	+= retu-headset.o
+-- 
+1.7.11.2
+

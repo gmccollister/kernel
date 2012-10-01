@@ -1,0 +1,36 @@
+From 870c6e84330d7e603910b1e2f8a8bd7053d5c4de Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 3 Jan 2012 15:27:21 +0530
+Subject: [PATCH 0698/1092] arm:omap:am33xx: Enable TPS65910 regulator
+
+Enable TPS65910 regulator
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 9aa9a6a..75d1041 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1476,7 +1476,7 @@ CONFIG_MFD_SUPPORT=y
+ # CONFIG_TPS65010 is not set
+ # CONFIG_TPS6507X is not set
+ # CONFIG_MFD_TPS6586X is not set
+-# CONFIG_MFD_TPS65910 is not set
++CONFIG_MFD_TPS65910=y
+ # CONFIG_MFD_TPS65912_I2C is not set
+ # CONFIG_MFD_TPS65912_SPI is not set
+ CONFIG_TWL4030_CORE=y
+@@ -1511,6 +1511,7 @@ CONFIG_REGULATOR=y
+ # CONFIG_REGULATOR_DEBUG is not set
+ CONFIG_REGULATOR_DUMMY=y
+ CONFIG_REGULATOR_FIXED_VOLTAGE=y
++CONFIG_REGULATOR_TPS65910=y
+ # CONFIG_REGULATOR_VIRTUAL_CONSUMER is not set
+ # CONFIG_REGULATOR_USERSPACE_CONSUMER is not set
+ # CONFIG_REGULATOR_BQ24022 is not set
+-- 
+1.7.11.2
+

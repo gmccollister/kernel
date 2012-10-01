@@ -1,0 +1,92 @@
+From b95c6add1bb0df72a68a1660a816d2a97512c1f1 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 14 Feb 2011 19:07:06 +0200
+Subject: [PATCH 0293/1092] cbus: retu: drop retu_get_status
+
+children are allocated after retu core probes,
+so by the time children start to probe, parent
+is initialized for sure.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/cbus/retu-rtc.c | 6 ------
+ drivers/cbus/retu-wdt.c | 8 --------
+ drivers/cbus/retu.c     | 6 ------
+ drivers/cbus/retu.h     | 1 -
+ 4 files changed, 21 deletions(-)
+
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index 5f52edf..303a4a6 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -215,12 +215,6 @@ static int __init retu_rtc_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, rtc);
+ 	mutex_init(&rtc->mutex);
+ 
+-	r = retu_get_status();
+-	if (!r) {
+-		dev_err(&pdev->dev, "retu not initialized\n");
+-		goto err1;
+-	}
+-
+ 	rtc->alarm_expired = retu_read_reg(RETU_REG_IDR) &
+ 		(0x1 << RETU_INT_RTCA);
+ 
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index 8b87ae9..423216c 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -230,10 +230,6 @@ static int __devinit retu_wdt_ping(void)
+ {
+ 	int r;
+ 
+-	r = retu_get_status();
+-	if (!r)
+-		return -ENODEV;
+-
+ #ifdef CONFIG_WATCHDOG_NOWAYOUT
+ 	retu_modify_counter(RETU_WDT_MAX_TIMER);
+ #else
+@@ -258,10 +254,6 @@ static int __init retu_wdt_probe(struct platform_device *pdev)
+ 	struct retu_wdt_dev *wdev;
+ 	int ret;
+ 
+-	ret = retu_get_status();
+-	if (!ret)
+-		return -ENODEV;
+-
+ 	wdev = kzalloc(sizeof(struct retu_wdt_dev), GFP_KERNEL);
+ 	if (!wdev)
+ 		return -ENOMEM;
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 6134781..5886b00 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -74,12 +74,6 @@ struct retu {
+ 
+ static struct retu *the_retu;
+ 
+-int retu_get_status(void)
+-{
+-	return the_retu ? 1 : 0;
+-}
+-EXPORT_SYMBOL(retu_get_status);
+-
+ /**
+  * retu_read_reg - Read a value from a register in Retu
+  * @reg: the register to read from
+diff --git a/drivers/cbus/retu.h b/drivers/cbus/retu.h
+index 1b05f3e..f2357a9 100644
+--- a/drivers/cbus/retu.h
++++ b/drivers/cbus/retu.h
+@@ -57,7 +57,6 @@
+ 
+ #define	MAX_RETU_IRQ_HANDLERS	16
+ 
+-int retu_get_status(void);
+ int retu_read_reg(unsigned reg);
+ void retu_write_reg(unsigned reg, u16 val);
+ void retu_set_clear_reg_bits(unsigned reg, u16 set, u16 clear);
+-- 
+1.7.11.2
+

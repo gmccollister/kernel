@@ -1,0 +1,91 @@
+From b07bc047134e435e1dacd8b5a906410b833cd7e7 Mon Sep 17 00:00:00 2001
+From: Ravi B <ravibabu@ti.com>
+Date: Tue, 14 Jun 2011 15:04:19 +0530
+Subject: [PATCH 0474/1092] usb: musb: pass musb pointer to is_inventra_dma
+ helper
+
+This patch passes musb pointer to is_inventra_dma to
+prepare for support runtime is_inventra_dma.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_dma.h    | 4 ++--
+ drivers/usb/musb/musb_gadget.c | 2 +-
+ drivers/usb/musb/musb_host.c   | 8 ++++----
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_dma.h b/drivers/usb/musb/musb_dma.h
+index e5293d2..4f2408c 100644
+--- a/drivers/usb/musb/musb_dma.h
++++ b/drivers/usb/musb/musb_dma.h
+@@ -75,9 +75,9 @@ struct musb_hw_ep;
+ #endif
+ 
+ #ifdef CONFIG_USB_INVENTRA_DMA
+-#define	is_inventra_dma()	1
++#define	is_inventra_dma(musb)	1
+ #else
+-#define	is_inventra_dma()	0
++#define	is_inventra_dma(musb)	0
+ #endif
+ 
+ #ifdef CONFIG_USB_TI_CPPI_DMA
+diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+index 1834504..ff179c7 100644
+--- a/drivers/usb/musb/musb_gadget.c
++++ b/drivers/usb/musb/musb_gadget.c
+@@ -692,7 +692,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
+ 			use_mode_1 = 0;
+ 
+ 		if (request->actual < request->length) {
+-			if (is_buffer_mapped(req) && is_inventra_dma()) {
++			if (is_buffer_mapped(req) && is_inventra_dma(musb)) {
+ 				struct dma_controller	*c;
+ 				struct dma_channel	*channel;
+ 				int			use_dma = 0;
+diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
+index 897785f..61822dc 100644
+--- a/drivers/usb/musb/musb_host.c
++++ b/drivers/usb/musb/musb_host.c
+@@ -615,7 +615,7 @@ static bool musb_tx_dma_program(struct dma_controller *dma,
+ 	u16			csr;
+ 	u8			mode;
+ 
+-	if (is_inventra_dma()) {
++	if (is_inventra_dma(hw_ep->musb)) {
+ 		if (length > channel->max_len)
+ 			length = channel->max_len;
+ 
+@@ -1529,7 +1529,7 @@ void musb_host_rx(struct musb *musb, u8 epnum)
+ 
+ 	/* FIXME this is _way_ too much in-line logic for Mentor DMA */
+ 
+-	if (!is_inventra_dma() && (rx_csr & MUSB_RXCSR_H_REQPKT))  {
++	if (!is_inventra_dma(musb) && (rx_csr & MUSB_RXCSR_H_REQPKT))  {
+ 		/* REVISIT this happened for a while on some short reads...
+ 		 * the cleanup still needs investigation... looks bad...
+ 		 * and also duplicates dma cleanup code above ... plus,
+@@ -1559,7 +1559,7 @@ void musb_host_rx(struct musb *musb, u8 epnum)
+ 			| MUSB_RXCSR_RXPKTRDY);
+ 		musb_writew(hw_ep->regs, MUSB_RXCSR, val);
+ 
+-		if (is_inventra_dma()) {
++		if (is_inventra_dma(musb)) {
+ 			if (usb_pipeisoc(pipe)) {
+ 				struct usb_iso_packet_descriptor *d;
+ 
+@@ -1617,7 +1617,7 @@ void musb_host_rx(struct musb *musb, u8 epnum)
+ 		}
+ 
+ 		/* we are expecting IN packets */
+-		if (is_inventra_dma() && dma) {
++		if (is_inventra_dma(musb) && dma) {
+ 			struct dma_controller	*c;
+ 			u16			rx_count;
+ 			int			ret, length;
+-- 
+1.7.11.2
+

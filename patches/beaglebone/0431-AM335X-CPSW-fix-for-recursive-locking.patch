@@ -1,0 +1,48 @@
+From d59f2706ceb0c992281d473a45deafa110080a37 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Thu, 22 Sep 2011 11:21:52 +0530
+Subject: [PATCH 0431/1092] AM335X: CPSW fix for recursive locking
+
+This patch is added to remove recursive locking seen in
+cpsw deinitializing function. spin_lock_irqsave() is called
+recursively with same resource in both cpdma_chan_stop and
+__cpdma_chan_process functions which leads to recursive locking
+and so multiple locking is removed.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/net/ethernet/ti/davinci_cpdma.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/ti/davinci_cpdma.c b/drivers/net/ethernet/ti/davinci_cpdma.c
+index c97d2f5..ae1b5e3 100644
+--- a/drivers/net/ethernet/ti/davinci_cpdma.c
++++ b/drivers/net/ethernet/ti/davinci_cpdma.c
+@@ -720,9 +720,6 @@ static int __cpdma_chan_process(struct cpdma_chan *chan)
+ 	int				status, outlen;
+ 	struct cpdma_desc_pool		*pool = ctlr->pool;
+ 	dma_addr_t			desc_dma;
+-	unsigned long			flags;
+-
+-	spin_lock_irqsave(&chan->lock, flags);
+ 
+ 	desc = chan->head;
+ 	if (!desc) {
+@@ -751,13 +748,10 @@ static int __cpdma_chan_process(struct cpdma_chan *chan)
+ 		chan_write(chan, hdp, desc_phys(pool, chan->head));
+ 	}
+ 
+-	spin_unlock_irqrestore(&chan->lock, flags);
+-
+ 	__cpdma_chan_free(chan, desc, outlen, status);
+ 	return status;
+ 
+ unlock_ret:
+-	spin_unlock_irqrestore(&chan->lock, flags);
+ 	return status;
+ }
+ 
+-- 
+1.7.11.2
+

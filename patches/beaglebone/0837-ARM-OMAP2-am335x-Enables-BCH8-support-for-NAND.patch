@@ -1,0 +1,28 @@
+From e6f71dabe7a077ac05c2af2f1729c62cd6110baf Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Tue, 6 Mar 2012 11:25:10 +0530
+Subject: [PATCH 0837/1092] ARM: OMAP2+: am335x: Enables BCH8 support for NAND
+
+Enables BCH8 ECC support on AM335x SOC.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index faeb35d..fb149ef 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1181,7 +1181,7 @@ static void evm_nand_init(int evm_id, int profile)
+ 	pdata = omap_nand_init(am335x_nand_partitions,
+ 		ARRAY_SIZE(am335x_nand_partitions), 0, 0,
+ 		&am335x_nand_timings);
+-	pdata->ecc_opt = OMAP_ECC_HAMMING_CODE_DEFAULT;
++	pdata->ecc_opt =OMAP_ECC_BCH8_CODE_HW;
+ 	pdata->elm_used = true;
+ 	gpmc_device[0].pdata = pdata;
+ 	gpmc_device[0].flag = GPMC_DEVICE_NAND;
+-- 
+1.7.11.2
+

@@ -1,0 +1,36 @@
+From 3e24fadc69a4ca37a085d82ede8dd66c3f12f12b Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Fri, 20 Jan 2012 12:33:06 +0530
+Subject: [PATCH 0731/1092] ARM: OMAP: AM33XX: Don't enable suspend by default
+
+Leaving the suspend option enabled in the defconfig
+leads to a 60 second timeout if the CM3 binary is not
+provided. To avoid this, disable suspend for now.
+
+A better solution for this might be exploring the
+usage of nowait version of the request_firmware
+interface.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 6ae4688..5a3f564 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -469,9 +469,7 @@ CONFIG_BINFMT_MISC=y
+ #
+ # Power management options
+ #
+-CONFIG_SUSPEND=y
+-CONFIG_SUSPEND_FREEZER=y
+-CONFIG_PM_SLEEP=y
++# CONFIG_SUSPEND is not set
+ CONFIG_PM_RUNTIME=y
+ CONFIG_PM=y
+ # CONFIG_PM_DEBUG is not set
+-- 
+1.7.11.2
+

@@ -1,0 +1,42 @@
+From d199c172046005d7df686ec28c45298f55b39c2b Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Thu, 3 May 2012 16:05:14 +0530
+Subject: [PATCH 0957/1092] ARM: OMAP2+: am335x: Add initial MMC1 support for
+ EVM-SK
+
+This patch adds initial MMC0 support for EVM-SK board.
+WLAN is connected to MMC1 Instance. Only pin-mux related to MMC1 is
+setup here. WLAN configurations needs to be done.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 81486ef..4f2b036 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1434,6 +1434,11 @@ static void mmc1_init(int evm_id, int profile)
+ 	return;
+ }
+ 
++static void mmc1_wl12xx_init(int evm_id, int profile)
++{
++	setup_pin_mux(mmc1_common_pin_mux);
++}
++
+ static void mmc2_wl12xx_init(int evm_id, int profile)
+ {
+ 	setup_pin_mux(mmc2_wl12xx_pin_mux);
+@@ -1741,6 +1746,7 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+ 
+ /* EVM - Starter Kit */
+ static struct evm_dev_cfg evm_sk_dev_cfg[] = {
++	{mmc1_wl12xx_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{rgmii2_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+-- 
+1.7.11.2
+

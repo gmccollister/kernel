@@ -1,0 +1,73 @@
+From c6f29a8aeca7e5b4e066a23e8637682a3fc3586c Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Fri, 25 Nov 2011 12:09:37 +0530
+Subject: [PATCH 0402/1092] arm:omap:clock Remove duplicate macros from DPLL
+ state
+
+Irrespective of cpu-type, aren't we supposed to do
+same thing for any bypass cases (LPBYPASS/FRBYPASS/MNBYPASS),
+
+     - dpll clock reparenting
+     - get dpll rate
+
+This patch cleans up the code and removes the unneccessary cpu check.
+
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/clkt_dpll.c | 16 ++++------------
+ arch/arm/mach-omap2/clock.h     |  3 ---
+ 2 files changed, 4 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/clkt_dpll.c b/arch/arm/mach-omap2/clkt_dpll.c
+index e069a9b..a81abea 100644
+--- a/arch/arm/mach-omap2/clkt_dpll.c
++++ b/arch/arm/mach-omap2/clkt_dpll.c
+@@ -206,13 +206,9 @@ void omap2_init_dpll_parent(struct clk *clk)
+ 		if (v == OMAP2XXX_EN_DPLL_LPBYPASS ||
+ 		    v == OMAP2XXX_EN_DPLL_FRBYPASS)
+ 			clk_reparent(clk, dd->clk_bypass);
+-	} else if (cpu_is_omap34xx()) {
++	} else if (cpu_is_omap34xx() || cpu_is_omap44xx()) {
+ 		if (v == OMAP3XXX_EN_DPLL_LPBYPASS ||
+-		    v == OMAP3XXX_EN_DPLL_FRBYPASS)
+-			clk_reparent(clk, dd->clk_bypass);
+-	} else if (cpu_is_omap44xx()) {
+-		if (v == OMAP4XXX_EN_DPLL_LPBYPASS ||
+-		    v == OMAP4XXX_EN_DPLL_FRBYPASS ||
++		    v == OMAP3XXX_EN_DPLL_FRBYPASS ||
+ 		    v == OMAP4XXX_EN_DPLL_MNBYPASS)
+ 			clk_reparent(clk, dd->clk_bypass);
+ 	}
+@@ -252,13 +248,9 @@ u32 omap2_get_dpll_rate(struct clk *clk)
+ 		if (v == OMAP2XXX_EN_DPLL_LPBYPASS ||
+ 		    v == OMAP2XXX_EN_DPLL_FRBYPASS)
+ 			return dd->clk_bypass->rate;
+-	} else if (cpu_is_omap34xx()) {
++	} else if (cpu_is_omap34xx() || cpu_is_omap44xx()) {
+ 		if (v == OMAP3XXX_EN_DPLL_LPBYPASS ||
+-		    v == OMAP3XXX_EN_DPLL_FRBYPASS)
+-			return dd->clk_bypass->rate;
+-	} else if (cpu_is_omap44xx()) {
+-		if (v == OMAP4XXX_EN_DPLL_LPBYPASS ||
+-		    v == OMAP4XXX_EN_DPLL_FRBYPASS ||
++		    v == OMAP3XXX_EN_DPLL_FRBYPASS ||
+ 		    v == OMAP4XXX_EN_DPLL_MNBYPASS)
+ 			return dd->clk_bypass->rate;
+ 	}
+diff --git a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
+index b8c2a68..3f818ba 100644
+--- a/arch/arm/mach-omap2/clock.h
++++ b/arch/arm/mach-omap2/clock.h
+@@ -37,9 +37,6 @@
+ 
+ /* OMAP4xxx CM_CLKMODE_DPLL*.EN_*_DPLL bits - for omap2_get_dpll_rate() */
+ #define OMAP4XXX_EN_DPLL_MNBYPASS		0x4
+-#define OMAP4XXX_EN_DPLL_LPBYPASS		0x5
+-#define OMAP4XXX_EN_DPLL_FRBYPASS		0x6
+-#define OMAP4XXX_EN_DPLL_LOCKED			0x7
+ 
+ /* CM_CLKEN_PLL*.EN* bit values - not all are available for every DPLL */
+ #define DPLL_LOW_POWER_STOP	0x1
+-- 
+1.7.11.2
+

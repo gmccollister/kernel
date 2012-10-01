@@ -1,0 +1,63 @@
+From 78aaa6f44be72fcbe99415772dcc178491e1b208 Mon Sep 17 00:00:00 2001
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Tue, 13 Dec 2011 10:48:51 -0800
+Subject: [PATCH 0164/1092] ARM: OMAP3: cm-t35: Add regulator for ads7846
+ touchscreen
+
+ads7846 driver fails to find the regulator supply and
+as a result the touchscreen is not working.
+Fix this by adding a regulator supply for the ads7846 driver.
+
+Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
+[tony@atomide.com: updated subject]
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-cm-t35.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 7a52fea..fad1be0 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -342,6 +342,10 @@ static struct regulator_consumer_supply cm_t35_vdvi_supply[] = {
+ 	REGULATOR_SUPPLY("vdvi", "omapdss"),
+ };
+ 
++static struct regulator_consumer_supply cm_t35_vio_supplies[] = {
++	REGULATOR_SUPPLY("vcc", "spi1.0"),
++};
++
+ /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card == max 220 mA) */
+ static struct regulator_init_data cm_t35_vmmc1 = {
+ 	.constraints = {
+@@ -372,6 +376,19 @@ static struct regulator_init_data cm_t35_vsim = {
+ 	.consumer_supplies	= cm_t35_vsim_supply,
+ };
+ 
++static struct regulator_init_data cm_t35_vio = {
++	.constraints = {
++		.min_uV			= 1800000,
++		.max_uV			= 1800000,
++		.apply_uV		= true,
++		.valid_modes_mask	= REGULATOR_MODE_NORMAL
++					| REGULATOR_MODE_STANDBY,
++		.valid_ops_mask		= REGULATOR_CHANGE_MODE,
++	},
++	.num_consumer_supplies	= ARRAY_SIZE(cm_t35_vio_supplies),
++	.consumer_supplies	= cm_t35_vio_supplies,
++};
++
+ static uint32_t cm_t35_keymap[] = {
+ 	KEY(0, 0, KEY_A),	KEY(0, 1, KEY_B),	KEY(0, 2, KEY_LEFT),
+ 	KEY(1, 0, KEY_UP),	KEY(1, 1, KEY_ENTER),	KEY(1, 2, KEY_DOWN),
+@@ -455,6 +472,7 @@ static struct twl4030_platform_data cm_t35_twldata = {
+ 	.gpio		= &cm_t35_gpio_data,
+ 	.vmmc1		= &cm_t35_vmmc1,
+ 	.vsim		= &cm_t35_vsim,
++	.vio		= &cm_t35_vio,
+ };
+ 
+ static void __init cm_t35_init_i2c(void)
+-- 
+1.7.11.2
+

@@ -1,0 +1,82 @@
+From b87aeac43c963ea4353a633d43a0b858ffd64d5f Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 3 Feb 2011 12:20:21 +0200
+Subject: [PATCH 0280/1092] arm: omap: cbus: pass irq_base and irq_end via
+ platform_data
+
+Pass CBUS_RETU_IRQ_BASE and CBUS_RETU_IRQ_END via
+platform_data to retu platform_driver.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c   | 8 ++++++++
+ arch/arm/mach-omap2/board-n8x0.c       | 8 ++++++++
+ arch/arm/plat-omap/include/plat/cbus.h | 5 +++++
+ 3 files changed, 21 insertions(+)
+
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index 54fa878..c9c8e62 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -107,11 +107,19 @@ static struct resource retu_resource[] = {
+ 	},
+ };
+ 
++static struct cbus_retu_platform_data nokia770_retu_data = {
++	.irq_base	= CBUS_RETU_IRQ_BASE,
++	.irq_end	= CBUS_RETU_IRQ_END,
++};
++
+ static struct platform_device retu_device = {
+ 	.name		= "retu",
+ 	.id		= -1,
+ 	.resource	= retu_resource,
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
++	.dev		= {
++		.platform_data = &nokia770_retu_data,
++	},
+ };
+ 
+ static struct resource tahvo_resource[] = {
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index c354173..e39c359 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -218,11 +218,19 @@ static struct resource retu_resource[] = {
+ 	},
+ };
+ 
++static struct cbus_retu_platform_data n8x0_retu_data = {
++	.irq_base	= CBUS_RETU_IRQ_BASE,
++	.irq_end	= CBUS_RETU_IRQ_END,
++};
++
+ static struct platform_device retu_device = {
+ 	.name		= "retu",
+ 	.id		= -1,
+ 	.resource	= retu_resource,
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
++	.dev		= {
++		.platform_data = &n8x0_retu_data,
++	},
+ };
+ 
+ static struct resource tahvo_resource[] = {
+diff --git a/arch/arm/plat-omap/include/plat/cbus.h b/arch/arm/plat-omap/include/plat/cbus.h
+index d938e23..1f0e8be 100644
+--- a/arch/arm/plat-omap/include/plat/cbus.h
++++ b/arch/arm/plat-omap/include/plat/cbus.h
+@@ -28,4 +28,9 @@ struct cbus_host_platform_data {
+ 	int	sel_gpio;
+ };
+ 
++struct cbus_retu_platform_data {
++	int	irq_base;
++	int	irq_end;
++};
++
+ #endif /* __PLAT_CBUS_H */
+-- 
+1.7.11.2
+

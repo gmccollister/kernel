@@ -1,0 +1,43 @@
+From 8d352dd7e0b4504267c19e30bb98eee9b0441c07 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Mon, 2 Jan 2012 17:17:01 +0530
+Subject: [PATCH 0665/1092] arm:omap:am33xx: Don't register McBSP
+
+...since AM33XX doesn't have any instance of McBSP
+
+Note: This needs to be merged with the commit
+08037c12036110c79b8fa2adf486aefaee
+(arm:omap:am33xx: Don't register non-existent...)
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/devices.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 8d43913..e896e7b 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -404,14 +404,16 @@ OMAP_MCBSP_PLATFORM_DEVICE(5);
+ 
+ static void omap_init_audio(void)
+ {
++	if (cpu_is_am33xx())
++		return;
++
+ 	platform_device_register(&omap_mcbsp1);
+ 	platform_device_register(&omap_mcbsp2);
+-	if ((cpu_is_omap243x() || cpu_is_omap34xx() || cpu_is_omap44xx()) &&
+-		!cpu_is_am33xx()) {
++	if (cpu_is_omap243x() || cpu_is_omap34xx() || cpu_is_omap44xx()) {
+ 		platform_device_register(&omap_mcbsp3);
+ 		platform_device_register(&omap_mcbsp4);
+ 	}
+-	if ((cpu_is_omap243x() || cpu_is_omap34xx()) && !cpu_is_am33xx())
++	if (cpu_is_omap243x() || cpu_is_omap34xx())
+ 		platform_device_register(&omap_mcbsp5);
+ 
+ 	platform_device_register(&omap_pcm);
+-- 
+1.7.11.2
+

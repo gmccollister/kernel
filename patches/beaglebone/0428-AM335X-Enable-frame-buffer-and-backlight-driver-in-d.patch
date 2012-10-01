@@ -1,0 +1,46 @@
+From d32599d5aec920700c20185baa93a14f5733538d Mon Sep 17 00:00:00 2001
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 14 Sep 2011 12:34:19 +0530
+Subject: [PATCH 0428/1092] AM335X: Enable frame buffer and backlight driver
+ in default EVM defconfig
+
+This patch enables the da8xx-fb frame buffer device, frame buffer console
+and backlight driver.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/omap2plus_defconfig | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index fb662c6..fb9e5d7 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -157,14 +157,23 @@ CONFIG_PANEL_TPO_TD043MTEA1=m
+ CONFIG_PANEL_ACX565AKM=m
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ CONFIG_LCD_CLASS_DEVICE=y
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
++# CONFIG_BACKLIGHT_GENERIC is not set
++# CONFIG_BACKLIGHT_ADP8860 is not set
++CONFIG_BACKLIGHT_TLC59108=y
+ CONFIG_LCD_PLATFORM=y
+ CONFIG_DISPLAY_SUPPORT=y
++CONFIG_FB_DA8XX=y
++CONFIG_FB_DA8XX_CONSISTENT_DMA_SIZE=4
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
+ CONFIG_FONTS=y
+ CONFIG_FONT_8x8=y
+ CONFIG_FONT_8x16=y
+ CONFIG_LOGO=y
++CONFIG_LOGO_LINUX_MONO=y
++CONFIG_LOGO_LINUX_VGA16=y
++CONFIG_LOGO_LINUX_CLUT224=y
+ CONFIG_SOUND=m
+ CONFIG_SND=m
+ CONFIG_SND_MIXER_OSS=m
+-- 
+1.7.11.2
+

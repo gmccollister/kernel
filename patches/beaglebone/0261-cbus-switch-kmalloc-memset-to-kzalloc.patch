@@ -1,0 +1,78 @@
+From 9d343bc511b3a996ea76b49a18474f3448473800 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <me@felipebalbi.com>
+Date: Sat, 1 May 2010 18:01:10 +0000
+Subject: [PATCH 0261/1092] cbus: switch kmalloc() + memset() to kzalloc()
+
+no functional changes, just using kzalloc().
+
+compile tested with n8x0_defconfig and n770_defconfig
+
+Signed-off-by: Felipe Balbi <me@felipebalbi.com>
+Acked-by: Jarkko Nikula <jhnikula@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-user.c  | 6 +++---
+ drivers/cbus/tahvo-usb.c  | 4 ++--
+ drivers/cbus/tahvo-user.c | 6 +++---
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cbus/retu-user.c b/drivers/cbus/retu-user.c
+index 1a29492..953d92a 100644
+--- a/drivers/cbus/retu-user.c
++++ b/drivers/cbus/retu-user.c
+@@ -382,12 +382,12 @@ int retu_user_init(void)
+ 	struct retu_irq *irq;
+ 	int res, i;
+ 
+-	irq = kmalloc(sizeof(*irq) * RETU_MAX_IRQ_BUF_LEN, GFP_KERNEL);
++	irq = kzalloc(sizeof(*irq) * RETU_MAX_IRQ_BUF_LEN, GFP_KERNEL);
+ 	if (irq == NULL) {
+-		printk(KERN_ERR PFX "kmalloc failed\n");
++		printk(KERN_ERR PFX "kzalloc failed\n");
+ 		return -ENOMEM;
+ 	}
+-	memset(irq, 0, sizeof(*irq) * RETU_MAX_IRQ_BUF_LEN);
++
+ 	for (i = 0; i < RETU_MAX_IRQ_BUF_LEN; i++)
+ 		list_add(&irq[i].node, &retu_irqs_reserve);
+ 
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index ef9fc37..5a344b6 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -655,10 +655,10 @@ static int tahvo_usb_probe(struct device *dev)
+ 	dev_dbg(dev, "probe\n");
+ 
+ 	/* Create driver data */
+-	tu = kmalloc(sizeof(*tu), GFP_KERNEL);
++	tu = kzalloc(sizeof(*tu), GFP_KERNEL);
+ 	if (!tu)
+ 		return -ENOMEM;
+-	memset(tu, 0, sizeof(*tu));
++
+ 	tu->pt_dev = container_of(dev, struct platform_device, dev);
+ #ifdef CONFIG_USB_OTG
+ 	/* Default mode */
+diff --git a/drivers/cbus/tahvo-user.c b/drivers/cbus/tahvo-user.c
+index 01e7f20..bd30f06 100644
+--- a/drivers/cbus/tahvo-user.c
++++ b/drivers/cbus/tahvo-user.c
+@@ -364,12 +364,12 @@ int tahvo_user_init(void)
+ 	struct tahvo_irq *irq;
+ 	int res, i;
+ 
+-	irq = kmalloc(sizeof(*irq) * TAHVO_MAX_IRQ_BUF_LEN, GFP_KERNEL);
++	irq = kzalloc(sizeof(*irq) * TAHVO_MAX_IRQ_BUF_LEN, GFP_KERNEL);
+ 	if (irq == NULL) {
+-		printk(KERN_ERR PFX "kmalloc failed\n");
++		printk(KERN_ERR PFX "kzalloc failed\n");
+ 		return -ENOMEM;
+ 	}
+-	memset(irq, 0, sizeof(*irq) * TAHVO_MAX_IRQ_BUF_LEN);
++
+ 	for (i = 0; i < TAHVO_MAX_IRQ_BUF_LEN; i++)
+ 		list_add(&irq[i].node, &tahvo_irqs_reserve);
+ 
+-- 
+1.7.11.2
+

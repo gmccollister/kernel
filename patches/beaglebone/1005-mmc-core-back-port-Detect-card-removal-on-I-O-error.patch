@@ -1,0 +1,91 @@
+From 1270703509870b0e9039c04b2ef5d2e2b9af678f Mon Sep 17 00:00:00 2001
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Date: Thu, 24 May 2012 18:06:06 +0530
+Subject: [PATCH 1005/1092] mmc: core: back-port: Detect card removal on I/O
+ error
+
+To prevent I/O as soon as possible at card removal, a new detect work is
+re-scheduled without a delay to let a rescan remove the card device as
+soon as possible.
+
+Additionally, MMC_CAP2_DETECT_ON_ERR can now be used to handle "slowly"
+removed cards that a scheduled detect work did not detect as removed.
+To prevent further I/O requests for these lingering removed cards,
+check if card has been removed and then schedule a detect work to
+properly remove it.
+
+Changes by Akshay:
+This commit is from mainline kernel
+(commit f0cc9cf99326926fd76f77645c48d16d647802eb).
+This commit could not be directly applied due to git am failure (patch
+command shows fuzz while applying). So manually back-ported.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@stericsson.com>
+Reviewed-by: Namjae Jeon <linkinjeon@gmail.com>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Chris Ball <cjb@laptop.org>
+Signed-off-by: Shankarmurthy, Akshay <akshay.s@ti.com>
+---
+ drivers/mmc/core/core.c  | 24 +++++++++++++++++++++---
+ include/linux/mmc/host.h |  1 +
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 23d944f..a4819d0 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -2080,18 +2080,36 @@ int _mmc_detect_card_removed(struct mmc_host *host)
+ int mmc_detect_card_removed(struct mmc_host *host)
+ {
+ 	struct mmc_card *card = host->card;
++	int ret;
+ 
+ 	WARN_ON(!host->claimed);
++
++	if (!card)
++		return 1;
++
++	ret = mmc_card_removed(card);
+ 	/*
+ 	 * The card will be considered unchanged unless we have been asked to
+ 	 * detect a change or host requires polling to provide card detection.
+ 	 */
+-	if (card && !host->detect_change && !(host->caps & MMC_CAP_NEEDS_POLL))
+-		return mmc_card_removed(card);
++	if (!host->detect_change && !(host->caps & MMC_CAP_NEEDS_POLL) &&
++	    !(host->caps2 & MMC_CAP2_DETECT_ON_ERR))
++		return ret;
+ 
+ 	host->detect_change = 0;
++	if (!ret) {
++		ret = _mmc_detect_card_removed(host);
++		if (ret && (host->caps2 & MMC_CAP2_DETECT_ON_ERR)) {
++			/*
++			 * Schedule a detect work as soon as possible to let a
++			 * rescan handle the card removal.
++			 */
++			cancel_delayed_work(&host->detect);
++			mmc_detect_change(host, 0);
++		}
++	}
+ 
+-	return _mmc_detect_card_removed(host);
++	return ret;
+ }
+ EXPORT_SYMBOL(mmc_detect_card_removed);
+ 
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index ef820f3..92bab44 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -213,6 +213,7 @@ struct mmc_host {
+ #define MMC_CAP_WAIT_WHILE_BUSY	(1 << 9)	/* Waits while card is busy */
+ #define MMC_CAP_ERASE		(1 << 10)	/* Allow erase/trim commands */
+ #define MMC_CAP_1_8V_DDR	(1 << 11)	/* can support */
++#define MMC_CAP2_DETECT_ON_ERR (1 << 8)        /* On I/O err check card removal */
+ 						/* DDR mode at 1.8V */
+ #define MMC_CAP_1_2V_DDR	(1 << 12)	/* can support */
+ 						/* DDR mode at 1.2V */
+-- 
+1.7.11.2
+

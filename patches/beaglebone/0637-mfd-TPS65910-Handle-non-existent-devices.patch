@@ -1,0 +1,75 @@
+From 1e5072bc203ac0ed4316bed9591e5e2fd7d541f3 Mon Sep 17 00:00:00 2001
+From: Kyle Manna <kyle.manna@fuel7.com>
+Date: Wed, 2 Nov 2011 17:17:29 +0530
+Subject: [PATCH 0637/1092] mfd: TPS65910: Handle non-existent devices
+
+Attempt to read the first register of the device, if there is no
+device return -ENODEV
+
+Signed-off-by: Kyle Manna <kyle.manna@fuel7.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/mfd/tps65910.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
+index c1da84b..d615ace 100644
+--- a/drivers/mfd/tps65910.c
++++ b/drivers/mfd/tps65910.c
+@@ -138,6 +138,7 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+ 	struct tps65910_board *pmic_plat_data;
+ 	struct tps65910_platform_data *init_data;
+ 	int ret = 0;
++	unsigned char buff;
+ 
+ 	pmic_plat_data = dev_get_platdata(&i2c->dev);
+ 	if (!pmic_plat_data)
+@@ -161,9 +162,24 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+ 	tps65910->write = tps65910_i2c_write;
+ 	mutex_init(&tps65910->io_mutex);
+ 
+-	ret = mfd_add_devices(tps65910->dev, -1,
+-			      tps65910s, ARRAY_SIZE(tps65910s),
+-			      NULL, 0);
++	/* Check that the device is actually there */
++	ret = tps65910_i2c_read(tps65910, 0x0, 1, &buff);
++	if (ret < 0) {
++		dev_err(tps65910->dev, "could not be detected\n");
++		ret = -ENODEV;
++		goto err;
++	}
++
++	dev_info(tps65910->dev, "JTAGREVNUM 0x%x\n", buff);
++
++	if (buff & ~JTAGVERNUM_VERNUM_MASK) {
++		dev_err(tps65910->dev, "unknown version\n");
++		ret = -ENODEV;
++		goto err;
++	}
++
++	ret = mfd_add_devices(tps65910->dev, -1, tps65910s,
++			ARRAY_SIZE(tps65910s), NULL, 0);
+ 	if (ret < 0)
+ 		goto err;
+ 
+@@ -174,13 +190,14 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+ 
+ 	ret = tps65910_irq_init(tps65910, init_data->irq, init_data);
+ 	if (ret < 0)
+-		goto err;
++		goto err2;
+ 
+ 	kfree(init_data);
+ 	return ret;
+ 
+-err:
++err2:
+ 	mfd_remove_devices(tps65910->dev);
++err:
+ 	kfree(tps65910);
+ 	kfree(init_data);
+ 	return ret;
+-- 
+1.7.11.2
+

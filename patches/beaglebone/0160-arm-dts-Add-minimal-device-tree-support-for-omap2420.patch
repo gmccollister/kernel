@@ -1,0 +1,94 @@
+From e138d44e9b899cf378a47f726277e630646fb420 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Fri, 16 Dec 2011 14:13:09 -0800
+Subject: [PATCH 0160/1092] arm/dts: Add minimal device tree support for
+ omap2420 and omap2430
+
+Add minimal device tree support for omap2420 and omap2430.
+
+This is needed to keep the uart functional on omap2 after
+omap_serial_init is removed from board-generic.c.
+
+Reviewed-by: Rob Herring <rob.herring@calxeda.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/boot/dts/omap2.dtsi | 67 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 67 insertions(+)
+ create mode 100644 arch/arm/boot/dts/omap2.dtsi
+
+diff --git a/arch/arm/boot/dts/omap2.dtsi b/arch/arm/boot/dts/omap2.dtsi
+new file mode 100644
+index 0000000..f2ab4ea
+--- /dev/null
++++ b/arch/arm/boot/dts/omap2.dtsi
+@@ -0,0 +1,67 @@
++/*
++ * Device Tree Source for OMAP2 SoC
++ *
++ * Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "ti,omap2430", "ti,omap2420", "ti,omap2";
++
++	aliases {
++		serial0 = &uart1;
++		serial1 = &uart2;
++		serial2 = &uart3;
++	};
++
++	cpus {
++		cpu@0 {
++			compatible = "arm,arm1136jf-s";
++		};
++	};
++
++	soc {
++		compatible = "ti,omap-infra";
++		mpu {
++			compatible = "ti,omap2-mpu";
++			ti,hwmods = "mpu";
++		};
++	};
++
++	ocp {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		ti,hwmods = "l3_main";
++
++		intc: interrupt-controller@1 {
++			compatible = "ti,omap2-intc";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++		};
++
++		uart1: serial@4806a000 {
++			compatible = "ti,omap2-uart";
++			ti,hwmods = "uart1";
++			clock-frequency = <48000000>;
++		};
++
++		uart2: serial@4806c000 {
++			compatible = "ti,omap2-uart";
++			ti,hwmods = "uart2";
++			clock-frequency = <48000000>;
++		};
++
++		uart3: serial@4806e000 {
++			compatible = "ti,omap2-uart";
++			ti,hwmods = "uart3";
++			clock-frequency = <48000000>;
++		};
++	};
++};
+-- 
+1.7.11.2
+

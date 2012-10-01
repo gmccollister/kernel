@@ -1,0 +1,102 @@
+From dbd08d6eb934432557597e743ced4e65687cd046 Mon Sep 17 00:00:00 2001
+From: AnilKumar Ch <anilkumar@ti.com>
+Date: Thu, 7 Jun 2012 17:00:28 +0530
+Subject: [PATCH 1009/1092] regulator: Add set voltage delay to regulator
+ framework
+
+Minimum time require to ramp the voltage from current voltage to a
+requested voltage is called ramp delay.
+
+The current framework supports only for regulators having fixed
+selectors. The framework don't have ramp delay implementation for
+variable selector regulators. And this patch provides ramp delay
+implemantation for variable selector regulators.
+
+Fixed/variable selector limitations should be handling in regulator
+set_voltage_time_sel() function but not in the core file.
+
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ drivers/regulator/core.c | 52 +++++++++++++++++++++++++++---------------------
+ 1 file changed, 29 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 6ec610c..5b0b520 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1768,43 +1768,49 @@ static int _regulator_do_set_voltage(struct regulator_dev *rdev,
+ 			}
+ 		}
+ 
++		if (best_val != INT_MAX) {
++			ret = rdev->desc->ops->set_voltage_sel(rdev, selector);
++			selector = best_val;
++		} else {
++			ret = -EINVAL;
++		}
++	} else {
++		ret = -EINVAL;
++	}
++
++	if (ret == 0) {
+ 		/*
+ 		 * If we can't obtain the old selector there is not enough
+ 		 * info to call set_voltage_time_sel().
+ 		 */
+ 		if (rdev->desc->ops->set_voltage_time_sel &&
+ 		    rdev->desc->ops->get_voltage_sel) {
+-			unsigned int old_selector = 0;
++			int old_selector;
++
++			old_selector = rdev->desc->ops->get_voltage_sel(rdev);
++			if (old_selector < 0)
++				return old_selector;
+ 
+-			ret = rdev->desc->ops->get_voltage_sel(rdev);
+-			if (ret < 0)
+-				return ret;
+-			old_selector = ret;
+ 			delay = rdev->desc->ops->set_voltage_time_sel(rdev,
+ 						old_selector, selector);
++			if (delay < 0) {
++				delay = 0;
++				rdev_warn(rdev, "set_voltage_time_sel() failed"
++							": %d\n", ret);
++			}
+ 		}
+ 
+-		if (best_val != INT_MAX) {
+-			ret = rdev->desc->ops->set_voltage_sel(rdev, selector);
+-			selector = best_val;
+-		} else {
+-			ret = -EINVAL;
++		/* Insert any necessary delays */
++		if (delay >= 1000) {
++			mdelay(delay / 1000);
++			udelay(delay % 1000);
++		} else if (delay) {
++			udelay(delay);
+ 		}
+-	} else {
+-		ret = -EINVAL;
+-	}
+ 
+-	/* Insert any necessary delays */
+-	if (delay >= 1000) {
+-		mdelay(delay / 1000);
+-		udelay(delay % 1000);
+-	} else if (delay) {
+-		udelay(delay);
+-	}
+-
+-	if (ret == 0)
+ 		_notifier_call_chain(rdev, REGULATOR_EVENT_VOLTAGE_CHANGE,
+-				     NULL);
++					NULL);
++	}
+ 
+ 	trace_regulator_set_voltage_complete(rdev_get_name(rdev), selector);
+ 
+-- 
+1.7.11.2
+

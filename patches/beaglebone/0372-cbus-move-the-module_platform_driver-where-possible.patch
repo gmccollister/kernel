@@ -1,0 +1,404 @@
+From cdb2b6dfbe0a25ffc245bba33547f202634d50c7 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Wed, 23 Nov 2011 16:00:44 +0200
+Subject: [PATCH 0372/1092] cbus: move the module_platform_driver where
+ possible
+
+this allows us to delete a bunch of boilerplate code
+from the drivers. While at that, also add missing
+MODULE_ALIAS().
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c           | 19 +++++--------------
+ drivers/cbus/retu-headset.c   | 21 ++++++---------------
+ drivers/cbus/retu-pwrbutton.c | 20 ++++++--------------
+ drivers/cbus/retu-rtc.c       | 18 +++++-------------
+ drivers/cbus/retu-wdt.c       | 19 +++++--------------
+ drivers/cbus/retu.c           | 13 ++-----------
+ drivers/cbus/tahvo-usb.c      | 21 +++++++++++----------
+ drivers/cbus/tahvo.c          | 13 ++-----------
+ 8 files changed, 42 insertions(+), 102 deletions(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 52eab4a..c7ed881 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -247,7 +247,7 @@ int cbus_write_reg(struct device *child, unsigned dev, unsigned reg,
+ }
+ EXPORT_SYMBOL(cbus_write_reg);
+ 
+-static int __init cbus_bus_probe(struct platform_device *pdev)
++static int __devinit cbus_bus_probe(struct platform_device *pdev)
+ {
+ 	struct cbus_host *chost;
+ 	struct cbus_host_platform_data *pdata = pdev->dev.platform_data;
+@@ -296,7 +296,7 @@ exit1:
+ 	return ret;
+ }
+ 
+-static void __exit cbus_bus_remove(struct platform_device *pdev)
++static void __devexit cbus_bus_remove(struct platform_device *pdev)
+ {
+ 	struct cbus_host	*chost = platform_get_drvdata(pdev);
+ 
+@@ -308,23 +308,14 @@ static void __exit cbus_bus_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver cbus_driver = {
+-	.remove		= __exit_p(cbus_bus_remove),
++	.probe		= cbus_bus_probe,
++	.remove		= __devexit_p(cbus_bus_remove),
+ 	.driver		= {
+ 		.name	= "cbus",
+ 	},
+ };
+ 
+-static int __init cbus_bus_init(void)
+-{
+-	return platform_driver_probe(&cbus_driver, cbus_bus_probe);
+-}
+-subsys_initcall(cbus_bus_init);
+-
+-static void __exit cbus_bus_exit(void)
+-{
+-	platform_driver_unregister(&cbus_driver);
+-}
+-module_exit(cbus_bus_exit);
++module_platform_driver(cbus_driver);
+ 
+ MODULE_DESCRIPTION("CBUS serial protocol");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/cbus/retu-headset.c b/drivers/cbus/retu-headset.c
+index 3b8e138..576b0e6 100644
+--- a/drivers/cbus/retu-headset.c
++++ b/drivers/cbus/retu-headset.c
+@@ -222,7 +222,7 @@ static void retu_headset_detect_timer(unsigned long arg)
+ 	spin_unlock_irqrestore(&hs->lock, flags);
+ }
+ 
+-static int __init retu_headset_probe(struct platform_device *pdev)
++static int __devinit retu_headset_probe(struct platform_device *pdev)
+ {
+ 	struct retu_headset *hs;
+ 	int irq;
+@@ -291,7 +291,7 @@ err1:
+ 	return r;
+ }
+ 
+-static int retu_headset_remove(struct platform_device *pdev)
++static int __devexit retu_headset_remove(struct platform_device *pdev)
+ {
+ 	struct retu_headset *hs = platform_get_drvdata(pdev);
+ 
+@@ -333,7 +333,8 @@ static int retu_headset_resume(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver retu_headset_driver = {
+-	.remove		= retu_headset_remove,
++	.probe		= retu_headset_probe,
++	.remove		= __devexit_p(retu_headset_remove),
+ 	.suspend	= retu_headset_suspend,
+ 	.resume		= retu_headset_resume,
+ 	.driver		= {
+@@ -341,19 +342,9 @@ static struct platform_driver retu_headset_driver = {
+ 	},
+ };
+ 
+-static int __init retu_headset_init(void)
+-{
+-	return platform_driver_probe(&retu_headset_driver, retu_headset_probe);
+-}
+-
+-static void __exit retu_headset_exit(void)
+-{
+-	platform_driver_unregister(&retu_headset_driver);
+-}
+-
+-module_init(retu_headset_init);
+-module_exit(retu_headset_exit);
++module_platform_driver(retu_headset_driver);
+ 
++MODULE_ALIAS("platform:retu-headset");
+ MODULE_DESCRIPTION("Retu/Vilma headset detection");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Juha Yrjölä");
+diff --git a/drivers/cbus/retu-pwrbutton.c b/drivers/cbus/retu-pwrbutton.c
+index a5a3069..98ad005 100644
+--- a/drivers/cbus/retu-pwrbutton.c
++++ b/drivers/cbus/retu-pwrbutton.c
+@@ -72,7 +72,7 @@ static irqreturn_t retubutton_irq(int irq, void *_pwr)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static int __init retubutton_probe(struct platform_device *pdev)
++static int __devinit retubutton_probe(struct platform_device *pdev)
+ {
+ 	struct retu_pwrbutton		*pwr;
+ 	int				ret = 0;
+@@ -127,7 +127,7 @@ err0:
+ 	return ret;
+ }
+ 
+-static int __exit retubutton_remove(struct platform_device *pdev)
++static int __devexit retubutton_remove(struct platform_device *pdev)
+ {
+ 	struct retu_pwrbutton		*pwr = platform_get_drvdata(pdev);
+ 
+@@ -140,24 +140,16 @@ static int __exit retubutton_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver retu_pwrbutton_driver = {
+-	.remove		= __exit_p(retubutton_remove),
++	.probe		= retubutton_probe,
++	.remove		= __devexit_p(retubutton_remove),
+ 	.driver		= {
+ 		.name	= "retu-pwrbutton",
+ 	},
+ };
+ 
+-static int __init retubutton_init(void)
+-{
+-	return platform_driver_probe(&retu_pwrbutton_driver, retubutton_probe);
+-}
+-module_init(retubutton_init);
+-
+-static void __exit retubutton_exit(void)
+-{
+-	platform_driver_unregister(&retu_pwrbutton_driver);
+-}
+-module_exit(retubutton_exit);
++module_platform_driver(retu_pwrbutton_driver);
+ 
++MODULE_ALIAS("platform:retu-pwrbutton");
+ MODULE_DESCRIPTION("Retu Power Button");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Ari Saastamoinen");
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index 488849c..965ee55 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -199,7 +199,7 @@ static struct rtc_class_ops retu_rtc_ops = {
+ 	.set_alarm		= retu_rtc_set_alarm,
+ };
+ 
+-static int __init retu_rtc_probe(struct platform_device *pdev)
++static int __devinit retu_rtc_probe(struct platform_device *pdev)
+ {
+ 	struct retu_rtc		*rtc;
+ 	int			r;
+@@ -261,24 +261,16 @@ static int __devexit retu_rtc_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver retu_rtc_driver = {
+-	.remove		= __exit_p(retu_rtc_remove),
++	.probe		= retu_rtc_probe,
++	.remove		= __devexit_p(retu_rtc_remove),
+ 	.driver		= {
+ 		.name	= "retu-rtc",
+ 	},
+ };
+ 
+-static int __init retu_rtc_init(void)
+-{
+-	return platform_driver_probe(&retu_rtc_driver, retu_rtc_probe);
+-}
+-module_init(retu_rtc_init);
+-
+-static void __exit retu_rtc_exit(void)
+-{
+-	platform_driver_unregister(&retu_rtc_driver);
+-}
+-module_exit(retu_rtc_exit);
++module_platform_driver(retu_rtc_driver);
+ 
++MODULE_ALIAS("platform:retu-rtc");
+ MODULE_DESCRIPTION("Retu RTC");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Paul Mundt");
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index 3eb388f..7557bc1 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -193,7 +193,7 @@ static const struct file_operations retu_wdt_fops = {
+ 	.release	= retu_wdt_release,
+ };
+ 
+-static int __init retu_wdt_probe(struct platform_device *pdev)
++static int __devinit retu_wdt_probe(struct platform_device *pdev)
+ {
+ 	struct retu_wdt_dev *wdev;
+ 	int ret;
+@@ -248,25 +248,16 @@ static int __devexit retu_wdt_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver retu_wdt_driver = {
+-	.remove		= __exit_p(retu_wdt_remove),
++	.probe		= retu_wdt_probe,
++	.remove		= __devexit_p(retu_wdt_remove),
+ 	.driver		= {
+ 		.name	= "retu-wdt",
+ 	},
+ };
+ 
+-static int __init retu_wdt_init(void)
+-{
+-	return platform_driver_probe(&retu_wdt_driver, retu_wdt_probe);
+-}
+-
+-static void __exit retu_wdt_exit(void)
+-{
+-	platform_driver_unregister(&retu_wdt_driver);
+-}
+-
+-module_init(retu_wdt_init);
+-module_exit(retu_wdt_exit);
++module_platform_driver(retu_wdt_driver);
+ 
++MODULE_ALIAS("platform:retu-wdt");
+ MODULE_DESCRIPTION("Retu WatchDog");
+ MODULE_AUTHOR("Amit Kucheria");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 437a309..5bd88c6 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -518,18 +518,9 @@ static struct platform_driver retu_driver = {
+ 	},
+ };
+ 
+-static int __init retu_init(void)
+-{
+-	return platform_driver_register(&retu_driver);
+-}
+-subsys_initcall(retu_init);
+-
+-static void __exit retu_exit(void)
+-{
+-	platform_driver_unregister(&retu_driver);
+-}
+-module_exit(retu_exit);
++module_platform_driver(retu_driver);
+ 
++MODULE_ALIAS("platform:retu");
+ MODULE_DESCRIPTION("Retu ASIC control");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Juha Yrjölä");
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index 41e39ca..15da853 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -189,7 +189,7 @@ static int tahvo_otg_init(void)
+ 	return 0;
+ }
+ 
+-static int __init omap_otg_probe(struct platform_device *pdev)
++static int __devinit omap_otg_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 
+@@ -205,7 +205,7 @@ static int __init omap_otg_probe(struct platform_device *pdev)
+ 			   tahvo_usb_device);
+ }
+ 
+-static int __exit omap_otg_remove(struct platform_device *pdev)
++static int __devexit omap_otg_remove(struct platform_device *pdev)
+ {
+ 	free_irq(tahvo_otg_dev->resource[1].start, tahvo_usb_device);
+ 	tahvo_otg_dev = NULL;
+@@ -214,10 +214,11 @@ static int __exit omap_otg_remove(struct platform_device *pdev)
+ }
+ 
+ struct platform_driver omap_otg_driver = {
++	.probe		= omap_otg_probe,
++	.remove		= __devexit_p(omap_otg_remove),
+ 	.driver		= {
+ 		.name	= "omap_otg",
+ 	},
+-	.remove		= __exit_p(omap_otg_remove),
+ };
+ 
+ /*
+@@ -588,7 +589,7 @@ static ssize_t otg_mode_store(struct device *device,
+ static DEVICE_ATTR(otg_mode, 0644, otg_mode_show, otg_mode_store);
+ #endif
+ 
+-static int __init tahvo_usb_probe(struct platform_device *pdev)
++static int __devinit tahvo_usb_probe(struct platform_device *pdev)
+ {
+ 	struct tahvo_usb *tu;
+ 	struct device *dev = &pdev->dev;
+@@ -680,7 +681,7 @@ err_free_tu:
+ 	return ret;
+ }
+ 
+-static int __exit tahvo_usb_remove(struct platform_device *pdev)
++static int __devexit tahvo_usb_remove(struct platform_device *pdev)
+ {
+ 	struct tahvo_usb *tu = platform_get_drvdata(pdev);
+ 
+@@ -703,21 +704,22 @@ static int __exit tahvo_usb_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver tahvo_usb_driver = {
++	.probe		= tahvo_usb_probe,
++	.remove		= __devexit_p(tahvo_usb_remove),
+ 	.driver		= {
+ 		.name	= "tahvo-usb",
+ 	},
+-	.remove		= __exit_p(tahvo_usb_remove),
+ };
+ 
+ static int __init tahvo_usb_init(void)
+ {
+ 	int ret = 0;
+ 
+-	ret = platform_driver_probe(&tahvo_usb_driver, tahvo_usb_probe);
++	ret = platform_driver_register(&tahvo_usb_driver);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = platform_driver_probe(&omap_otg_driver, omap_otg_probe);
++	ret = platform_driver_register(&omap_otg_driver);
+ 	if (ret) {
+ 		platform_driver_unregister(&tahvo_usb_driver);
+ 		return ret;
+@@ -725,8 +727,7 @@ static int __init tahvo_usb_init(void)
+ 
+ 	return 0;
+ }
+-
+-subsys_initcall(tahvo_usb_init);
++module_init(tahvo_usb_init);
+ 
+ static void __exit tahvo_usb_exit(void)
+ {
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 5de3d8d..7f7c712 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -401,18 +401,9 @@ static struct platform_driver tahvo_driver = {
+ 	},
+ };
+ 
+-static int __init tahvo_init(void)
+-{
+-	return platform_driver_register(&tahvo_driver);
+-}
+-subsys_initcall(tahvo_init);
+-
+-static void __exit tahvo_exit(void)
+-{
+-	platform_driver_unregister(&tahvo_driver);
+-}
+-module_exit(tahvo_exit);
++module_platform_driver(tahvo_driver);
+ 
++MODULE_ALIAS("platform:tahvo");
+ MODULE_DESCRIPTION("Tahvo ASIC control");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Juha Yrjölä");
+-- 
+1.7.11.2
+

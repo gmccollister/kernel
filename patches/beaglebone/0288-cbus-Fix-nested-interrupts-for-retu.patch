@@ -1,0 +1,101 @@
+From 77ef4952a7105e7fc75ae4e9b1bb502518be0a19 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 9 Feb 2011 18:36:16 -0800
+Subject: [PATCH 0288/1092] cbus: Fix nested interrupts for retu
+
+We need to add the retu irq base number to the interrupt
+number for children.
+
+This could be done by passing the interrupt base for
+children in platform_data also I guess.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-headset.c   |  4 ++--
+ drivers/cbus/retu-pwrbutton.c |  2 +-
+ drivers/cbus/retu-rtc.c       | 14 +++++++-------
+ 3 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cbus/retu-headset.c b/drivers/cbus/retu-headset.c
+index 2aa4d30..661534c 100644
+--- a/drivers/cbus/retu-headset.c
++++ b/drivers/cbus/retu-headset.c
+@@ -258,7 +258,7 @@ static int __init retu_headset_probe(struct platform_device *pdev)
+ 	setup_timer(&hs->detect_timer, retu_headset_detect_timer,
+ 		    (unsigned long) hs);
+ 
+-	r = request_threaded_irq(RETU_INT_HOOK, NULL,
++	r = request_threaded_irq(CBUS_RETU_IRQ_BASE + RETU_INT_HOOK, NULL,
+ 			retu_headset_hook_interrupt, 0, "hookdet", hs);
+ 	if (r != 0) {
+ 		dev_err(&pdev->dev, "hookdet IRQ not available\n");
+@@ -290,7 +290,7 @@ static int retu_headset_remove(struct platform_device *pdev)
+ 	device_remove_file(&pdev->dev, &dev_attr_enable_det);
+ 	retu_headset_disable(hs);
+ 	retu_headset_det_disable(hs);
+-	free_irq(RETU_INT_HOOK, hs);
++	free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_HOOK, hs);
+ 	input_unregister_device(hs->idev);
+ 	input_free_device(hs->idev);
+ 
+diff --git a/drivers/cbus/retu-pwrbutton.c b/drivers/cbus/retu-pwrbutton.c
+index 2a5ccb0..24efdee 100644
+--- a/drivers/cbus/retu-pwrbutton.c
++++ b/drivers/cbus/retu-pwrbutton.c
+@@ -83,7 +83,7 @@ static int __init retubutton_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	pwr->irq = RETU_INT_PWR;
++	pwr->irq = CBUS_RETU_IRQ_BASE + RETU_INT_PWR;
+ 	platform_set_drvdata(pdev, pwr);
+ 
+ 	ret = request_threaded_irq(pwr->irq, NULL, retubutton_irq, 0,
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index b2b9472..a011ba7 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -88,15 +88,15 @@ static int retu_rtc_init_irq(struct retu_rtc *rtc)
+ {
+ 	int ret;
+ 
+-	ret = request_threaded_irq(RETU_INT_RTCS, NULL, retu_rtc_interrupt,
++	ret = request_threaded_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCS, NULL, retu_rtc_interrupt,
+ 			0, "RTCS", rtc);
+ 	if (ret != 0)
+ 		return ret;
+ 
+-	ret = request_threaded_irq(RETU_INT_RTCA, NULL, retu_rtc_interrupt,
++	ret = request_threaded_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCA, NULL, retu_rtc_interrupt,
+ 			0, "RTCA", rtc);
+ 	if (ret != 0) {
+-		free_irq(RETU_INT_RTCS, rtc);
++		free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCS, rtc);
+ 		return ret;
+ 	}
+ 
+@@ -235,8 +235,8 @@ static int __init retu_rtc_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err2:
+-	free_irq(RETU_INT_RTCS, rtc);
+-	free_irq(RETU_INT_RTCA, rtc);
++	free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCS, rtc);
++	free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCA, rtc);
+ 
+ err1:
+ 	kfree(rtc);
+@@ -249,8 +249,8 @@ static int __devexit retu_rtc_remove(struct platform_device *pdev)
+ {
+ 	struct retu_rtc		*rtc = platform_get_drvdata(pdev);
+ 
+-	free_irq(RETU_INT_RTCS, rtc);
+-	free_irq(RETU_INT_RTCA, rtc);
++	free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCS, rtc);
++	free_irq(CBUS_RETU_IRQ_BASE + RETU_INT_RTCA, rtc);
+ 	rtc_device_unregister(rtc->rtc);
+ 	kfree(rtc);
+ 
+-- 
+1.7.11.2
+

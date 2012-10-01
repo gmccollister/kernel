@@ -1,0 +1,28 @@
+From 5d06eb6503c794c20c613491f5eec099c39df6c0 Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Sat, 26 Nov 2011 16:26:24 +0530
+Subject: [PATCH 0409/1092] arm:omap2plus: Enable ethernet driver (CPDMA, MDIO
+ and CPSW)
+
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/omap2plus_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index 61b9d20..fb662c6 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -92,6 +92,9 @@ CONFIG_MD=y
+ CONFIG_NETDEVICES=y
+ CONFIG_SMSC_PHY=y
+ CONFIG_NET_ETHERNET=y
++CONFIG_TI_DAVINCI_MDIO=y
++CONFIG_TI_DAVINCI_CPDMA=y
++CONFIG_TI_CPSW=y
+ CONFIG_SMC91X=y
+ CONFIG_SMSC911X=y
+ CONFIG_KS8851=y
+-- 
+1.7.11.2
+

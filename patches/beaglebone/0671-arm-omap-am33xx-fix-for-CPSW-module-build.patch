@@ -1,0 +1,41 @@
+From 012ed42aae306401ff64d0b117b3bbc91dd55556 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Tue, 3 Jan 2012 15:02:01 +0530
+Subject: [PATCH 0671/1092] arm:omap:am33xx: fix for CPSW module build
+
+module build adds _module for related config_xxx and hence checking
+only for config_xxx is not sufficent. this patch adds check for
+CONFIG_TLK110_WORKAROUND_MODULE also.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index f4fe8f2..1b611ff 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -104,7 +104,8 @@
+ #define TLK110_SCFALLBACK_VAL	0xC11D
+ #define TLK110_PHYRCR_VAL	0x4000
+ 
+-#ifdef CONFIG_TLK110_WORKAROUND
++#if defined(CONFIG_TLK110_WORKAROUND) || \
++		defined(CONFIG_TLK110_WORKAROUND_MODULE)
+ #define am335x_tlk110_phy_init()\
+ 	do {	\
+ 		phy_register_fixup_for_uid(TLK110_PHY_ID,\
+@@ -1311,7 +1312,8 @@ static int beaglebone_phy_fixup(struct phy_device *phydev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_TLK110_WORKAROUND
++#if defined(CONFIG_TLK110_WORKAROUND) || \
++			defined(CONFIG_TLK110_WORKAROUND_MODULE)
+ static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
+ {
+ 	unsigned int val;
+-- 
+1.7.11.2
+

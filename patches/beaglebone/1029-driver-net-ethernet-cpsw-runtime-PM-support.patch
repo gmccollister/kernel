@@ -1,0 +1,258 @@
+From 10853040e72158bce44c2d4c015ea867365143bf Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Tue, 5 Jun 2012 13:29:06 +0530
+Subject: [PATCH 1029/1092] driver: net: ethernet: cpsw: runtime PM support
+
+Enabling runtime PM support for cpsw and davinci mdio modules
+
+As per hardware specs cpsw and mdio are of same module and has only one
+clock control and sys control register. In software cpsw and davinci mdio
+are two different independent devices, even if we specify cpsw as parent
+and mdio as child, hwmod doesn't traverse the tree to ensure that all its
+children are in disabled state before disabling parent's clock. To over
+come this issue, cpgmac clock is enabled in cpsw probe itself, so that
+cpgmac clock enable/disable happens only in cpsw/mdio probe/remove and
+suspend/resume.
+
+Side effects:
+cpgmac module will be enabled even when Ethernet interface is not brought
+up. For power optimization with no Ethernet, it is recommended to remove
+the cpsw and mdio modules in kernel config which will make cpgmac to be
+disabled state.
+
+Todo:
+Find a way in hwmod or driver to specify mdio and cpsw devices shares
+same clock and the clock can be disabled only when both the devices are
+in closed state
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c          | 41 +++++++++++++++++----------------
+ drivers/net/ethernet/ti/davinci_cpdma.c | 11 ---------
+ drivers/net/ethernet/ti/davinci_mdio.c  | 26 ++++++++++-----------
+ 3 files changed, 33 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 086b14d..02914a6 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -26,6 +26,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <linux/cpsw.h>
+ #include <plat/dmtimer.h>
+@@ -818,12 +819,6 @@ static int cpsw_ndo_open(struct net_device *ndev)
+ 		cpsw_intr_disable(priv);
+ 	netif_carrier_off(ndev);
+ 
+-	ret = clk_enable(priv->clk);
+-	if (ret < 0) {
+-		dev_err(priv->dev, "unable to turn on device clock\n");
+-		return ret;
+-	}
+-
+ 	if (priv->data.phy_control)
+ 		(*priv->data.phy_control)(true);
+ 
+@@ -940,7 +935,6 @@ static int cpsw_ndo_stop(struct net_device *ndev)
+ 	for_each_slave(priv, cpsw_slave_stop, priv);
+ 	if (priv->data.phy_control)
+ 		(*priv->data.phy_control)(false);
+-	clk_disable(priv->clk);
+ 
+ 	cpsw_update_slave_open_state(priv, false)
+ 
+@@ -1371,9 +1365,14 @@ static int __devinit cpsw_probe(struct platform_device *pdev)
+ 	priv->slaves[0].ndev = ndev;
+ 	priv->emac_port = 0;
+ 
+-	priv->clk = clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(priv->clk))
+-		dev_err(priv->dev, "failed to get device clock\n");
++	pm_runtime_enable(&pdev->dev);
++	pm_runtime_get_sync(&pdev->dev);
++	priv->clk = clk_get(&pdev->dev, "fck");
++	if (IS_ERR(priv->clk)) {
++		dev_err(&pdev->dev, "fck is not found\n");
++		ret = -ENODEV;
++		goto clean_slave_ret;
++	}
+ 
+ 	priv->coal_intvl = 0;
+ 	priv->bus_freq_mhz = clk_get_rate(priv->clk) / 1000000;
+@@ -1572,6 +1571,9 @@ clean_cpsw_iores_ret:
+ 				resource_size(priv->cpsw_res));
+ clean_clk_ret:
+ 	clk_put(priv->clk);
++clean_slave_ret:
++	pm_runtime_get_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	kfree(priv->slaves);
+ clean_ndev_ret:
+ 	free_netdev(ndev);
+@@ -1600,6 +1602,8 @@ static int __devexit cpsw_remove(struct platform_device *pdev)
+ 				resource_size(priv->cpsw_res));
+ 	release_mem_region(priv->cpsw_ss_res->start,
+ 				resource_size(priv->cpsw_ss_res));
++	pm_runtime_put_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	clk_put(priv->clk);
+ 	kfree(priv->slaves);
+ 	unregister_netdev(ndev);
+@@ -1622,10 +1626,11 @@ static inline void cpsw_start_slaves_interface(struct net_device *ndev)
+ 	}
+ }
+ 
+-static inline void cpsw_stop_slaves_interface(struct net_device *ndev,
+-					      struct cpsw_priv *priv)
++static inline void cpsw_stop_slaves_interface(struct net_device *ndev)
+ {
+ 	u32 i = 0;
++	struct cpsw_priv *priv = netdev_priv(ndev);
++
+ 	for (i = 0; i < priv->data.slaves; i++) {
+ 		ndev = cpsw_get_slave_ndev(priv, i);
+ 		if (netif_running(ndev))
+@@ -1638,7 +1643,7 @@ static inline void cpsw_stop_slaves_interface(struct net_device *ndev,
+ #define cpsw_start_slaves_interface(ndev)		\
+ 	if (netif_running(ndev))			\
+ 		cpsw_ndo_open(ndev)
+-#define cpsw_stop_slaves_interface(ndev, priv)		\
++#define cpsw_stop_slaves_interface(ndev)		\
+ 	if (netif_running(ndev))			\
+ 		cpsw_ndo_stop(ndev)
+ 
+@@ -1648,14 +1653,9 @@ static int cpsw_suspend(struct device *dev)
+ {
+ 	struct platform_device	*pdev = to_platform_device(dev);
+ 	struct net_device	*ndev = platform_get_drvdata(pdev);
+-	struct cpsw_priv	*priv = netdev_priv(ndev);
+ 
+-	cpsw_stop_slaves_interface(ndev, priv);
+-
+-	soft_reset("cpsw", &priv->regs->soft_reset);
+-	soft_reset("sliver 0", &priv->slaves[0].sliver->soft_reset);
+-	soft_reset("sliver 1", &priv->slaves[1].sliver->soft_reset);
+-	soft_reset("cpsw_ss", &priv->ss_regs->soft_reset);
++	cpsw_stop_slaves_interface(ndev);
++	pm_runtime_put_sync(&pdev->dev);
+ 
+ 	return 0;
+ }
+@@ -1665,6 +1665,7 @@ static int cpsw_resume(struct device *dev)
+ 	struct platform_device	*pdev = to_platform_device(dev);
+ 	struct net_device	*ndev = platform_get_drvdata(pdev);
+ 
++	pm_runtime_get_sync(&pdev->dev);
+ 	cpsw_start_slaves_interface(ndev);
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/ti/davinci_cpdma.c b/drivers/net/ethernet/ti/davinci_cpdma.c
+index 56e92d2..2374976 100644
+--- a/drivers/net/ethernet/ti/davinci_cpdma.c
++++ b/drivers/net/ethernet/ti/davinci_cpdma.c
+@@ -359,17 +359,6 @@ int cpdma_ctlr_stop(struct cpdma_ctlr *ctlr)
+ 
+ 	ctlr->state = CPDMA_STATE_IDLE;
+ 
+-	if (ctlr->params.has_soft_reset) {
+-		unsigned long timeout = jiffies + HZ/10;
+-
+-		dma_reg_write(ctlr, CPDMA_SOFTRESET, 1);
+-		while (time_before(jiffies, timeout)) {
+-			if (dma_reg_read(ctlr, CPDMA_SOFTRESET) == 0)
+-				break;
+-		}
+-		WARN_ON(!time_before(jiffies, timeout));
+-	}
+-
+ 	spin_unlock_irqrestore(&ctlr->lock, flags);
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/ti/davinci_mdio.c b/drivers/net/ethernet/ti/davinci_mdio.c
+index 3802de3..aa2413a 100644
+--- a/drivers/net/ethernet/ti/davinci_mdio.c
++++ b/drivers/net/ethernet/ti/davinci_mdio.c
+@@ -34,6 +34,7 @@
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
++#include <linux/pm_runtime.h>
+ #include <linux/davinci_emac.h>
+ 
+ /*
+@@ -324,7 +325,9 @@ static int __devinit davinci_mdio_probe(struct platform_device *pdev)
+ 	data->bus->priv		= data;
+ 	snprintf(data->bus->id, MII_BUS_ID_SIZE, "%x", pdev->id);
+ 
+-	data->clk = clk_get(dev, NULL);
++	pm_runtime_enable(&pdev->dev);
++	pm_runtime_get_sync(&pdev->dev);
++	data->clk = clk_get(&pdev->dev, "fck");
+ 	if (IS_ERR(data->clk)) {
+ 		data->clk = NULL;
+ 		dev_err(dev, "failed to get device clock\n");
+@@ -332,8 +335,6 @@ static int __devinit davinci_mdio_probe(struct platform_device *pdev)
+ 		goto bail_out;
+ 	}
+ 
+-	clk_enable(data->clk);
+-
+ 	dev_set_drvdata(dev, data);
+ 	data->dev = dev;
+ 	spin_lock_init(&data->lock);
+@@ -380,11 +381,10 @@ static int __devinit davinci_mdio_probe(struct platform_device *pdev)
+ bail_out:
+ 	if (data->bus)
+ 		mdiobus_free(data->bus);
+-
+-	if (data->clk) {
+-		clk_disable(data->clk);
++	if (data->clk)
+ 		clk_put(data->clk);
+-	}
++	pm_runtime_put_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 
+ 	kfree(data);
+ 
+@@ -399,10 +399,10 @@ static int __devexit davinci_mdio_remove(struct platform_device *pdev)
+ 	if (data->bus)
+ 		mdiobus_free(data->bus);
+ 
+-	if (data->clk) {
+-		clk_disable(data->clk);
++	if (data->clk)
+ 		clk_put(data->clk);
+-	}
++	pm_runtime_put_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 
+ 	dev_set_drvdata(dev, NULL);
+ 
+@@ -451,8 +451,7 @@ static int davinci_mdio_suspend(struct device *dev)
+ 	__raw_writel(ctrl, &data->regs->control);
+ 	wait_for_idle(data);
+ 
+-	if (data->clk)
+-		clk_disable(data->clk);
++	pm_runtime_put_sync(data->dev);
+ 
+ 	data->suspended = true;
+ 	spin_unlock(&data->lock);
+@@ -466,8 +465,7 @@ static int davinci_mdio_resume(struct device *dev)
+ 	u32 ctrl;
+ 
+ 	spin_lock(&data->lock);
+-	if (data->clk)
+-		clk_enable(data->clk);
++	pm_runtime_put_sync(data->dev);
+ 
+ 	/* Need to wait till Module is enabled */
+ 	wait_for_clock_enable(data);
+-- 
+1.7.11.2
+

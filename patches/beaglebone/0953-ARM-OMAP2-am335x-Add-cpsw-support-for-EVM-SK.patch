@@ -1,0 +1,32 @@
+From f1b16e85000e46504bad8525b6d1a1826ad6489c Mon Sep 17 00:00:00 2001
+From: "Satyanarayana, Sandhya" <sandhya.satyanarayana@ti.com>
+Date: Mon, 30 Apr 2012 17:19:31 +0530
+Subject: [PATCH 0953/1092] ARM: OMAP2+: am335x: Add cpsw support for EVM-SK
+
+This patch adds initial support for cpsw on EVM-SK.
+
+RGMII1 and RGMII2 pinmux is done.
+Phy Ids for both the PHYs and RGMII mode selected
+by default hold good for EVM-SK.
+
+Signed-off-by: Satyanarayana, Sandhya <sandhya.satyanarayana@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index f3a1f0a..1fb5533 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1724,6 +1724,8 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+ /* EVM - Starter Kit */
+ static struct evm_dev_cfg evm_sk_dev_cfg[] = {
+ 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
++	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
++	{rgmii2_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{NULL, 0, 0},
+ };
+ 
+-- 
+1.7.11.2
+

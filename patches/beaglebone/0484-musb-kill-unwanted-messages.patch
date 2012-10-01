@@ -1,0 +1,33 @@
+From 0fc57c50bba57615f800fc214cbe6d68f6545437 Mon Sep 17 00:00:00 2001
+From: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Date: Tue, 29 Sep 2009 16:46:52 +0530
+Subject: [PATCH 0484/1092] musb: kill unwanted messages
+
+Remives below messages:
+musb_bus_suspend 2285: trying to suspend as a_wait_bcon while active
+....
+....
+
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_host.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
+index e46763a..8b8a845 100644
+--- a/drivers/usb/musb/musb_host.c
++++ b/drivers/usb/musb/musb_host.c
+@@ -2284,7 +2284,7 @@ static int musb_bus_suspend(struct usb_hcd *hcd)
+ 	}
+ 
+ 	if (musb->is_active) {
+-		WARNING("trying to suspend as %s while active\n",
++		dev_dbg(musb->controller, "trying to suspend as %s while active\n",
+ 				otg_state_string(musb->xceiv->state));
+ 		return -EBUSY;
+ 	} else
+-- 
+1.7.11.2
+

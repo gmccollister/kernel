@@ -1,0 +1,98 @@
+From 740cd6214549dbc14b97ad889addbb7a8b621582 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:36 +0300
+Subject: [PATCH 0337/1092] cbus: tahvo: convert spinlock into mutex
+
+GPIO operations can sleep, so move to a
+mutex.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index d4a89a6..bc3ca6d 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -32,6 +32,7 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
++#include <linux/mutex.h>
+ 
+ #include "cbus.h"
+ #include "tahvo.h"
+@@ -43,7 +44,7 @@ static int tahvo_initialized;
+ static int tahvo_is_betty;
+ 
+ static struct tasklet_struct tahvo_tasklet;
+-static DEFINE_SPINLOCK(tahvo_lock);
++static struct mutex tahvo_lock;
+ 
+ static struct device *the_dev;
+ 
+@@ -97,15 +98,14 @@ EXPORT_SYMBOL(tahvo_write_reg);
+  */
+ void tahvo_set_clear_reg_bits(unsigned reg, u16 set, u16 clear)
+ {
+-	unsigned long flags;
+ 	u16 w;
+ 
+-	spin_lock_irqsave(&tahvo_lock, flags);
++	mutex_lock(&tahvo_lock);
+ 	w = tahvo_read_reg(reg);
+ 	w &= ~clear;
+ 	w |= set;
+ 	tahvo_write_reg(reg, w);
+-	spin_unlock_irqrestore(&tahvo_lock, flags);
++	mutex_unlock(&tahvo_lock);
+ }
+ 
+ /*
+@@ -113,14 +113,13 @@ void tahvo_set_clear_reg_bits(unsigned reg, u16 set, u16 clear)
+  */
+ void tahvo_disable_irq(int id)
+ {
+-	unsigned long flags;
+ 	u16 mask;
+ 
+-	spin_lock_irqsave(&tahvo_lock, flags);
++	mutex_lock(&tahvo_lock);
+ 	mask = tahvo_read_reg(TAHVO_REG_IMR);
+ 	mask |= 1 << id;
+ 	tahvo_write_reg(TAHVO_REG_IMR, mask);
+-	spin_unlock_irqrestore(&tahvo_lock, flags);
++	mutex_unlock(&tahvo_lock);
+ }
+ EXPORT_SYMBOL(tahvo_disable_irq);
+ 
+@@ -129,14 +128,13 @@ EXPORT_SYMBOL(tahvo_disable_irq);
+  */
+ void tahvo_enable_irq(int id)
+ {
+-	unsigned long flags;
+ 	u16 mask;
+ 
+-	spin_lock_irqsave(&tahvo_lock, flags);
++	mutex_lock(&tahvo_lock);
+ 	mask = tahvo_read_reg(TAHVO_REG_IMR);
+ 	mask &= ~(1 << id);
+ 	tahvo_write_reg(TAHVO_REG_IMR, mask);
+-	spin_unlock_irqrestore(&tahvo_lock, flags);
++	mutex_unlock(&tahvo_lock);
+ }
+ EXPORT_SYMBOL(tahvo_enable_irq);
+ 
+@@ -297,6 +295,7 @@ static int __init tahvo_probe(struct platform_device *pdev)
+ 	int rev, id, ret;
+ 	int irq;
+ 
++	mutex_init(&tahvo_lock);
+ 	the_dev = &pdev->dev;
+ 
+ 	/* Prepare tasklet */
+-- 
+1.7.11.2
+

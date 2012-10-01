@@ -1,0 +1,49 @@
+From 096bc1765a185220268fe24268483520f48f6b9e Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Mon, 9 Jan 2012 10:16:20 +0530
+Subject: [PATCH 0672/1092] ARM: OMAP: PRCM: Don't register PRCM chain handler
+ for AM33XX
+
+AM33XX does not support PRCM interrupts for IO/WKUP events.
+Since the current PRCM chain handler expects only these two
+events, don't register it for AM33XX.
+
+We might revisit this once the PRCM chain handler code is
+enhanced to take care of other events like DPLL needing to be
+recalibrated.
+
+Note: This fixes the following crash in USB during kernel boot
+
+[    2.131963] Unhandled fault: external abort on non-linefetch
+(0x1008) at 0xc880a460
+[    2.139960] Internal error: : 1008 [#1]
+[    2.143954] Modules linked in:
+[    2.147143] CPU: 0    Not tainted  (3.2.0-rc6-12008-g363a774)
+[    2.154057] PC is at __musb_readb+0xc/0x14
+[    2.158329] LR is at otg_timer+0x2c/0x13c
+...
+
+This was due to the PRCM_IRQENABLE register for OMAP3 being at
+the same offset as USB_CLKCTRL on AM33XX.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/prm2xxx_3xxx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/prm2xxx_3xxx.c b/arch/arm/mach-omap2/prm2xxx_3xxx.c
+index c1c4d86..fa803c6 100644
+--- a/arch/arm/mach-omap2/prm2xxx_3xxx.c
++++ b/arch/arm/mach-omap2/prm2xxx_3xxx.c
+@@ -302,7 +302,7 @@ void omap3xxx_prm_restore_irqen(u32 *saved_mask)
+ 
+ static int __init omap3xxx_prcm_init(void)
+ {
+-	if (cpu_is_omap34xx())
++	if (cpu_is_omap34xx() && !cpu_is_am33xx())
+ 		return omap_prcm_register_chain_handler(&omap3_prcm_irq_setup);
+ 	return 0;
+ }
+-- 
+1.7.11.2
+

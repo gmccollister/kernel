@@ -1,0 +1,36 @@
+From eece66837bf04b47a90f5b1c9ff1ae3e2ee5d74d Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Thu, 23 Dec 2010 23:13:47 +0800
+Subject: [PATCH 0461/1092] usb: musb: remove musb_in_tusb
+
+Remove musb_in_tusb since no one may use it.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/tusb6010.h | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/usb/musb/tusb6010.h b/drivers/usb/musb/tusb6010.h
+index 3d40c63..aec86c8 100644
+--- a/drivers/usb/musb/tusb6010.h
++++ b/drivers/usb/musb/tusb6010.h
+@@ -12,12 +12,6 @@
+ #ifndef __TUSB6010_H__
+ #define __TUSB6010_H__
+ 
+-#ifdef CONFIG_USB_TUSB6010
+-#define musb_in_tusb()			1
+-#else
+-#define musb_in_tusb()			0
+-#endif
+-
+ #ifdef CONFIG_USB_TUSB_OMAP_DMA
+ #define tusb_dma_omap()			1
+ #else
+-- 
+1.7.11.2
+

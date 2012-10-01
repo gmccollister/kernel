@@ -1,0 +1,124 @@
+From 447f42d959028b879459a742cf310eb00bbea39b Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:33 -0700
+Subject: [PATCH 0241/1092] cbus: retu: convert to a platform_driver
+
+preparing this driver for mainline. Convert into
+a platform_driver and prepare to split platform_device
+code from platform_driver code.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 8b85221..ea09c17 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -336,7 +336,7 @@ static void retu_power_off(void)
+  * Probe for the Retu ASIC and allocate memory
+  * for its device-struct if found
+  */
+-static int __devinit retu_probe(struct device *dev)
++static int __devinit retu_probe(struct platform_device *pdev)
+ {
+ 	int rev, ret;
+ 
+@@ -350,13 +350,13 @@ static int __devinit retu_probe(struct device *dev)
+ 			machine_is_nokia_n810_wimax()) {
+ 		retu_irq_pin = 108;
+ 	} else {
+-		dev_err(dev, "cbus: Unsupported board for tahvo\n");
++		dev_err(&pdev->dev, "cbus: Unsupported board for tahvo\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	ret = gpio_request(retu_irq_pin, "RETU irq");
+ 	if (ret < 0) {
+-		dev_err(dev, "Unable to reserve IRQ GPIO\n");
++		dev_err(&pdev->dev, "Unable to reserve IRQ GPIO\n");
+ 		return ret;
+ 	}
+ 
+@@ -372,7 +372,7 @@ static int __devinit retu_probe(struct device *dev)
+ 	if (rev & (1 << 7))
+ 		retu_is_vilma = 1;
+ 
+-	dev_info(dev, "%s v%d.%d found\n", retu_is_vilma ? "Vilma" : "Retu",
++	dev_info(&pdev->dev, "%s v%d.%d found\n", retu_is_vilma ? "Vilma" : "Retu",
+ 	       (rev >> 4) & 0x07, rev & 0x0f);
+ 
+ 	/* Mask all RETU interrupts */
+@@ -381,7 +381,7 @@ static int __devinit retu_probe(struct device *dev)
+ 	ret = request_irq(gpio_to_irq(retu_irq_pin), retu_irq_handler, 0,
+ 			  "retu", 0);
+ 	if (ret < 0) {
+-		dev_err(dev, "Unable to register IRQ handler\n");
++		dev_err(&pdev->dev, "Unable to register IRQ handler\n");
+ 		gpio_free(retu_irq_pin);
+ 		return ret;
+ 	}
+@@ -393,7 +393,7 @@ static int __devinit retu_probe(struct device *dev)
+ #ifdef CONFIG_CBUS_RETU_USER
+ 	/* Initialize user-space interface */
+ 	if (retu_user_init() < 0) {
+-		dev_err(dev, "Unable to initialize driver\n");
++		dev_err(&pdev->dev, "Unable to initialize driver\n");
+ 		free_irq(gpio_to_irq(retu_irq_pin), 0);
+ 		gpio_free(retu_irq_pin);
+ 		return ret;
+@@ -403,7 +403,7 @@ static int __devinit retu_probe(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int retu_remove(struct device *dev)
++static int __devexit retu_remove(struct platform_device *pdev)
+ {
+ #ifdef CONFIG_CBUS_RETU_USER
+ 	retu_user_cleanup();
+@@ -422,11 +422,12 @@ static void retu_device_release(struct device *dev)
+ 	complete(&device_release);
+ }
+ 
+-static struct device_driver retu_driver = {
+-	.name		= "retu",
+-	.bus		= &platform_bus_type,
++static struct platform_driver retu_driver = {
+ 	.probe		= retu_probe,
+-	.remove		= retu_remove,
++	.remove		= __devexit_p(retu_remove),
++	.driver		= {
++		.name	= "retu",
++	},
+ };
+ 
+ static struct platform_device retu_device = {
+@@ -452,13 +453,13 @@ static int __init retu_init(void)
+ 
+ 	init_completion(&device_release);
+ 
+-	ret = driver_register(&retu_driver);
++	ret = platform_driver_register(&retu_driver);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	ret = platform_device_register(&retu_device);
+ 	if (ret < 0) {
+-		driver_unregister(&retu_driver);
++		platform_driver_unregister(&retu_driver);
+ 		return ret;
+ 	}
+ 
+@@ -471,7 +472,7 @@ static int __init retu_init(void)
+ static void __exit retu_exit(void)
+ {
+ 	platform_device_unregister(&retu_device);
+-	driver_unregister(&retu_driver);
++	platform_driver_unregister(&retu_driver);
+ 	wait_for_completion(&device_release);
+ }
+ 
+-- 
+1.7.11.2
+

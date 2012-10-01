@@ -1,0 +1,138 @@
+From 060b56705e48800bda9837ccc45483775a328a86 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Fri, 17 Aug 2012 14:02:26 +0530
+Subject: [PATCH 1058/1092] input: TSC: ti_tscadc: Add Step configuration as
+ platform data
+
+There are 16 programmable Step Configuration
+registers which are used by the sequencer.
+Program the Steps in order to configure a channel
+input to be sampled. If the same step is applied
+several times, the coordinate values read are more
+accurate.
+Hence we provide the user an option of how many steps
+should be configured.
+
+For ex: If this value is assigned as 4, This means that
+4 steps are applied to read x co-ordinate and 4 steps to read
+y co-ordinate. Furtheron the interrupt handler already
+holds code to use delta filter and report the best value
+out of these values to the input sub-system.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ drivers/input/touchscreen/ti_tscadc.c | 23 ++++++++++++++---------
+ include/linux/input/ti_tscadc.h       |  6 ++++++
+ 2 files changed, 20 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/input/touchscreen/ti_tscadc.c b/drivers/input/touchscreen/ti_tscadc.c
+index 7745377..7973060 100644
+--- a/drivers/input/touchscreen/ti_tscadc.c
++++ b/drivers/input/touchscreen/ti_tscadc.c
+@@ -144,6 +144,7 @@ struct tscadc {
+ 	int			irq;
+ 	void __iomem		*tsc_base;
+ 	unsigned int		ctrl;
++	int			steps_to_config;
+ };
+ 
+ static unsigned int tscadc_readl(struct tscadc *ts, unsigned int reg)
+@@ -162,12 +163,13 @@ static void tsc_step_config(struct tscadc *ts_dev)
+ 	unsigned int	stepconfigx = 0, stepconfigy = 0;
+ 	unsigned int	delay, chargeconfig = 0;
+ 	unsigned int	stepconfigz1 = 0, stepconfigz2 = 0;
+-	int i;
++	int		i, total_steps;
+ 
+ 	/* Configure the Step registers */
+ 
+ 	delay = TSCADC_STEPCONFIG_SAMPLEDLY | TSCADC_STEPCONFIG_OPENDLY;
+ 
++	total_steps = 2 * ts_dev->steps_to_config;
+ 	stepconfigx = TSCADC_STEPCONFIG_MODE_HWSYNC |
+ 			TSCADC_STEPCONFIG_AVG_16 | TSCADC_STEPCONFIG_XPP;
+ 
+@@ -188,7 +190,7 @@ static void tsc_step_config(struct tscadc *ts_dev)
+ 		break;
+ 	}
+ 
+-	for (i = 1; i < 7; i++) {
++	for (i = 1; i <= ts_dev->steps_to_config; i++) {
+ 		tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(i), stepconfigx);
+ 		tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(i), delay);
+ 	}
+@@ -210,7 +212,7 @@ static void tsc_step_config(struct tscadc *ts_dev)
+ 		break;
+ 	}
+ 
+-	for (i = 7; i < 13; i++) {
++	for (i = (ts_dev->steps_to_config + 1); i <= total_steps; i++) {
+ 		tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(i), stepconfigy);
+ 		tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(i), delay);
+ 	}
+@@ -228,10 +230,12 @@ static void tsc_step_config(struct tscadc *ts_dev)
+ 			TSCADC_STEPCONFIG_YPN | TSCADC_STEPCONFIG_INM_ADCREFM;
+ 	stepconfigz2 = stepconfigz1 | TSCADC_STEPCONFIG_INP_AN3 |
+ 				TSCADC_STEPCONFIG_FIFO1;
+-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG13, stepconfigz1);
+-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY13, delay);
+-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG14, stepconfigz2);
+-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY14, delay);
++	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(total_steps + 1),
++						stepconfigz1);
++	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(total_steps + 1), delay);
++	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(total_steps + 2),
++						stepconfigz2);
++	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(total_steps + 2), delay);
+ 
+ 	tscadc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB);
+ }
+@@ -458,6 +462,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
+ 
+ 	ts_dev->wires = pdata->wires;
+ 	ts_dev->x_plate_resistance = pdata->x_plate_resistance;
++	ts_dev->steps_to_config = pdata->steps_to_configure;
+ 
+ 	/* Set the control register bits */
+ 	ctrl = TSCADC_CNTRLREG_STEPCONFIGWRT |
+@@ -486,7 +491,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
+ 
+ 	tsc_step_config(ts_dev);
+ 
+-	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, 6);
++	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, ts_dev->steps_to_config);
+ 
+ 	ctrl |= TSCADC_CNTRLREG_TSCSSENB;
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL, ctrl);
+@@ -597,7 +602,7 @@ static int tscadc_resume(struct platform_device *pdev)
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL, restore);
+ 	tsc_idle_config(ts_dev);
+ 	tsc_step_config(ts_dev);
+-	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, 6);
++	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, ts_dev->steps_to_config);
+ 	restore = tscadc_readl(ts_dev, TSCADC_REG_CTRL);
+ 	tscadc_writel(ts_dev, TSCADC_REG_CTRL,
+ 			(restore | TSCADC_CNTRLREG_TSCSSENB));
+diff --git a/include/linux/input/ti_tscadc.h b/include/linux/input/ti_tscadc.h
+index 57ce71c..fa73aeb 100644
+--- a/include/linux/input/ti_tscadc.h
++++ b/include/linux/input/ti_tscadc.h
+@@ -4,9 +4,15 @@
+  *			i.e. 4/5/8 wire touchscreen support
+  *			on the platform
+  * @x_plate_resistance:	X plate resistance.
++ * @steps_to_configure: The sequencer supports a total of
++ *			16 programmable steps.
++ *			A step configured to read a single
++ *			co-ordinate value, can be applied
++ *			more number of times for better results.
+  */
+ 
+ struct tsc_data {
+ 	int wires;
+ 	int x_plate_resistance;
++	int steps_to_configure;
+ };
+-- 
+1.7.11.2
+

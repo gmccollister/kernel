@@ -1,0 +1,44 @@
+From f3ae0512ce8a5ab98ee486aa8f61fd0cd190ffa8 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Mon, 25 Jul 2011 16:22:34 +0530
+Subject: [PATCH 0111/1092] ARM: OMAP4: Remove un-used do_wfi() macro.
+
+With OMAP4 suspend, idle and hotplug series, we no longer need
+do_wfi() macro.
+
+Remove the same.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/common.h | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
+index 7ca2a5a..2ff68b8 100644
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -158,17 +158,6 @@ void omap3_intc_resume_idle(void);
+ void omap2_intc_handle_irq(struct pt_regs *regs);
+ void omap3_intc_handle_irq(struct pt_regs *regs);
+ 
+-/*
+- * wfi used in low power code. Directly opcode is used instead
+- * of instruction to avoid mulit-omap build break
+- */
+-#ifdef CONFIG_THUMB2_KERNEL
+-#define do_wfi() __asm__ __volatile__ ("wfi" : : : "memory")
+-#else
+-#define do_wfi()			\
+-		__asm__ __volatile__ (".word	0xe320f003" : : : "memory")
+-#endif
+-
+ #ifdef CONFIG_CACHE_L2X0
+ extern void __iomem *omap4_get_l2cache_base(void);
+ #endif
+-- 
+1.7.11.2
+

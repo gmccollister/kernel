@@ -1,0 +1,108 @@
+From e918d941e268b8a484174a5724f129cdc2baff7d Mon Sep 17 00:00:00 2001
+From: Jarkko Nikula <jarkko.nikula@bitmer.com>
+Date: Mon, 12 Dec 2011 11:15:17 +0200
+Subject: [PATCH 0088/1092] ARM: OMAP: McSPI: Remove unused flag from struct
+ omap2_mcspi_device_config
+
+Flag single_channel in struct omap2_mcspi_device_config is not used
+by drivers/spi/spi-omap2-mcspi.c so we may remove it from include/plat/mcspi.h
+and affected board files.
+
+Signed-off-by: Jarkko Nikula <jarkko.nikula@bitmer.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-cm-t35.c           | 1 -
+ arch/arm/mach-omap2/board-n8x0.c             | 1 -
+ arch/arm/mach-omap2/board-rx51-peripherals.c | 3 ---
+ arch/arm/mach-omap2/board-zoom-display.c     | 1 -
+ arch/arm/mach-omap2/common-board-devices.c   | 1 -
+ arch/arm/plat-omap/include/plat/mcspi.h      | 3 ---
+ 6 files changed, 10 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 510b6a2..7a52fea 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -279,7 +279,6 @@ static struct omap_dss_board_info cm_t35_dss_data = {
+ 
+ static struct omap2_mcspi_device_config tdo24m_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel	= 1,	/* 0: slave, 1: master */
+ };
+ 
+ static struct tdo24m_platform_data tdo24m_config = {
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index bebd3d8..2cb99d1 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -137,7 +137,6 @@ static void __init n8x0_usb_init(void) {}
+ 
+ static struct omap2_mcspi_device_config p54spi_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel = 1,
+ };
+ 
+ static struct spi_board_info n800_spi_board_info[] __initdata = {
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 108fee6..a480b9f 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -133,17 +133,14 @@ static struct lp5523_platform_data rx51_lp5523_platform_data = {
+ 
+ static struct omap2_mcspi_device_config wl1251_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel	= 1,
+ };
+ 
+ static struct omap2_mcspi_device_config mipid_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel	= 1,
+ };
+ 
+ static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel	= 1,
+ };
+ 
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+diff --git a/arch/arm/mach-omap2/board-zoom-display.c b/arch/arm/mach-omap2/board-zoom-display.c
+index d4683ba..2818290 100644
+--- a/arch/arm/mach-omap2/board-zoom-display.c
++++ b/arch/arm/mach-omap2/board-zoom-display.c
+@@ -117,7 +117,6 @@ static struct omap_dss_board_info zoom_dss_data = {
+ 
+ static struct omap2_mcspi_device_config dss_lcd_mcspi_config = {
+ 	.turbo_mode		= 1,
+-	.single_channel	= 1,  /* 0: slave, 1: master */
+ };
+ 
+ static struct spi_board_info nec_8048_spi_board_info[] __initdata = {
+diff --git a/arch/arm/mach-omap2/common-board-devices.c b/arch/arm/mach-omap2/common-board-devices.c
+index bcb0c58..2d1d775 100644
+--- a/arch/arm/mach-omap2/common-board-devices.c
++++ b/arch/arm/mach-omap2/common-board-devices.c
+@@ -33,7 +33,6 @@
+ 	defined(CONFIG_TOUCHSCREEN_ADS7846_MODULE)
+ static struct omap2_mcspi_device_config ads7846_mcspi_config = {
+ 	.turbo_mode	= 0,
+-	.single_channel	= 1,	/* 0: slave, 1: master */
+ };
+ 
+ static struct ads7846_platform_data ads7846_config = {
+diff --git a/arch/arm/plat-omap/include/plat/mcspi.h b/arch/arm/plat-omap/include/plat/mcspi.h
+index 3d51b18..a357eb2 100644
+--- a/arch/arm/plat-omap/include/plat/mcspi.h
++++ b/arch/arm/plat-omap/include/plat/mcspi.h
+@@ -18,9 +18,6 @@ struct omap2_mcspi_dev_attr {
+ 
+ struct omap2_mcspi_device_config {
+ 	unsigned turbo_mode:1;
+-
+-	/* Do we want one channel enabled at the same time? */
+-	unsigned single_channel:1;
+ };
+ 
+ #endif
+-- 
+1.7.11.2
+

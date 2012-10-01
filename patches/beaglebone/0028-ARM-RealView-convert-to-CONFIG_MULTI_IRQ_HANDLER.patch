@@ -1,0 +1,107 @@
+From 5e51776aea5b55cdaa346d2ed673e2dedcf2e96d Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Tue, 6 Sep 2011 10:23:45 +0100
+Subject: [PATCH 0028/1092] ARM: RealView: convert to CONFIG_MULTI_IRQ_HANDLER
+
+Convert the RealView platforms to be using the gic_handle_irq
+function as their primary interrupt handler.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/Kconfig                                  | 1 +
+ arch/arm/mach-realview/include/mach/entry-macro.S | 2 --
+ arch/arm/mach-realview/realview_eb.c              | 1 +
+ arch/arm/mach-realview/realview_pb1176.c          | 1 +
+ arch/arm/mach-realview/realview_pb11mp.c          | 1 +
+ arch/arm/mach-realview/realview_pba8.c            | 1 +
+ arch/arm/mach-realview/realview_pbx.c             | 1 +
+ 7 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index aa3cfcc..27f200b 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -279,6 +279,7 @@ config ARCH_REALVIEW
+ 	select ARM_TIMER_SP804
+ 	select GPIO_PL061 if GPIOLIB
+ 	select NEED_MACH_MEMORY_H
++	select MULTI_IRQ_HANDLER
+ 	help
+ 	  This enables support for ARM Ltd RealView boards.
+ 
+diff --git a/arch/arm/mach-realview/include/mach/entry-macro.S b/arch/arm/mach-realview/include/mach/entry-macro.S
+index 4071164..e8a5179 100644
+--- a/arch/arm/mach-realview/include/mach/entry-macro.S
++++ b/arch/arm/mach-realview/include/mach/entry-macro.S
+@@ -7,8 +7,6 @@
+  * License version 2. This program is licensed "as is" without any
+  * warranty of any kind, whether express or implied.
+  */
+-#include <mach/hardware.h>
+-#include <asm/hardware/entry-macro-gic.S>
+ 
+ 		.macro	disable_fiq
+ 		.endm
+diff --git a/arch/arm/mach-realview/realview_eb.c b/arch/arm/mach-realview/realview_eb.c
+index 026c66a..10ef2e7 100644
+--- a/arch/arm/mach-realview/realview_eb.c
++++ b/arch/arm/mach-realview/realview_eb.c
+@@ -469,6 +469,7 @@ MACHINE_START(REALVIEW_EB, "ARM-RealView EB")
+ 	.init_early	= realview_init_early,
+ 	.init_irq	= gic_init_irq,
+ 	.timer		= &realview_eb_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= realview_eb_init,
+ #ifdef CONFIG_ZONE_DMA
+ 	.dma_zone_size	= SZ_256M,
+diff --git a/arch/arm/mach-realview/realview_pb1176.c b/arch/arm/mach-realview/realview_pb1176.c
+index c057540..bd8fec8 100644
+--- a/arch/arm/mach-realview/realview_pb1176.c
++++ b/arch/arm/mach-realview/realview_pb1176.c
+@@ -392,6 +392,7 @@ MACHINE_START(REALVIEW_PB1176, "ARM-RealView PB1176")
+ 	.init_early	= realview_init_early,
+ 	.init_irq	= gic_init_irq,
+ 	.timer		= &realview_pb1176_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= realview_pb1176_init,
+ #ifdef CONFIG_ZONE_DMA
+ 	.dma_zone_size	= SZ_256M,
+diff --git a/arch/arm/mach-realview/realview_pb11mp.c b/arch/arm/mach-realview/realview_pb11mp.c
+index 671ad6d..fa73ba8 100644
+--- a/arch/arm/mach-realview/realview_pb11mp.c
++++ b/arch/arm/mach-realview/realview_pb11mp.c
+@@ -366,6 +366,7 @@ MACHINE_START(REALVIEW_PB11MP, "ARM-RealView PB11MPCore")
+ 	.init_early	= realview_init_early,
+ 	.init_irq	= gic_init_irq,
+ 	.timer		= &realview_pb11mp_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= realview_pb11mp_init,
+ #ifdef CONFIG_ZONE_DMA
+ 	.dma_zone_size	= SZ_256M,
+diff --git a/arch/arm/mach-realview/realview_pba8.c b/arch/arm/mach-realview/realview_pba8.c
+index cbf22df..6e5f2b9 100644
+--- a/arch/arm/mach-realview/realview_pba8.c
++++ b/arch/arm/mach-realview/realview_pba8.c
+@@ -316,6 +316,7 @@ MACHINE_START(REALVIEW_PBA8, "ARM-RealView PB-A8")
+ 	.init_early	= realview_init_early,
+ 	.init_irq	= gic_init_irq,
+ 	.timer		= &realview_pba8_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= realview_pba8_init,
+ #ifdef CONFIG_ZONE_DMA
+ 	.dma_zone_size	= SZ_256M,
+diff --git a/arch/arm/mach-realview/realview_pbx.c b/arch/arm/mach-realview/realview_pbx.c
+index 63c4114..291bf1a 100644
+--- a/arch/arm/mach-realview/realview_pbx.c
++++ b/arch/arm/mach-realview/realview_pbx.c
+@@ -399,6 +399,7 @@ MACHINE_START(REALVIEW_PBX, "ARM-RealView PBX")
+ 	.init_early	= realview_init_early,
+ 	.init_irq	= gic_init_irq,
+ 	.timer		= &realview_pbx_timer,
++	.handle_irq	= gic_handle_irq,
+ 	.init_machine	= realview_pbx_init,
+ #ifdef CONFIG_ZONE_DMA
+ 	.dma_zone_size	= SZ_256M,
+-- 
+1.7.11.2
+

@@ -1,0 +1,29 @@
+From 6b081635e0536d1737c17d39522f5fb1acc9155e Mon Sep 17 00:00:00 2001
+From: Jarkko Nikula <jhnikula@gmail.com>
+Date: Tue, 19 Apr 2011 08:19:38 +0000
+Subject: [PATCH 0326/1092] cbus: tahvo: Select USB_OTG_UTILS
+
+tahvo-usb.c is using otg_set_transceiver which is built only if
+CONFIG_USB_OTG_UTILS is set.
+
+Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cbus/Kconfig b/drivers/cbus/Kconfig
+index 2667dff..d845a7e 100644
+--- a/drivers/cbus/Kconfig
++++ b/drivers/cbus/Kconfig
+@@ -23,6 +23,7 @@ config CBUS_TAHVO
+ 
+ config CBUS_TAHVO_USB
+ 	depends on CBUS_TAHVO && USB
++	select USB_OTG_UTILS
+ 	tristate "Support for Tahvo USB transceiver"
+ 	---help---
+ 	  If you want Tahvo support for USB transceiver, say Y or M here.
+-- 
+1.7.11.2
+

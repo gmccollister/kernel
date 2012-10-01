@@ -1,0 +1,280 @@
+From 812c72f3c00caaf0304d6895be10e2bdf2f4d377 Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Sat, 26 Nov 2011 23:11:04 +0530
+Subject: [PATCH 0420/1092] AM335X: Enable LCDC on AM335X
+
+Adding pinmux, platform resource information. Also add
+AM335X panel inforamtion.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/plat-omap/include/plat/lcdc.h | 21 +++++++++++++++++
+ drivers/video/Kconfig                  | 42 +++++++++++++++++-----------------
+ drivers/video/da8xx-fb.c               | 35 ++++++++++++++++++++++++++--
+ include/video/da8xx-fb.h               |  5 ++--
+ 4 files changed, 78 insertions(+), 25 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/plat/lcdc.h
+
+diff --git a/arch/arm/plat-omap/include/plat/lcdc.h b/arch/arm/plat-omap/include/plat/lcdc.h
+new file mode 100644
+index 0000000..f8bcdec
+--- /dev/null
++++ b/arch/arm/plat-omap/include/plat/lcdc.h
+@@ -0,0 +1,21 @@
++/*
++ * Header file for LCD controller
++ *
++ * Copyright (C) {2011} Texas Instruments Incorporated - http://www.ti.com/
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
++ * GNU General Public License for more details.
++ **/
++
++#ifndef __OMAP2_LCDC_H
++#define __OMAP2_LCDC_H
++
++struct platform_device *am33xx_register_lcdc(
++		struct da8xx_lcdc_platform_data *pdata);
++#endif
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d83e967..6c9863a 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -30,7 +30,7 @@ config VGASTATE
+ config VIDEO_OUTPUT_CONTROL
+ 	tristate "Lowlevel video output switch controls"
+ 	help
+-	  This framework adds support for low-level control of the video 
++	  This framework adds support for low-level control of the video
+ 	  output switch.
+ 
+ menuconfig FB
+@@ -691,7 +691,7 @@ config FB_STI
+ 	  BIOS routines contained in a ROM chip in HP PA-RISC based machines.
+ 	  Enabling this option will implement the linux framebuffer device
+ 	  using calls to the STI BIOS routines for initialisation.
+-	
++
+ 	  If you enable this option, you will get a planar framebuffer device
+ 	  /dev/fb which will work on the most common HP graphic cards of the
+ 	  NGLE family, including the artist chips (in the 7xx and Bxxx series),
+@@ -1132,36 +1132,36 @@ config FB_I810
+ 	select FB_CFB_IMAGEBLIT
+ 	select VGASTATE
+ 	help
+-	  This driver supports the on-board graphics built in to the Intel 810 
++	  This driver supports the on-board graphics built in to the Intel 810
+           and 815 chipsets.  Say Y if you have and plan to use such a board.
+ 
+           To compile this driver as a module, choose M here: the
+ 	  module will be called i810fb.
+ 
+-          For more information, please read 
++          For more information, please read
+ 	  <file:Documentation/fb/intel810.txt>
+ 
+ config FB_I810_GTF
+ 	bool "use VESA Generalized Timing Formula"
+ 	depends on FB_I810
+ 	help
+-	  If you say Y, then the VESA standard, Generalized Timing Formula 
++	  If you say Y, then the VESA standard, Generalized Timing Formula
+           or GTF, will be used to calculate the required video timing values
+-	  per video mode.  Since the GTF allows nondiscrete timings 
++	  per video mode.  Since the GTF allows nondiscrete timings
+           (nondiscrete being a range of values as opposed to discrete being a
+-          set of values), you'll be able to use any combination of horizontal 
++          set of values), you'll be able to use any combination of horizontal
+ 	  and vertical resolutions, and vertical refresh rates without having
+ 	  to specify your own timing parameters.  This is especially useful
+-	  to maximize the performance of an aging display, or if you just 
+-          have a display with nonstandard dimensions. A VESA compliant 
++	  to maximize the performance of an aging display, or if you just
++          have a display with nonstandard dimensions. A VESA compliant
+ 	  monitor is recommended, but can still work with non-compliant ones.
+-	  If you need or want this, then select this option. The timings may 
+-	  not be compliant with Intel's recommended values. Use at your own 
++	  If you need or want this, then select this option. The timings may
++	  not be compliant with Intel's recommended values. Use at your own
+ 	  risk.
+ 
+-          If you say N, the driver will revert to discrete video timings 
++          If you say N, the driver will revert to discrete video timings
+ 	  using a set recommended by Intel in their documentation.
+-  
++
+           If unsure, say N.
+ 
+ config FB_I810_I2C
+@@ -1279,10 +1279,10 @@ config FB_MATROX_G
+ 	  G450/G550 secondary head and digital output are supported without
+ 	  additional modules.
+ 
+-	  The driver starts in monitor mode. You must use the matroxset tool 
+-	  (available at <ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/>) to 
+-	  swap primary and secondary head outputs, or to change output mode.  
+-	  Secondary head driver always start in 640x480 resolution and you 
++	  The driver starts in monitor mode. You must use the matroxset tool
++	  (available at <ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/>) to
++	  swap primary and secondary head outputs, or to change output mode.
++	  Secondary head driver always start in 640x480 resolution and you
+ 	  must use fbset to change it.
+ 
+ 	  Do not forget that second head supports only 16 and 32 bpp
+@@ -1365,7 +1365,7 @@ config FB_RADEON_I2C
+ 	select FB_DDC
+ 	default y
+ 	help
+-	  Say Y here if you want DDC/I2C support for your Radeon board. 
++	  Say Y here if you want DDC/I2C support for your Radeon board.
+ 
+ config FB_RADEON_BACKLIGHT
+ 	bool "Support for backlight control"
+@@ -1599,7 +1599,7 @@ config FB_NEOMAGIC
+ 	select VGASTATE
+ 	help
+ 	  This driver supports notebooks with NeoMagic PCI chips.
+-	  Say Y if you have such a graphics card. 
++	  Say Y if you have such a graphics card.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called neofb.
+@@ -1654,7 +1654,7 @@ config FB_VOODOO1
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	---help---
+-	  Say Y here if you have a 3Dfx Voodoo Graphics (Voodoo1/sst1) or 
++	  Say Y here if you have a 3Dfx Voodoo Graphics (Voodoo1/sst1) or
+ 	  Voodoo2 (cvg) based graphics card.
+ 
+ 	  To compile this driver as a module, choose M here: the
+@@ -2229,7 +2229,7 @@ config FB_SH7760
+ 
+ config FB_DA8XX
+ 	tristate "DA8xx/OMAP-L1xx Framebuffer support"
+-	depends on FB && ARCH_DAVINCI_DA8XX
++	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_OMAPAM33XX)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 1f49733..f550811 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -32,6 +32,7 @@
+ #include <linux/console.h>
+ #include <linux/slab.h>
+ #include <video/da8xx-fb.h>
++#include <asm/mach-types.h>
+ 
+ #define DRIVER_NAME "da8xx_lcdc"
+ 
+@@ -176,7 +177,7 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
+ 	.activate = 0,
+ 	.height = -1,
+ 	.width = -1,
+-	.pixclock = 46666,	/* 46us - AUO display */
++	.pixclock = 33333,	/* 46us - AUO display */
+ 	.accel_flags = 0,
+ 	.left_margin = LEFT_MARGIN,
+ 	.right_margin = RIGHT_MARGIN,
+@@ -240,6 +241,20 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.pxl_clk = 7833600,
+ 		.invert_pxl_clk = 0,
+ 	},
++	/* ThreeFive S9700RTWV35TR */
++	[2] = {
++		.name = "TFC_S9700RTWV35TR_01B",
++		.width = 800,
++		.height = 480,
++		.hfp = 39,
++		.hbp = 39,
++		.hsw = 47,
++		.vfp = 13,
++		.vbp = 29,
++		.vsw = 2,
++		.pxl_clk = 30000000,
++		.invert_pxl_clk = 0,
++	},
+ };
+ 
+ /* Enable the Raster Engine of the LCD Controller */
+@@ -681,7 +696,9 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (QVGA != cfg->p_disp_panel->panel_type)
++
++	if ((QVGA != cfg->p_disp_panel->panel_type) &&
++			(WVGA != cfg->p_disp_panel->panel_type))
+ 		return -EINVAL;
+ 
+ 	if (cfg->bpp <= cfg->p_disp_panel->max_bpp &&
+@@ -1102,6 +1119,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	struct da8xx_panel *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
++	struct clk *lcdc_ick = NULL;
+ 	struct da8xx_fb_par *par;
+ 	resource_size_t len;
+ 	int ret, i;
+@@ -1130,6 +1148,18 @@ static int __devinit fb_probe(struct platform_device *device)
+ 		goto err_request_mem;
+ 	}
+ 
++	/*
++	 * Some SoC will not have seperate interface clock,
++	 * so make lazy check here
++	 */
++	lcdc_ick = clk_get(&device->dev, "lcdc_ick");
++	if (IS_ERR(lcdc_ick))
++		dev_err(&device->dev, "Can not get lcdc_ick\n");
++
++	ret = clk_enable(lcdc_ick);
++	if (ret)
++		dev_err(&device->dev, "failed to enable lcdc_ick\n");
++
+ 	fb_clk = clk_get(&device->dev, NULL);
+ 	if (IS_ERR(fb_clk)) {
+ 		dev_err(&device->dev, "Can not get device clock\n");
+@@ -1146,6 +1176,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 		lcd_revision = LCD_VERSION_1;
+ 		break;
+ 	case 0x4F200800:
++	case 0x4F201000:
+ 		lcd_revision = LCD_VERSION_2;
+ 		break;
+ 	default:
+diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
+index 89d43b3..f96f570 100644
+--- a/include/video/da8xx-fb.h
++++ b/include/video/da8xx-fb.h
+@@ -13,7 +13,8 @@
+ #define DA8XX_FB_H
+ 
+ enum panel_type {
+-	QVGA = 0
++	QVGA = 0,
++	WVGA,
+ };
+ 
+ enum panel_shade {
+@@ -28,7 +29,7 @@ enum raster_load_mode {
+ };
+ 
+ struct display_panel {
+-	enum panel_type panel_type; /* QVGA */
++	enum panel_type panel_type;
+ 	int max_bpp;
+ 	int min_bpp;
+ 	enum panel_shade panel_shade;
+-- 
+1.7.11.2
+

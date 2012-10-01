@@ -1,0 +1,64 @@
+From 5fe9a560932345e4a396a0a0adc9a3074771be40 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Tue, 22 May 2012 12:02:22 +0530
+Subject: [PATCH 0967/1092] input: TSC: fix warning related to TSC
+
+Remove function in touchscreen did not check for
+idle state of the module previously, due to which
+disable of module failed.
+This patch disables all the steps before removal
+of module from kernel, which helps the module
+enter into idle state.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ drivers/input/touchscreen/ti_tscadc.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/input/touchscreen/ti_tscadc.c b/drivers/input/touchscreen/ti_tscadc.c
+index d9c13be..197f603 100644
+--- a/drivers/input/touchscreen/ti_tscadc.c
++++ b/drivers/input/touchscreen/ti_tscadc.c
+@@ -410,6 +410,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
+ 		goto err_free_irq;
+ 	}
+ 	clock_rate = clk_get_rate(clk);
++	clk_put(clk);
+ 	clk_value = clock_rate / ADC_CLK;
+ 	if (clk_value < 7) {
+ 		dev_err(&pdev->dev, "clock input less than min clock requirement\n");
+@@ -475,6 +476,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_fail:
++	pm_runtime_put_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ err_free_irq:
+ 	free_irq(ts_dev->irq, ts_dev);
+@@ -484,6 +486,7 @@ err_release_mem:
+ 	release_mem_region(res->start, resource_size(res));
+ 	input_free_device(ts_dev->input);
+ err_free_mem:
++	platform_set_drvdata(pdev, NULL);
+ 	kfree(ts_dev);
+ 	return err;
+ }
+@@ -493,6 +496,7 @@ static int __devexit tscadc_remove(struct platform_device *pdev)
+ 	struct tscadc		*ts_dev = platform_get_drvdata(pdev);
+ 	struct resource		*res;
+ 
++	tscadc_writel(ts_dev, TSCADC_REG_SE, 0x00);
+ 	free_irq(ts_dev->irq, ts_dev);
+ 
+ 	input_unregister_device(ts_dev->input);
+@@ -501,6 +505,7 @@ static int __devexit tscadc_remove(struct platform_device *pdev)
+ 	iounmap(ts_dev->tsc_base);
+ 	release_mem_region(res->start, resource_size(res));
+ 
++	pm_runtime_put_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 
+ 	kfree(ts_dev);
+-- 
+1.7.11.2
+

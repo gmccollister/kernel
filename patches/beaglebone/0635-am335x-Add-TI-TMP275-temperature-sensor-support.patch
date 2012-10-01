@@ -1,0 +1,142 @@
+From 8218077b2660680e43ce924e7008418f01084008 Mon Sep 17 00:00:00 2001
+From: AnilKumar Ch <anilkumar@ti.com>
+Date: Fri, 25 Nov 2011 21:56:24 +0530
+Subject: [PATCH 0635/1092] am335x: Add TI TMP275 temperature sensor support
+
+This patch enables the TI's temperature sensor - TMP275 on
+am335x chip
+
+Also adds the tmp275 to default kernel configuration
+am335x_evm_defconfig
+
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 97 ++++++++++++++++++++++++++++++++++-
+ arch/arm/mach-omap2/board-am335xevm.c |  3 ++
+ 2 files changed, 99 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 41dce55..6edf162 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1339,7 +1339,102 @@ CONFIG_GPIO_SYSFS=y
+ #
+ # CONFIG_W1 is not set
+ # CONFIG_POWER_SUPPLY is not set
+-# CONFIG_HWMON is not set
++CONFIG_HWMON=y
++# CONFIG_HWMON_VID is not set
++# CONFIG_HWMON_DEBUG_CHIP is not set
++
++#
++# Native drivers
++#
++# CONFIG_SENSORS_AD7414 is not set
++# CONFIG_SENSORS_AD7418 is not set
++# CONFIG_SENSORS_ADCXX is not set
++# CONFIG_SENSORS_ADM1021 is not set
++# CONFIG_SENSORS_ADM1025 is not set
++# CONFIG_SENSORS_ADM1026 is not set
++# CONFIG_SENSORS_ADM1029 is not set
++# CONFIG_SENSORS_ADM1031 is not set
++# CONFIG_SENSORS_ADM9240 is not set
++# CONFIG_SENSORS_ADT7411 is not set
++# CONFIG_SENSORS_ADT7462 is not set
++# CONFIG_SENSORS_ADT7470 is not set
++# CONFIG_SENSORS_ADT7475 is not set
++# CONFIG_SENSORS_ASC7621 is not set
++# CONFIG_SENSORS_ATXP1 is not set
++# CONFIG_SENSORS_DS620 is not set
++# CONFIG_SENSORS_DS1621 is not set
++# CONFIG_SENSORS_F71805F is not set
++# CONFIG_SENSORS_F71882FG is not set
++# CONFIG_SENSORS_F75375S is not set
++# CONFIG_SENSORS_G760A is not set
++# CONFIG_SENSORS_GL518SM is not set
++# CONFIG_SENSORS_GL520SM is not set
++# CONFIG_SENSORS_GPIO_FAN is not set
++# CONFIG_SENSORS_IT87 is not set
++# CONFIG_SENSORS_JC42 is not set
++# CONFIG_SENSORS_LINEAGE is not set
++# CONFIG_SENSORS_LM63 is not set
++# CONFIG_SENSORS_LM70 is not set
++# CONFIG_SENSORS_LM73 is not set
++CONFIG_SENSORS_LM75=y
++# CONFIG_SENSORS_LM77 is not set
++# CONFIG_SENSORS_LM78 is not set
++# CONFIG_SENSORS_LM80 is not set
++# CONFIG_SENSORS_LM83 is not set
++# CONFIG_SENSORS_LM85 is not set
++# CONFIG_SENSORS_LM87 is not set
++# CONFIG_SENSORS_LM90 is not set
++# CONFIG_SENSORS_LM92 is not set
++# CONFIG_SENSORS_LM93 is not set
++# CONFIG_SENSORS_LTC4151 is not set
++# CONFIG_SENSORS_LTC4215 is not set
++# CONFIG_SENSORS_LTC4245 is not set
++# CONFIG_SENSORS_LTC4261 is not set
++# CONFIG_SENSORS_LM95241 is not set
++# CONFIG_SENSORS_LM95245 is not set
++# CONFIG_SENSORS_MAX1111 is not set
++# CONFIG_SENSORS_MAX16065 is not set
++# CONFIG_SENSORS_MAX1619 is not set
++# CONFIG_SENSORS_MAX1668 is not set
++# CONFIG_SENSORS_MAX6639 is not set
++# CONFIG_SENSORS_MAX6642 is not set
++# CONFIG_SENSORS_MAX6650 is not set
++# CONFIG_SENSORS_NTC_THERMISTOR is not set
++# CONFIG_SENSORS_PC87360 is not set
++# CONFIG_SENSORS_PC87427 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_PMBUS is not set
++# CONFIG_SENSORS_SHT15 is not set
++# CONFIG_SENSORS_SHT21 is not set
++# CONFIG_SENSORS_SMM665 is not set
++# CONFIG_SENSORS_DME1737 is not set
++# CONFIG_SENSORS_EMC1403 is not set
++# CONFIG_SENSORS_EMC2103 is not set
++# CONFIG_SENSORS_EMC6W201 is not set
++# CONFIG_SENSORS_SMSC47M1 is not set
++# CONFIG_SENSORS_SMSC47M192 is not set
++# CONFIG_SENSORS_SMSC47B397 is not set
++# CONFIG_SENSORS_SCH56XX_COMMON is not set
++# CONFIG_SENSORS_SCH5627 is not set
++# CONFIG_SENSORS_SCH5636 is not set
++# CONFIG_SENSORS_ADS1015 is not set
++# CONFIG_SENSORS_ADS7828 is not set
++# CONFIG_SENSORS_ADS7871 is not set
++# CONFIG_SENSORS_AMC6821 is not set
++# CONFIG_SENSORS_THMC50 is not set
++# CONFIG_SENSORS_TMP102 is not set
++# CONFIG_SENSORS_TMP401 is not set
++# CONFIG_SENSORS_TMP421 is not set
++# CONFIG_SENSORS_VT1211 is not set
++# CONFIG_SENSORS_W83781D is not set
++# CONFIG_SENSORS_W83791D is not set
++# CONFIG_SENSORS_W83792D is not set
++# CONFIG_SENSORS_W83793 is not set
++# CONFIG_SENSORS_W83795 is not set
++# CONFIG_SENSORS_W83L785TS is not set
++# CONFIG_SENSORS_W83L786NG is not set
++# CONFIG_SENSORS_W83627HF is not set
++# CONFIG_SENSORS_W83627EHF is not set
+ # CONFIG_THERMAL is not set
+ CONFIG_WATCHDOG=y
+ # CONFIG_WATCHDOG_CORE is not set
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 7caeb60..c8613b0 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1092,6 +1092,9 @@ static struct i2c_board_info am335x_i2c_boardinfo1[] = {
+ 		I2C_BOARD_INFO("lis331dlh", 0x18),
+ 		.platform_data = &lis331dlh_pdata,
+ 	},
++	{
++		I2C_BOARD_INFO("tmp275", 0x48),
++	},
+ };
+ 
+ static void i2c1_init(int evm_id, int profile)
+-- 
+1.7.11.2
+

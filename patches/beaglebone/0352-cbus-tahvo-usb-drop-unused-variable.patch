@@ -1,0 +1,28 @@
+From 1863c455412d0e8853f66eed02cdde03d2a3f7b4 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:51 +0300
+Subject: [PATCH 0352/1092] cbus: tahvo: usb: drop unused variable
+
+no functional changes.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo-usb.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index 10619a8..e078440 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -116,7 +116,6 @@ static struct platform_device *tahvo_otg_dev;
+ 
+ static irqreturn_t omap_otg_irq(int irq, void *arg)
+ {
+-	struct tahvo_usb *tu = arg;
+ 	u16 otg_irq;
+ 
+ 	otg_irq = omap_readw(OTG_IRQ_SRC);
+-- 
+1.7.11.2
+

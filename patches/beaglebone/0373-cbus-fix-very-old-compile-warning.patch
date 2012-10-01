@@ -1,0 +1,38 @@
+From 32222eeb3b1f18c34640dadb0be77e73bc72a024 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Wed, 23 Nov 2011 16:00:45 +0200
+Subject: [PATCH 0373/1092] cbus: fix very old compile warning
+
+platform_driver.remove returns an 'int'.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index c7ed881..45b01fd 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -296,7 +296,7 @@ exit1:
+ 	return ret;
+ }
+ 
+-static void __devexit cbus_bus_remove(struct platform_device *pdev)
++static int __devexit cbus_bus_remove(struct platform_device *pdev)
+ {
+ 	struct cbus_host	*chost = platform_get_drvdata(pdev);
+ 
+@@ -305,6 +305,8 @@ static void __devexit cbus_bus_remove(struct platform_device *pdev)
+ 	gpio_free(chost->clk_gpio);
+ 
+ 	kfree(chost);
++
++	return 0;
+ }
+ 
+ static struct platform_driver cbus_driver = {
+-- 
+1.7.11.2
+

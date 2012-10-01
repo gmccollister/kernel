@@ -1,0 +1,54 @@
+From c2b2dbffe259a76af49fd6bc2347c94862c7e491 Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Mon, 19 Dec 2011 22:17:50 +0200
+Subject: [PATCH 0447/1092] usb: musb: remove a bit of indentation
+
+And use dev instead of musb->controller.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/omap2430.c | 27 +++++++++++++--------------
+ 1 file changed, 13 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index 22d233e..ba36fe4 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -353,20 +353,19 @@ static void omap2430_musb_enable(struct musb *musb)
+ 
+ 	case USB_EVENT_ID:
+ 		otg_init(musb->xceiv);
+-		if (data->interface_type == MUSB_INTERFACE_UTMI) {
+-			devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
+-			/* start the session */
+-			devctl |= MUSB_DEVCTL_SESSION;
+-			musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
+-			while (musb_readb(musb->mregs, MUSB_DEVCTL) &
+-						MUSB_DEVCTL_BDEVICE) {
+-				cpu_relax();
+-
+-				if (time_after(jiffies, timeout)) {
+-					dev_err(musb->controller,
+-					"configured as A device timeout");
+-					break;
+-				}
++		if (data->interface_type != MUSB_INTERFACE_UTMI)
++			break;
++		devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
++		/* start the session */
++		devctl |= MUSB_DEVCTL_SESSION;
++		musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
++		while (musb_readb(musb->mregs, MUSB_DEVCTL) &
++				MUSB_DEVCTL_BDEVICE) {
++			cpu_relax();
++
++			if (time_after(jiffies, timeout)) {
++				dev_err(dev, "configured as A device timeout");
++				break;
+ 			}
+ 		}
+ 		break;
+-- 
+1.7.11.2
+

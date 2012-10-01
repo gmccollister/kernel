@@ -1,0 +1,28 @@
+From 6a84f199f896fbb462de7da56b864b542919dba8 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:22:46 -0700
+Subject: [PATCH 0252/1092] cbus: retu-rtc: split MODULE_AUTHOR into several
+ entries
+
+it's easier to read, no functional changes.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu-rtc.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index 2947c80..2a1623b 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -452,4 +452,6 @@ module_exit(retu_rtc_exit);
+ 
+ MODULE_DESCRIPTION("Retu RTC");
+ MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Paul Mundt and Igor Stoppa");
++MODULE_AUTHOR("Paul Mundt");
++MODULE_AUTHOR("Igor Stoppa");
++
+-- 
+1.7.11.2
+

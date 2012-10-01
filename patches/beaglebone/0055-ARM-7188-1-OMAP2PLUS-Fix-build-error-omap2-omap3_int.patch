@@ -1,0 +1,31 @@
+From d6fdf37920a262701f1675e94db73d481d9989f7 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Mon, 5 Dec 2011 09:44:58 +0100
+Subject: [PATCH 0055/1092] ARM: 7188/1: OMAP2PLUS: Fix build error:
+ 'omap2/omap3_intc_handle_irq' undeclared.
+
+Fix the build break by adding the necessary irq functions to
+common header.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/arm/mach-omap2/common.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
+index 950b39d..cd0691a 100644
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -153,6 +153,8 @@ void omap_intc_restore_context(void);
+ void omap3_intc_suspend(void);
+ void omap3_intc_prepare_idle(void);
+ void omap3_intc_resume_idle(void);
++void omap2_intc_handle_irq(struct pt_regs *regs);
++void omap3_intc_handle_irq(struct pt_regs *regs);
+ 
+ /*
+  * wfi used in low power code. Directly opcode is used instead
+-- 
+1.7.11.2
+

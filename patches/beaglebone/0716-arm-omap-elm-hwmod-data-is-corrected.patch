@@ -1,0 +1,30 @@
+From b8198031c1fc54f18393c72fd4b8c09c034f4c92 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Mon, 16 Jan 2012 13:07:03 +0530
+Subject: [PATCH 0716/1092] arm:omap:elm - hwmod data is corrected
+
+sysconf register details are corrected.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_33xx_data.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+index fcdda05..1d4c441 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+@@ -480,8 +480,8 @@ static struct omap_hwmod_class_sysconfig am33xx_elm_sysc = {
+ 	.sysc_offs	= 0x0010,
+ 	.syss_offs	= 0x0014,
+ 	.sysc_flags	= (SYSC_HAS_CLOCKACTIVITY | SYSC_HAS_SIDLEMODE |
+-				SYSC_HAS_SOFTRESET |
+-				SYSS_HAS_RESET_STATUS),
++			SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE |
++			SYSS_HAS_RESET_STATUS),
+ 	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
+ 	.sysc_fields	= &omap_hwmod_sysc_type1,
+ };
+-- 
+1.7.11.2
+

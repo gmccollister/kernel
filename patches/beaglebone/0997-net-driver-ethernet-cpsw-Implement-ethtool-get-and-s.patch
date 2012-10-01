@@ -1,0 +1,90 @@
+From 294a4f6997132d304d951d28b374ef8d02289b10 Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Fri, 23 Sep 2011 12:30:13 +0530
+Subject: [PATCH 0997/1092] net: driver: ethernet: cpsw: Implement ethtool get
+ and set settings
+
+* Implementation for get and set the phy setting through ethtool interface.
+* In switch mode only one phy can be supported and other port will have
+  default settings and not changed.
+* Port selection for ethtool support can be specified in ethtool_slave in
+  cpsw platform data.
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpsw.h           |  1 +
+ 2 files changed, 42 insertions(+)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index a5cac35..8135974 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -1011,11 +1011,52 @@ static void cpsw_set_msglevel(struct net_device *ndev, u32 value)
+ 	priv->msg_enable = value;
+ }
+ 
++/**
++ * cpsw_get_settings: Get EMAC settings
++ * @ndev: CPSW network adapter
++ * @ecmd: ethtool command
++ *
++ * Executes ethool get command
++ *
++ */
++static int cpsw_get_settings(struct net_device *ndev,
++			     struct ethtool_cmd *ecmd)
++{
++	struct cpsw_priv *priv = netdev_priv(ndev);
++	int slave_no = priv->data.ethtool_slave;
++
++	if (priv->slaves[slave_no].phy)
++		return phy_ethtool_gset(priv->slaves[slave_no].phy, ecmd);
++	else
++		return -EOPNOTSUPP;
++}
++
++/**
++ * cpsw_set_settings: Set EMAC settings
++ * @ndev: CPSW network adapter
++ * @ecmd: ethtool command
++ *
++ * Executes ethool set command
++ *
++ */
++static int cpsw_set_settings(struct net_device *ndev, struct ethtool_cmd *ecmd)
++{
++	struct cpsw_priv *priv = netdev_priv(ndev);
++	int slave_no = priv->data.ethtool_slave;
++
++	if (priv->slaves[slave_no].phy)
++		return phy_ethtool_sset(priv->slaves[slave_no].phy, ecmd);
++	else
++		return -EOPNOTSUPP;
++}
++
+ static const struct ethtool_ops cpsw_ethtool_ops = {
+ 	.get_drvinfo	= cpsw_get_drvinfo,
+ 	.get_msglevel	= cpsw_get_msglevel,
+ 	.set_msglevel	= cpsw_set_msglevel,
+ 	.get_link	= ethtool_op_get_link,
++	.get_settings	= cpsw_get_settings,
++	.set_settings	= cpsw_set_settings,
+ 	.get_coalesce	= cpsw_get_coalesce,
+ 	.set_coalesce	= cpsw_set_coalesce,
+ };
+diff --git a/include/linux/cpsw.h b/include/linux/cpsw.h
+index f1bb9d3..cb3a857 100644
+--- a/include/linux/cpsw.h
++++ b/include/linux/cpsw.h
+@@ -23,6 +23,7 @@ struct cpsw_platform_data {
+ 
+ 	int	slaves;		/* number of slave cpgmac ports */
+ 	struct cpsw_slave_data	*slave_data;
++	int	ethtool_slave;	/* Holds which slave attaches to ethtool */
+ 
+ 	u32	ale_reg_ofs;	/* address lookup engine reg offset */
+ 	int	ale_entries;	/* ale table size */
+-- 
+1.7.11.2
+

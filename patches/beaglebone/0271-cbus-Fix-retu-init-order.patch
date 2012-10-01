@@ -1,0 +1,36 @@
+From dd579c04a1b118c34b93fcef851c8d551dccfb26 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 16 Sep 2010 17:02:33 -0700
+Subject: [PATCH 0271/1092] cbus: Fix retu init order
+
+Device needs to be registered before the driver. Otherwise
+the driver register will fail.
+
+Eventually the device register will move to the board-*.c files.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 1397366..4a072da 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -531,11 +531,11 @@ static int __init retu_init(void)
+ 	/* Set up correct gpio number on struct resource */
+ 	retu_resource[0].start = gpio_to_irq(retu_irq_pin);
+ 
+-	ret = platform_driver_probe(&retu_driver, retu_probe);
++	ret = platform_device_register(&retu_device);
+ 	if (ret < 0)
+ 		goto err1;
+ 
+-	ret = platform_device_register(&retu_device);
++	ret = platform_driver_probe(&retu_driver, retu_probe);
+ 	if (ret < 0)
+ 		goto err2;
+ 
+-- 
+1.7.11.2
+

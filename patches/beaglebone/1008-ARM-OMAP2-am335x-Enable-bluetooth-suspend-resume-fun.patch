@@ -1,0 +1,34 @@
+From 8d75a84572da04e680fb8d5c09199f0bb10ac7d5 Mon Sep 17 00:00:00 2001
+From: Eyal Reizer <eyalr@ti.com>
+Date: Wed, 6 Jun 2012 19:12:20 +0530
+Subject: [PATCH 1008/1092] ARM: OMAP2+: am335x: Enable bluetooth
+ suspend/resume functionality
+
+Enable pull-up on the bluetooth enable pin to allow maintaining
+"on" state during suspend
+
+Signed-off-by: Eyal Reizer <eyalr@ti.com>
+[vaibhav.bedia@ti.com - Drop the pad context save and restore
+since that is now handled in a generic manner in pm33xx.c and
+update the commit message accordingly]
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index f47b27b..444061c 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -887,7 +887,7 @@ static struct pinmux_config uart1_wl12xx_pin_mux[] = {
+ static struct pinmux_config wl12xx_pin_mux[] = {
+ 	{"gpmc_a0.gpio1_16", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+ 	{"mcasp0_ahclkr.gpio3_17", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+-	{"mcasp0_ahclkx.gpio3_21", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
++	{"mcasp0_ahclkx.gpio3_21", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT_PULLUP},
+ 	{NULL, 0},
+  };
+ 
+-- 
+1.7.11.2
+

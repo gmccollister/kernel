@@ -1,0 +1,38 @@
+From ba54060c956e9c7525051124073d683eb94fb754 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 6 Dec 2011 17:50:42 +0100
+Subject: [PATCH 0086/1092] ARM: 7194/1: OMAP: Fix build after a merge between
+ v3.2-rc4 and ARM restart changes
+
+ARM restart changes needed changes to common.h to make it local.
+This conflicted with v3.2-rc4 DSS related hwmod changes that
+git mergetool was not able to handle.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/arm/mach-omap2/display.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index dce9905..bc6cf86 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -22,12 +22,13 @@
+ #include <linux/io.h>
+ #include <linux/clk.h>
+ #include <linux/err.h>
++#include <linux/delay.h>
+ 
+ #include <video/omapdss.h>
+ #include <plat/omap_hwmod.h>
+ #include <plat/omap_device.h>
+ #include <plat/omap-pm.h>
+-#include <plat/common.h>
++#include "common.h"
+ 
+ #include "control.h"
+ #include "display.h"
+-- 
+1.7.11.2
+

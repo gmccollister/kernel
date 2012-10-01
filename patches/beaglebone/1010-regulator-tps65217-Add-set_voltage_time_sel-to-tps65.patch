@@ -1,0 +1,104 @@
+From e31653b750c3c175edcc3ab3b3bf3457a2f0cceb Mon Sep 17 00:00:00 2001
+From: AnilKumar Ch <anilkumar@ti.com>
+Date: Fri, 8 Jun 2012 15:26:47 +0530
+Subject: [PATCH 1010/1092] regulator: tps65217: Add set_voltage_time_sel() to
+ tps65217
+
+This patch adds set_voltage_time_sel() function to tps65217 PMIC
+driver to handle ramp_delay.
+
+This function will return the delay required to ramp the current
+voltage to a requested voltage. Regulator framework then wait for
+this much delay after voltage set.
+
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ drivers/regulator/tps65217-regulator.c | 21 +++++++++++++++++++++
+ include/linux/mfd/tps65217.h           |  6 ++++++
+ 2 files changed, 27 insertions(+)
+
+diff --git a/drivers/regulator/tps65217-regulator.c b/drivers/regulator/tps65217-regulator.c
+index 6665566..9733d96 100644
+--- a/drivers/regulator/tps65217-regulator.c
++++ b/drivers/regulator/tps65217-regulator.c
+@@ -389,6 +389,21 @@ static int tps65217_pmic_ldo_list_voltage(struct regulator_dev *dev,
+ 	return tps->info[ldo]->vsel_to_uv(selector);
+ }
+ 
++static int tps65217_pmic_dcdc_set_voltage_time_sel(struct regulator_dev *dev,
++			unsigned int old_sel, unsigned int new_sel)
++{
++	struct tps65217 *tps = rdev_get_drvdata(dev);
++	unsigned int dcdc = rdev_get_id(dev);
++	int ret;
++
++	/* If the regulator isn't on, it won't take time here */
++	ret = tps65217_pmic_dcdc_is_enabled(dev);
++	if (!ret || ret < 0)
++		return ret;
++
++	return tps->info[dcdc]->delay;
++}
++
+ /* Operations permitted on DCDCx */
+ static struct regulator_ops tps65217_pmic_dcdc_ops = {
+ 	.is_enabled		= tps65217_pmic_dcdc_is_enabled,
+@@ -397,6 +412,7 @@ static struct regulator_ops tps65217_pmic_dcdc_ops = {
+ 	.get_voltage_sel	= tps65217_pmic_dcdc_get_voltage_sel,
+ 	.set_voltage		= tps65217_pmic_dcdc_set_voltage,
+ 	.list_voltage		= tps65217_pmic_dcdc_list_voltage,
++	.set_voltage_time_sel	= tps65217_pmic_dcdc_set_voltage_time_sel,
+ };
+ 
+ /* Operations permitted on LDO1 */
+@@ -441,11 +457,16 @@ static int __devinit tps65217_regulator_probe(struct platform_device *pdev)
+ 	struct regulator_dev *rdev;
+ 	struct tps65217 *tps;
+ 	struct tps_info *info = &tps65217_pmic_regs[pdev->id];
++	const struct regulator_init_data *init_data = pdev->dev.platform_data;
++	struct tps65217_rdelay *pd = init_data->driver_data;
+ 
+ 	/* Already set by core driver */
+ 	tps = dev_to_tps65217(pdev->dev.parent);
+ 	tps->info[pdev->id] = info;
+ 
++	if (pd)
++		tps->info[pdev->id]->delay = pd->ramp_delay;
++
+ 	rdev = regulator_register(&regulators[pdev->id], &pdev->dev,
+ 				  pdev->dev.platform_data, tps);
+ 	if (IS_ERR(rdev))
+diff --git a/include/linux/mfd/tps65217.h b/include/linux/mfd/tps65217.h
+index e030ef9..234cd0d 100644
+--- a/include/linux/mfd/tps65217.h
++++ b/include/linux/mfd/tps65217.h
+@@ -220,6 +220,10 @@ struct tps65217_board {
+ 	struct regulator_init_data *tps65217_init_data;
+ };
+ 
++struct tps65217_rdelay {
++	int ramp_delay;
++};
++
+ /**
+  * struct tps_info - packages regulator constraints
+  * @name:		Voltage regulator name
+@@ -227,6 +231,7 @@ struct tps65217_board {
+  * @max_uV:		minimum micro volts
+  * @vsel_to_uv:		Function pointer to get voltage from selector
+  * @uv_to_vsel:		Function pointer to get selector from voltage
++ * @delay:		Set voltage delay in us
+  * @table:		Table for non-uniform voltage step-size
+  * @table_len:		Length of the voltage table
+  * @enable_mask:	Regulator enable mask bits
+@@ -241,6 +246,7 @@ struct tps_info {
+ 	int max_uV;
+ 	int (*vsel_to_uv)(unsigned int vsel);
+ 	int (*uv_to_vsel)(int uV, unsigned int *vsel);
++	int delay;
+ 	const int *table;
+ 	unsigned int table_len;
+ 	unsigned int enable_mask;
+-- 
+1.7.11.2
+

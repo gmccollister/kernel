@@ -1,0 +1,41 @@
+From 645866b5c1c7ab84f606853c08234b1fddaac95e Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Thu, 26 Apr 2012 15:20:20 +0530
+Subject: [PATCH 0954/1092] video: da8xx-fb: Add Newhaven LCD Panel details
+
+This patch adds details for Newhaven display Panel.
+This panel is used on AM335x EVM-SK An upcoming TI EVM.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ drivers/video/da8xx-fb.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 2e69278..af6cded 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -272,6 +272,20 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.pxl_clk = 30000000,
+ 		.invert_pxl_clk = 0,
+ 	},
++	/* Newhaven Display */
++	[3] = {
++		.name = "NHD-4.3-ATXI#-T-1",
++		.width = 480,
++		.height = 272,
++		.hfp = 8,
++		.hbp = 43,
++		.hsw = 4,
++		.vfp = 4,
++		.vbp = 12,
++		.vsw = 10,
++		.pxl_clk = 9000000,
++		.invert_pxl_clk = 0,
++	},
+ };
+ 
+ /* Enable the Raster Engine of the LCD Controller */
+-- 
+1.7.11.2
+

@@ -1,0 +1,96 @@
+From 75fe56c9e0534bb6b6bc49310e5503a4078abec5 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Wed, 28 Dec 2011 19:08:10 +0530
+Subject: [PATCH 0660/1092] arm:omap: Add SRAM support for AM33xx
+
+Just creates a gen_pool of 64KB which points to
+OCMC RAM in AM33xx. A subsequent patch will add
+code for copying the suspend code to SRAM
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/plat-omap/include/plat/sram.h |  1 +
+ arch/arm/plat-omap/sram.c              | 21 ++++++++++++++-------
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/sram.h b/arch/arm/plat-omap/include/plat/sram.h
+index bfe33ee..a60f643 100644
+--- a/arch/arm/plat-omap/include/plat/sram.h
++++ b/arch/arm/plat-omap/include/plat/sram.h
+@@ -108,4 +108,5 @@ static inline void omap_push_sram_idle(void) {}
+ #else
+ #define OMAP4_SRAM_PA		0x40300000
+ #endif
++#define AM33XX_SRAM_PA		0x40300000
+ #endif
+diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
+index 24100b5..46378a2 100644
+--- a/arch/arm/plat-omap/sram.c
++++ b/arch/arm/plat-omap/sram.c
+@@ -85,7 +85,7 @@ static int is_sram_locked(void)
+ 			__raw_writel(0xCFDE, OMAP24XX_VA_READPERM0);  /* all i-read */
+ 			__raw_writel(0xCFDE, OMAP24XX_VA_WRITEPERM0); /* all i-write */
+ 		}
+-		if (cpu_is_omap34xx()) {
++		if (cpu_is_omap34xx() && !cpu_is_am33xx()) {
+ 			__raw_writel(0xFFFF, OMAP34XX_VA_REQINFOPERM0); /* all q-vects */
+ 			__raw_writel(0xFFFF, OMAP34XX_VA_READPERM0);  /* all i-read */
+ 			__raw_writel(0xFFFF, OMAP34XX_VA_WRITEPERM0); /* all i-write */
+@@ -110,7 +110,7 @@ static void __init omap_detect_sram(void)
+ {
+ 	if (cpu_class_is_omap2()) {
+ 		if (is_sram_locked()) {
+-			if (cpu_is_omap34xx()) {
++			if (cpu_is_omap34xx() && !cpu_is_am33xx()) {
+ 				omap_sram_start = OMAP3_SRAM_PUB_PA;
+ 				if ((omap_type() == OMAP2_DEVICE_TYPE_EMU) ||
+ 				    (omap_type() == OMAP2_DEVICE_TYPE_SEC)) {
+@@ -126,12 +126,15 @@ static void __init omap_detect_sram(void)
+ 				omap_sram_size = 0x800; /* 2K */
+ 			}
+ 		} else {
+-			if (cpu_is_omap34xx()) {
++			if (cpu_is_omap34xx() && !cpu_is_am33xx()) {
+ 				omap_sram_start = OMAP3_SRAM_PA;
+ 				omap_sram_size = 0x10000; /* 64K */
+ 			} else if (cpu_is_omap44xx()) {
+ 				omap_sram_start = OMAP4_SRAM_PA;
+ 				omap_sram_size = 0xe000; /* 56K */
++			} else if (cpu_is_am33xx()) {
++				omap_sram_start = AM33XX_SRAM_PA;
++				omap_sram_size = 0x10000; /* 64K */
+ 			} else {
+ 				omap_sram_start = OMAP2_SRAM_PA;
+ 				if (cpu_is_omap242x())
+@@ -353,11 +356,13 @@ static inline int omap34xx_sram_init(void)
+ 	return 0;
+ }
+ 
+-int __init omap_sram_init(void)
++static inline int am33xx_sram_init(void)
+ {
+-	if (cpu_is_am33xx())
+-		return 0;
++	return 0;
++}
+ 
++int __init omap_sram_init(void)
++{
+ 	omap_detect_sram();
+ 	omap_map_sram();
+ 
+@@ -367,8 +372,10 @@ int __init omap_sram_init(void)
+ 		omap242x_sram_init();
+ 	else if (cpu_is_omap2430())
+ 		omap243x_sram_init();
+-	else if (cpu_is_omap34xx())
++	else if (cpu_is_omap34xx() && !cpu_is_am33xx())
+ 		omap34xx_sram_init();
++	else if (!cpu_is_am33xx())
++		am33xx_sram_init();
+ 
+ 	return 0;
+ }
+-- 
+1.7.11.2
+

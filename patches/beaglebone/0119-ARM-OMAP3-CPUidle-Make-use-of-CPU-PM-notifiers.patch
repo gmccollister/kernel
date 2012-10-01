@@ -1,0 +1,55 @@
+From a89e0e471c5e457c4840471387824b7c8b66dbe0 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Sat, 3 Sep 2011 22:38:27 +0530
+Subject: [PATCH 0119/1092] ARM: OMAP3: CPUidle: Make use of CPU PM notifiers
+
+Save VFP CPU context using CPU PM notifier chain. VFP context
+is lost when CPU hits OFF state.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/cpuidle34xx.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+index e20332f..1f71ebb 100644
+--- a/arch/arm/mach-omap2/cpuidle34xx.c
++++ b/arch/arm/mach-omap2/cpuidle34xx.c
+@@ -25,6 +25,7 @@
+ #include <linux/sched.h>
+ #include <linux/cpuidle.h>
+ #include <linux/export.h>
++#include <linux/cpu_pm.h>
+ 
+ #include <plat/prcm.h>
+ #include <plat/irqs.h>
+@@ -124,9 +125,23 @@ static int omap3_enter_idle(struct cpuidle_device *dev,
+ 		pwrdm_for_each_clkdm(core_pd, _cpuidle_deny_idle);
+ 	}
+ 
++	/*
++	 * Call idle CPU PM enter notifier chain so that
++	 * VFP context is saved.
++	 */
++	if (mpu_state == PWRDM_POWER_OFF)
++		cpu_pm_enter();
++
+ 	/* Execute ARM wfi */
+ 	omap_sram_idle();
+ 
++	/*
++	 * Call idle CPU PM enter notifier chain to restore
++	 * VFP context.
++	 */
++	if (pwrdm_read_prev_pwrst(mpu_pd) == PWRDM_POWER_OFF)
++		cpu_pm_exit();
++
+ 	/* Re-allow idle for C1 */
+ 	if (index == 0) {
+ 		pwrdm_for_each_clkdm(mpu_pd, _cpuidle_allow_idle);
+-- 
+1.7.11.2
+

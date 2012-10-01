@@ -1,0 +1,110 @@
+From 45d7bfaef72e4280f0423aa36d79213f4fbbc0c7 Mon Sep 17 00:00:00 2001
+From: Tero Kristo <t-kristo@ti.com>
+Date: Fri, 16 Dec 2011 14:36:59 -0700
+Subject: [PATCH 0127/1092] ARM: OMAP: hwmod: add support for selecting
+ mpu_irq for each wakeup pad
+
+By default all registered pads will trigger mpu_irqs[0]. Now there is
+an API for selecting used mpu_irq on pad basis, which can be used to
+trigger different irq handlers for different pads in the same hwmod.
+Each pad that requires its interrupt to be re-routed this way must
+have a separate call to omap_hwmod_pad_route_irq(hwmod, pad, irq).
+
+Signed-off-by: Tero Kristo <t-kristo@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+[paul@pwsan.com: moved fn to omap_hwmod.c; separated fn from mux scan_wakeups
+ changes; added kerneldoc]
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ arch/arm/mach-omap2/omap_hwmod.c             | 55 ++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/plat/omap_hwmod.h |  2 +
+ 2 files changed, 57 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod.c b/arch/arm/mach-omap2/omap_hwmod.c
+index c753161..5192cab 100644
+--- a/arch/arm/mach-omap2/omap_hwmod.c
++++ b/arch/arm/mach-omap2/omap_hwmod.c
+@@ -136,6 +136,7 @@
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
++#include <linux/slab.h>
+ 
+ #include "common.h"
+ #include <plat/cpu.h>
+@@ -2730,3 +2731,57 @@ int omap_hwmod_no_setup_reset(struct omap_hwmod *oh)
+ 
+ 	return 0;
+ }
++
++/**
++ * omap_hwmod_pad_route_irq - route an I/O pad wakeup to a particular MPU IRQ
++ * @oh: struct omap_hwmod * containing hwmod mux entries
++ * @pad_idx: array index in oh->mux of the hwmod mux entry to route wakeup
++ * @irq_idx: the hwmod mpu_irqs array index of the IRQ to trigger on wakeup
++ *
++ * When an I/O pad wakeup arrives for the dynamic or wakeup hwmod mux
++ * entry number @pad_idx for the hwmod @oh, trigger the interrupt
++ * service routine for the hwmod's mpu_irqs array index @irq_idx.  If
++ * this function is not called for a given pad_idx, then the ISR
++ * associated with @oh's first MPU IRQ will be triggered when an I/O
++ * pad wakeup occurs on that pad.  Note that @pad_idx is the index of
++ * the _dynamic or wakeup_ entry: if there are other entries not
++ * marked with OMAP_DEVICE_PAD_WAKEUP or OMAP_DEVICE_PAD_REMUX, these
++ * entries are NOT COUNTED in the dynamic pad index.  This function
++ * must be called separately for each pad that requires its interrupt
++ * to be re-routed this way.  Returns -EINVAL if there is an argument
++ * problem or if @oh does not have hwmod mux entries or MPU IRQs;
++ * returns -ENOMEM if memory cannot be allocated; or 0 upon success.
++ *
++ * XXX This function interface is fragile.  Rather than using array
++ * indexes, which are subject to unpredictable change, it should be
++ * using hwmod IRQ names, and some other stable key for the hwmod mux
++ * pad records.
++ */
++int omap_hwmod_pad_route_irq(struct omap_hwmod *oh, int pad_idx, int irq_idx)
++{
++	int nr_irqs;
++
++	might_sleep();
++
++	if (!oh || !oh->mux || !oh->mpu_irqs || pad_idx < 0 ||
++	    pad_idx >= oh->mux->nr_pads_dynamic)
++		return -EINVAL;
++
++	/* Check the number of available mpu_irqs */
++	for (nr_irqs = 0; oh->mpu_irqs[nr_irqs].irq >= 0; nr_irqs++)
++		;
++
++	if (irq_idx >= nr_irqs)
++		return -EINVAL;
++
++	if (!oh->mux->irqs) {
++		/* XXX What frees this? */
++		oh->mux->irqs = kzalloc(sizeof(int) * oh->mux->nr_pads_dynamic,
++			GFP_KERNEL);
++		if (!oh->mux->irqs)
++			return -ENOMEM;
++	}
++	oh->mux->irqs[pad_idx] = irq_idx;
++
++	return 0;
++}
+diff --git a/arch/arm/plat-omap/include/plat/omap_hwmod.h b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+index 78af92a..6470101 100644
+--- a/arch/arm/plat-omap/include/plat/omap_hwmod.h
++++ b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+@@ -608,6 +608,8 @@ int omap_hwmod_get_context_loss_count(struct omap_hwmod *oh);
+ 
+ int omap_hwmod_no_setup_reset(struct omap_hwmod *oh);
+ 
++int omap_hwmod_pad_route_irq(struct omap_hwmod *oh, int pad_idx, int irq_idx);
++
+ /*
+  * Chip variant-specific hwmod init routines - XXX should be converted
+  * to use initcalls once the initial boot ordering is straightened out
+-- 
+1.7.11.2
+

@@ -1,0 +1,97 @@
+From 1bc1fc2267e35768e1e8b93f4796562802b669ca Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 17 Jan 2012 12:08:43 +0530
+Subject: [PATCH 0724/1092] ARM: OMAP2+: hwmod: Add two new sysc_field types
+
+In AM33XX, two new types of SYSCONFIG bitfields are present.
+This patch introduces two new sysc_field types to take care
+of these new schemes.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_common_data.c | 22 ++++++++++++++++++++++
+ arch/arm/plat-omap/include/plat/omap_hwmod.h | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_common_data.c b/arch/arm/mach-omap2/omap_hwmod_common_data.c
+index 51e5418..063925c 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_common_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_common_data.c
+@@ -49,6 +49,28 @@ struct omap_hwmod_sysc_fields omap_hwmod_sysc_type2 = {
+ 	.srst_shift	= SYSC_TYPE2_SOFTRESET_SHIFT,
+ };
+ 
++/**
++ * struct omap_hwmod_sysc_type3 - TYPE3 sysconfig scheme.
++ * Used by some IPs on AM33xx
++ */
++struct omap_hwmod_sysc_fields omap_hwmod_sysc_type3 = {
++	.midle_shift	= SYSC_TYPE3_MIDLEMODE_SHIFT,
++	.sidle_shift	= SYSC_TYPE3_SIDLEMODE_SHIFT,
++};
++
++/**
++ * struct omap_hwmod_sysc_type4 - TYPE4 sysconfig scheme.
++ * Used by some IPs on AM33xx
++ */
++struct omap_hwmod_sysc_fields omap_hwmod_sysc_type4 = {
++	.midle_shift	= SYSC_TYPE4_MIDLEMODE_SHIFT,
++	.clkact_shift	= SYSC_TYPE4_CLOCKACTIVITY_SHIFT,
++	.sidle_shift	= SYSC_TYPE4_SIDLEMODE_SHIFT,
++	.enwkup_shift	= SYSC_TYPE4_ENAWAKEUP_SHIFT,
++	.srst_shift	= SYSC_TYPE4_SOFTRESET_SHIFT,
++	.autoidle_shift	= SYSC_TYPE4_AUTOIDLE_SHIFT,
++};
++
+ struct omap_dss_dispc_dev_attr omap2_3_dss_dispc_dev_attr = {
+ 	.manager_count		= 2,
+ 	.has_framedonetv_irq	= 0
+diff --git a/arch/arm/plat-omap/include/plat/omap_hwmod.h b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+index f05f9a6..a3b8b5c 100644
+--- a/arch/arm/plat-omap/include/plat/omap_hwmod.h
++++ b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+@@ -41,6 +41,8 @@ struct omap_device;
+ 
+ extern struct omap_hwmod_sysc_fields omap_hwmod_sysc_type1;
+ extern struct omap_hwmod_sysc_fields omap_hwmod_sysc_type2;
++extern struct omap_hwmod_sysc_fields omap_hwmod_sysc_type3;
++extern struct omap_hwmod_sysc_fields omap_hwmod_sysc_type4;
+ 
+ /*
+  * OCP SYSCONFIG bit shifts/masks TYPE1. These are for IPs compliant
+@@ -70,6 +72,32 @@ extern struct omap_hwmod_sysc_fields omap_hwmod_sysc_type2;
+ #define SYSC_TYPE2_MIDLEMODE_SHIFT	4
+ #define SYSC_TYPE2_MIDLEMODE_MASK	(0x3 << SYSC_TYPE2_MIDLEMODE_SHIFT)
+ 
++/*
++ * OCP SYSCONFIG bit shifts/masks TYPE3.
++ * This is applicable for some IPs present in AM33XX
++ */
++#define SYSC_TYPE3_SIDLEMODE_SHIFT	0
++#define SYSC_TYPE3_SIDLEMODE_MASK	(0x3 << SYSC_TYPE3_SIDLEMODE_SHIFT)
++#define SYSC_TYPE3_MIDLEMODE_SHIFT	2
++#define SYSC_TYPE3_MIDLEMODE_MASK	(0x3 << SYSC_TYPE3_MIDLEMODE_SHIFT)
++
++/*
++ * OCP SYSCONFIG bit shifts/masks TYPE4.
++ * This is applicable for some IPs present in AM33XX
++ */
++#define SYSC_TYPE4_CLOCKACTIVITY_SHIFT	8
++#define SYSC_TYPE4_CLOCKACTIVITY_MASK	(0x3 << SYSC_CLOCKACTIVITY_SHIFT)
++#define SYSC_TYPE4_MIDLEMODE_SHIFT	5
++#define SYSC_TYPE4_MIDLEMODE_MASK	(0x3 << SYSC_MIDLEMODE_SHIFT)
++#define SYSC_TYPE4_SIDLEMODE_SHIFT	3
++#define SYSC_TYPE4_SIDLEMODE_MASK	(0x3 << SYSC_SIDLEMODE_SHIFT)
++#define SYSC_TYPE4_ENAWAKEUP_SHIFT	2
++#define SYSC_TYPE4_ENAWAKEUP_MASK	(1 << SYSC_ENAWAKEUP_SHIFT)
++#define SYSC_TYPE4_SOFTRESET_SHIFT	1
++#define SYSC_TYPE4_SOFTRESET_MASK	(1 << SYSC_SOFTRESET_SHIFT)
++#define SYSC_TYPE4_AUTOIDLE_SHIFT	0
++#define SYSC_TYPE4_AUTOIDLE_MASK	(1 << SYSC_AUTOIDLE_SHIFT)
++
+ /* OCP SYSSTATUS bit shifts/masks */
+ #define SYSS_RESETDONE_SHIFT		0
+ #define SYSS_RESETDONE_MASK		(1 << SYSS_RESETDONE_SHIFT)
+-- 
+1.7.11.2
+

@@ -1,0 +1,63 @@
+From bd9ef73d5e4fa395e05755a048cfe7ba802ee005 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 17 Oct 2011 23:50:41 +0300
+Subject: [PATCH 0365/1092] cbus: retu: no need to pass devid via pdata
+
+that's a constant, which will never change.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 464fc0c..d2f43bb 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -46,8 +46,6 @@ struct retu {
+ 	struct mutex		mutex;
+ 	struct device		*dev;
+ 
+-	int			devid;
+-
+ 	int			irq_base;
+ 	int			irq_end;
+ 
+@@ -71,7 +69,7 @@ static struct retu *the_retu;
+  */
+ static int __retu_read_reg(struct retu *retu, unsigned reg)
+ {
+-	return cbus_read_reg(retu->dev, retu->devid, reg);
++	return cbus_read_reg(retu->dev, CBUS_RETU_DEVICE_ID, reg);
+ }
+ 
+ /**
+@@ -82,7 +80,7 @@ static int __retu_read_reg(struct retu *retu, unsigned reg)
+  */
+ static void __retu_write_reg(struct retu *retu, unsigned reg, u16 val)
+ {
+-	cbus_write_reg(retu->dev, retu->devid, reg, val);
++	cbus_write_reg(retu->dev, CBUS_RETU_DEVICE_ID, reg, val);
+ }
+ 
+ /**
+@@ -430,7 +428,6 @@ static int retu_allocate_children(struct device *parent, int irq_base)
+ static int __devinit retu_probe(struct platform_device *pdev)
+ {
+ 	struct retu	*retu;
+-	struct cbus_retu_platform_data *pdata = pdev->dev.platform_data;
+ 
+ 	int		ret = -ENOMEM;
+ 	int		rev;
+@@ -452,7 +449,6 @@ static int __devinit retu_probe(struct platform_device *pdev)
+ 	retu->irq	= platform_get_irq(pdev, 0);
+ 	retu->irq_base	= ret;
+ 	retu->irq_end	= ret + MAX_RETU_IRQ_HANDLERS;
+-	retu->devid	= pdata->devid;
+ 	retu->dev	= &pdev->dev;
+ 	the_retu	= retu;
+ 
+-- 
+1.7.11.2
+

@@ -1,0 +1,143 @@
+From 64935286dd1ad682d465eebe54173c6b24bbcf7e Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Tue, 28 Sep 2010 12:00:30 -0700
+Subject: [PATCH 0216/1092] cbus: move to platform_driver
+
+also add the platform_device to 770 and n8x0 board files.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c |  6 ++++++
+ arch/arm/mach-omap2/board-n8x0.c     |  8 ++++++++
+ drivers/cbus/cbus.c                  | 34 +++++++++++++++++++++++++++++++++-
+ 3 files changed, 47 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index c643423..390e300 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -82,8 +82,14 @@ static struct platform_device nokia770_kp_device = {
+ 	.resource	= nokia770_kp_resources,
+ };
+ 
++static struct platform_device nokia770_cbus_device = {
++	.name		= "cbus",
++	.id		= -1,
++};
++
+ static struct platform_device *nokia770_devices[] __initdata = {
+ 	&nokia770_kp_device,
++	&nokia770_cbus_device,
+ };
+ 
+ static void mipid_shutdown(struct mipid_platform_data *pdata)
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 7f2e216..599656b 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -17,6 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/stddef.h>
++#include <linux/platform_device.h>
+ #include <linux/i2c.h>
+ #include <linux/spi/spi.h>
+ #include <linux/usb/musb.h>
+@@ -181,6 +182,11 @@ static struct mtd_partition onenand_partitions[] = {
+ 	},
+ };
+ 
++static struct platform_device n8x0_cbus_device = {
++	.name		= "cbus",
++	.id		= -1,
++};
++
+ static struct omap_onenand_platform_data board_onenand_data[] = {
+ 	{
+ 		.cs		= 0,
+@@ -666,6 +672,8 @@ static inline void board_serial_init(void)
+ static void __init n8x0_init_machine(void)
+ {
+ 	omap2420_mux_init(board_mux, OMAP_PACKAGE_ZAC);
++	platform_device_register(&n8x0_cbus_device);
++
+ 	/* FIXME: add n810 spi devices */
+ 	spi_register_board_info(n800_spi_board_info,
+ 				ARRAY_SIZE(n800_spi_board_info));
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 145e760..a35941e 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -29,6 +29,7 @@
+ #include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/gpio.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/io.h>
+ #include <asm/mach-types.h>
+@@ -222,7 +223,7 @@ int cbus_write_reg(struct cbus_host *host, int dev, int reg, u16 val)
+ }
+ EXPORT_SYMBOL(cbus_write_reg);
+ 
+-static int __init cbus_bus_init(void)
++static int __init cbus_bus_probe(struct platform_device *pdev)
+ {
+ 	struct cbus_host *chost;
+ 	int ret;
+@@ -275,6 +276,8 @@ static int __init cbus_bus_init(void)
+ 	gpio_set_value(chost->clk_gpio, 1);
+ 	gpio_set_value(chost->clk_gpio, 0);
+ 
++	platform_set_drvdata(pdev, chost);
++
+ 	cbus_host = chost;
+ 
+ 	return 0;
+@@ -284,13 +287,42 @@ exit2:
+ 	gpio_free(chost->clk_gpio);
+ exit1:
+ 	kfree(chost);
++
+ 	return ret;
+ }
+ 
++static void __exit cbus_bus_remove(struct platform_device *pdev)
++{
++	struct cbus_host	*chost = platform_get_drvdata(pdev);
++
++	gpio_free(chost->dat_gpio);
++	gpio_free(chost->clk_gpio);
++	kfree(chost);
++}
++
++static struct platform_driver cbus_driver = {
++	.remove		= __exit_p(cbus_bus_remove),
++	.driver		= {
++		.name	= "cbus",
++	},
++};
++
++static int __init cbus_bus_init(void)
++{
++	return platform_driver_probe(&cbus_driver, cbus_bus_probe);
++}
++
+ subsys_initcall(cbus_bus_init);
+ 
++static void __exit cbus_bus_exit(void)
++{
++	platform_driver_unregister(&cbus_driver);
++}
++module_exit(cbus_bus_exit);
++
+ MODULE_DESCRIPTION("CBUS serial protocol");
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Juha Yrjölä");
+ MODULE_AUTHOR("David Weinehall");
+ MODULE_AUTHOR("Mikko Ylinen");
++
+-- 
+1.7.11.2
+

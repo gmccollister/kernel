@@ -1,0 +1,97 @@
+From f5fa83b249ebfa8199e6a6168ede97923be17c24 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Wed, 11 Jan 2012 17:35:47 +0530
+Subject: [PATCH 0681/1092] arm: am33xx: Add CPSW MII mac select support
+
+This patch fixes missing configuration for MII interface
+configuration in device control register. MII mode selection
+should be done depending up on the board/phy type.
+This was missing in linux, however without this also it was
+working as it was configured in uboot. This is required in
+linux also in order to remove any dependency on uboot.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c              |  6 ++++++
+ arch/arm/mach-omap2/devices.c                      | 16 +++++++++++++++-
+ arch/arm/mach-omap2/include/mach/board-am335xevm.h |  4 +++-
+ 3 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 8a9eb2b..5b88961 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1550,6 +1550,9 @@ static void setup_beaglebone_old(void)
+ 
+ 	phy_register_fixup_for_uid(BBB_PHY_ID, BBB_PHY_MASK,
+ 					beaglebone_phy_fixup);
++
++	/* Fill up global evmid */
++	am33xx_evmid_fillup(BEAGLE_BONE_OLD);
+ }
+ 
+ /* BeagleBone after Rev A3 */
+@@ -1561,6 +1564,9 @@ static void setup_beaglebone(void)
+ 	am335x_mmc[0].gpio_wp = -EINVAL;
+ 
+ 	_configure_device(LOW_COST_EVM, beaglebone_dev_cfg, PROFILE_NONE);
++
++	/* Fill up global evmid */
++	am33xx_evmid_fillup(BEAGLE_BONE_A3);
+ }
+ 
+ 
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index e896e7b..bf5d54c 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -1314,6 +1314,11 @@ void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1)
+ 	return;
+ }
+ 
++#define MII_MODE_ENABLE		0x0
++#define RMII_MODE_ENABLE	0x5
++#define RGMII_MODE_ENABLE	0xA
++#define MAC_MII_SEL		0x650
++
+ void am33xx_cpsw_init(unsigned int gigen)
+ {
+ 	u32 mac_lo, mac_hi;
+@@ -1349,9 +1354,18 @@ void am33xx_cpsw_init(unsigned int gigen)
+ 			am33xx_cpsw_slaves[1].mac_addr[i] = am33xx_macid1[i];
+ 	}
+ 
+-	if (am33xx_evmid == IND_AUT_MTR_EVM) {
++	if (am33xx_evmid == BEAGLE_BONE_OLD) {
++		__raw_writel(RMII_MODE_ENABLE,
++				AM33XX_CTRL_REGADDR(MAC_MII_SEL));
++	} else if (am33xx_evmid == BEAGLE_BONE_A3) {
++		__raw_writel(MII_MODE_ENABLE,
++				AM33XX_CTRL_REGADDR(MAC_MII_SEL));
++	} else if (am33xx_evmid == IND_AUT_MTR_EVM) {
+ 		am33xx_cpsw_slaves[0].phy_id = "0:1e";
+ 		am33xx_cpsw_slaves[1].phy_id = "0:00";
++	} else {
++		__raw_writel(RGMII_MODE_ENABLE,
++				AM33XX_CTRL_REGADDR(MAC_MII_SEL));
+ 	}
+ 
+ 	am33xx_cpsw_pdata.gigabit_en = gigen;
+diff --git a/arch/arm/mach-omap2/include/mach/board-am335xevm.h b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+index 521b872..a8fe93a 100644
+--- a/arch/arm/mach-omap2/include/mach/board-am335xevm.h
++++ b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+@@ -23,7 +23,9 @@
+ #define LOW_COST_EVM		0
+ #define GEN_PURP_EVM		1
+ #define IND_AUT_MTR_EVM		2
+-#define IP_PHN_EVM			3
++#define IP_PHN_EVM		3
++#define BEAGLE_BONE_OLD		4
++#define BEAGLE_BONE_A3		5
+ 
+ /* REVIST : check posibility of PROFILE_(x) syntax usage */
+ #define PROFILE_NONE	-1	/* Few EVM doesn't have profiles */
+-- 
+1.7.11.2
+

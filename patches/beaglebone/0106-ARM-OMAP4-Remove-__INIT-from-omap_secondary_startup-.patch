@@ -1,0 +1,40 @@
+From 3f45bfea2513aaa1c56ff439d4dbe65994f14270 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Sun, 4 Sep 2011 13:10:32 +0530
+Subject: [PATCH 0106/1092] ARM: OMAP4: Remove __INIT from
+ omap_secondary_startup() to re-use it for
+ hotplug.
+
+Remove the __INIT from omap_secondary_startup() so that it can
+be re-used for CPU hotplug.
+
+While at this, remove the un-used AUXBOOT register reference.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/omap-headsmp.S | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap-headsmp.S b/arch/arm/mach-omap2/omap-headsmp.S
+index 4ee6aec..b13ef7e 100644
+--- a/arch/arm/mach-omap2/omap-headsmp.S
++++ b/arch/arm/mach-omap2/omap-headsmp.S
+@@ -18,11 +18,6 @@
+ #include <linux/linkage.h>
+ #include <linux/init.h>
+ 
+-/* Physical address needed since MMU not enabled yet on secondary core */
+-#define OMAP4_AUX_CORE_BOOT1_PA			0x48281804
+-
+-	__INIT
+-
+ /*
+  * OMAP4 specific entry point for secondary CPU to jump from ROM
+  * code.  This routine also provides a holding flag into which
+-- 
+1.7.11.2
+

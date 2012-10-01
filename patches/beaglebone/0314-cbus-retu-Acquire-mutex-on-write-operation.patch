@@ -1,0 +1,31 @@
+From 394159d63babc038d1527a46190bcc431a34c09c Mon Sep 17 00:00:00 2001
+From: Michael Buesch <mb@bu3sch.de>
+Date: Sat, 26 Feb 2011 23:34:33 +0000
+Subject: [PATCH 0314/1092] cbus-retu: Acquire mutex on write operation
+
+The mutex has to be acquired on register write to avoid interference
+with a simultaneous retu_set_clear_reg_bits operation.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 0ca58b7..702e821 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -120,7 +120,9 @@ void retu_write_reg(struct device *child, unsigned reg, u16 val)
+ {
+ 	struct retu		*retu = dev_get_drvdata(child->parent);
+ 
++	mutex_lock(&retu->mutex);
+ 	__retu_write_reg(retu, reg, val);
++	mutex_unlock(&retu->mutex);
+ }
+ EXPORT_SYMBOL_GPL(retu_write_reg);
+ 
+-- 
+1.7.11.2
+

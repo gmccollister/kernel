@@ -1,0 +1,39 @@
+From b31bedd6f6bc3918d3f6c8b89f8878ae219e6571 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 14 Feb 2011 19:55:22 +0200
+Subject: [PATCH 0302/1092] cbus: retu: pwrbutton: save device pointer on our
+ structure
+
+We will start passing our device pointer to
+read/write functions exported from retu so
+we need to save the device pointer on our
+context structure.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/cbus/retu-pwrbutton.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/retu-pwrbutton.c b/drivers/cbus/retu-pwrbutton.c
+index 593a73a..77c655d 100644
+--- a/drivers/cbus/retu-pwrbutton.c
++++ b/drivers/cbus/retu-pwrbutton.c
+@@ -47,6 +47,7 @@
+ 
+ struct retu_pwrbutton {
+ 	struct input_dev	*idev;
++	struct device		*dev;
+ 
+ 	int			state;
+ 	int			irq;
+@@ -83,6 +84,7 @@ static int __init retubutton_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
++	pwr->dev = &pdev->dev;
+ 	pwr->irq = platform_get_irq(pdev, 0);
+ 	platform_set_drvdata(pdev, pwr);
+ 
+-- 
+1.7.11.2
+

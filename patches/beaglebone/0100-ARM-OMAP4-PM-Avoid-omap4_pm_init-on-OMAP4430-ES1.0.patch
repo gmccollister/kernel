@@ -1,0 +1,44 @@
+From cc1a8d6e5124cb77df024709d6fc265e8ce1ca74 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Fri, 11 Mar 2011 16:13:09 +0530
+Subject: [PATCH 0100/1092] ARM: OMAP4: PM: Avoid omap4_pm_init() on OMAP4430
+ ES1.0
+
+On OMAP4430 ES1.0, Power Management features are not supported.
+Avoid omap4_pm_init() on ES1.0 silicon so that we can continue
+to use same kernel binary to boot on all OMAP4 silicons.
+
+The ES1.0 boot failure with OMAP4 PM series was because of
+the clockdomain initialisation code. Hardware supervised
+clockdomain mode isn't functional for all clockdomains
+on OMAP4430 ES1.0 silicon so avoid the same.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Reported-by: Kevin Hilman <khilman@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/pm44xx.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/pm44xx.c b/arch/arm/mach-omap2/pm44xx.c
+index 715035d..35d392a 100644
+--- a/arch/arm/mach-omap2/pm44xx.c
++++ b/arch/arm/mach-omap2/pm44xx.c
+@@ -105,6 +105,11 @@ static int __init omap4_pm_init(void)
+ 	if (!cpu_is_omap44xx())
+ 		return -ENODEV;
+ 
++	if (omap_rev() == OMAP4430_REV_ES1_0) {
++		WARN(1, "Power Management not supported on OMAP4430 ES1.0\n");
++		return -ENODEV;
++	}
++
+ 	pr_err("Power Management for TI OMAP4.\n");
+ 
+ 	ret = pwrdm_for_each(pwrdms_setup, NULL);
+-- 
+1.7.11.2
+

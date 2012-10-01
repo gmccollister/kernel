@@ -1,0 +1,131 @@
+From b5ebf011ca76d1e80fac5fbad2b366a1f621b8d2 Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Sat, 26 Nov 2011 15:58:03 +0530
+Subject: [PATCH 0405/1092] arm:omap:am33xx:TEMP: Create board support and
+ enable build for AM335XEVM
+
+This patch adds minimal support and build configuration for
+AM335X EVM.
+
+Also, remove and cleanup AM3517EVM approach, so that we don't end up
+polluting board-am3517evm.c file for all AM335x related code.
+
+NOTE: Patch is not for upstream, since upstream approach is completely
+      in different direction as far as board changes is concerned.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/Makefile          |  2 +-
+ arch/arm/mach-omap2/board-am335xevm.c | 55 +++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/board-am3517evm.c | 22 --------------
+ 3 files changed, 56 insertions(+), 23 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/board-am335xevm.c
+
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index 3241454..d72558c 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -248,7 +248,7 @@ obj-$(CONFIG_MACH_CRANEBOARD)		+= board-am3517crane.o
+ obj-$(CONFIG_MACH_SBC3530)		+= board-omap3stalker.o
+ obj-$(CONFIG_MACH_TI8168EVM)		+= board-ti8168evm.o
+ obj-$(CONFIG_MACH_TI8148EVM)		+= board-ti8168evm.o
+-obj-$(CONFIG_MACH_AM335XEVM)		+= board-am3517evm.o
++obj-$(CONFIG_MACH_AM335XEVM)		+= board-am335xevm.o
+ 
+ # Platform specific device init code
+ 
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+new file mode 100644
+index 0000000..d85cf39
+--- /dev/null
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -0,0 +1,55 @@
++/*
++ * Code for AM335X EVM.
++ *
++ * Copyright (C) 2011 Texas Instruments, Inc. - http://www.ti.com/
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++
++#include <mach/hardware.h>
++#include <asm/mach-types.h>
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++
++#include <plat/irqs.h>
++#include <plat/board.h>
++#include <plat/common.h>
++
++#include "common.h"
++
++static struct omap_board_config_kernel am335x_evm_config[] __initdata = {
++};
++
++static void __init am335x_evm_init(void)
++{
++	omap_serial_init();
++	omap_sdrc_init(NULL, NULL);
++	omap_board_config = am335x_evm_config;
++	omap_board_config_size = ARRAY_SIZE(am335x_evm_config);
++}
++
++static void __init am335x_evm_map_io(void)
++{
++	omap2_set_globals_am33xx();
++	omapam33xx_map_common_io();
++}
++
++MACHINE_START(AM335XEVM, "am335xevm")
++	/* Maintainer: Texas Instruments */
++	.atag_offset	= 0x100,
++	.map_io		= am335x_evm_map_io,
++	.init_early	= am33xx_init_early,
++	.init_irq	= ti81xx_init_irq,
++	.handle_irq     = omap3_intc_handle_irq,
++	.timer		= &omap3_am33xx_timer,
++	.init_machine	= am335x_evm_init,
++MACHINE_END
+diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
+index 263ca7d..3a44f07 100644
+--- a/arch/arm/mach-omap2/board-am3517evm.c
++++ b/arch/arm/mach-omap2/board-am3517evm.c
+@@ -517,25 +517,3 @@ MACHINE_START(OMAP3517EVM, "OMAP3517/AM3517 EVM")
+ 	.init_machine	= am3517_evm_init,
+ 	.timer		= &omap3_timer,
+ MACHINE_END
+-
+-static struct omap_board_config_kernel am335x_evm_config[] __initdata = {
+-};
+-
+-static void __init am335x_evm_init(void)
+-{
+-	omap_serial_init();
+-	omap_sdrc_init(NULL, NULL);
+-	omap_board_config = am335x_evm_config;
+-	omap_board_config_size = ARRAY_SIZE(am335x_evm_config);
+-}
+-
+-MACHINE_START(AM335XEVM, "am335xevm")
+-	/* Maintainer: Texas Instruments */
+-	.atag_offset	= 0x100,
+-	.map_io		= am33xx_map_io,
+-	.init_early	= am33xx_init_early,
+-	.init_irq	= ti81xx_init_irq,
+-	.handle_irq	= omap3_intc_handle_irq,
+-	.timer		= &omap3_am33xx_timer,
+-	.init_machine	= am335x_evm_init,
+-MACHINE_END
+-- 
+1.7.11.2
+

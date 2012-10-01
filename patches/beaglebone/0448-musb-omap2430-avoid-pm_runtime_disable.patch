@@ -1,0 +1,37 @@
+From 250c3240e233a3232837979378a21b73bc08ec0d Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Mon, 19 Dec 2011 22:17:51 +0200
+Subject: [PATCH 0448/1092] musb: omap2430: avoid pm_runtime_disable()
+
+These are handled by drivers core, and in a way that doesn't wake up the
+devices.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/omap2430.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index ba36fe4..330879f 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -337,7 +337,6 @@ static int omap2430_musb_init(struct musb *musb)
+ 	return 0;
+ 
+ err1:
+-	pm_runtime_disable(dev);
+ 	return status;
+ }
+ 
+@@ -480,7 +479,6 @@ static int __exit omap2430_remove(struct platform_device *pdev)
+ 	platform_device_del(glue->musb);
+ 	platform_device_put(glue->musb);
+ 	pm_runtime_put(&pdev->dev);
+-	pm_runtime_disable(&pdev->dev);
+ 	kfree(glue);
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

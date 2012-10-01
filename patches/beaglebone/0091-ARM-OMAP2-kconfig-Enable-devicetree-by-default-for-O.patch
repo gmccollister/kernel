@@ -1,0 +1,47 @@
+From fb2e3b92614d47db4e435666f381f373dedd123c Mon Sep 17 00:00:00 2001
+From: Benoit Cousson <b-cousson@ti.com>
+Date: Thu, 1 Dec 2011 10:21:16 +0100
+Subject: [PATCH 0091/1092] ARM: OMAP2+: kconfig: Enable devicetree by default
+ for OMAP2+ systems
+
+devicetree will become the mandatory boot method for OMAP2+.
+In order to avoid cluttering the OMAP code with #ifdef CONFIG_OF,
+select USE_OF by default for every OMAP2+ systems.
+
+Enable PROC_DEVICETREE as well.
+
+Signed-off-by: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/Kconfig | 1 -
+ arch/arm/plat-omap/Kconfig  | 2 ++
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index b662513..bdd5b68 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -111,7 +111,6 @@ comment "OMAP Board Type"
+ config MACH_OMAP_GENERIC
+ 	bool "Generic OMAP2+ board"
+ 	depends on ARCH_OMAP2PLUS
+-	select USE_OF
+ 	default y
+ 	help
+ 	  Support for generic TI OMAP2+ boards using Flattened Device Tree.
+diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+index aa59f42..734009a 100644
+--- a/arch/arm/plat-omap/Kconfig
++++ b/arch/arm/plat-omap/Kconfig
+@@ -24,6 +24,8 @@ config ARCH_OMAP2PLUS
+ 	select CLKDEV_LOOKUP
+ 	select GENERIC_IRQ_CHIP
+ 	select OMAP_DM_TIMER
++	select USE_OF
++	select PROC_DEVICETREE
+ 	help
+ 	  "Systems based on OMAP2, OMAP3 or OMAP4"
+ 
+-- 
+1.7.11.2
+

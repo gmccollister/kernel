@@ -1,0 +1,42 @@
+From ffe948fba953755504ba70b3124cf02d35eb963f Mon Sep 17 00:00:00 2001
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 28 Nov 2011 15:45:39 +0200
+Subject: [PATCH 0010/1092] ARM: OMAP4: hwmod data: Add names for DMIC memory
+ address space
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+To be able to get the memory resources by name from
+the DMIC driver (for MPU and for DMA).
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Acked-by: Benoît Cousson <b-cousson@ti.com>
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_44xx_data.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+index e5416a3..6354ad3 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+@@ -1039,6 +1039,7 @@ static struct omap_hwmod_dma_info omap44xx_dmic_sdma_reqs[] = {
+ 
+ static struct omap_hwmod_addr_space omap44xx_dmic_addrs[] = {
+ 	{
++		.name		= "mpu",
+ 		.pa_start	= 0x4012e000,
+ 		.pa_end		= 0x4012e07f,
+ 		.flags		= ADDR_TYPE_RT
+@@ -1057,6 +1058,7 @@ static struct omap_hwmod_ocp_if omap44xx_l4_abe__dmic = {
+ 
+ static struct omap_hwmod_addr_space omap44xx_dmic_dma_addrs[] = {
+ 	{
++		.name		= "dma",
+ 		.pa_start	= 0x4902e000,
+ 		.pa_end		= 0x4902e07f,
+ 		.flags		= ADDR_TYPE_RT
+-- 
+1.7.11.2
+

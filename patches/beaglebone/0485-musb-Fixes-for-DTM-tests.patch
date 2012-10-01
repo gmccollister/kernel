@@ -1,0 +1,185 @@
+From a54638735ae195990b238b0f3987a3a7534e9db5 Mon Sep 17 00:00:00 2001
+From: Ravi B <ravibabu@ti.com>
+Date: Mon, 6 Dec 2010 18:26:05 +0530
+Subject: [PATCH 0485/1092] musb: Fixes for DTM tests.
+
+Fixes all the DTM tests except mini6sendrecv tests.
+
+Signed-off-by: Ravi B <ravibabu@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/gadget/ether.c   |  8 ++++++--
+ drivers/usb/gadget/f_rndis.c |  5 +----
+ drivers/usb/gadget/rndis.c   | 21 ++++++++++++++++-----
+ drivers/usb/gadget/rndis.h   |  7 +++++--
+ 4 files changed, 28 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
+index 0cd764d..5c1e1a9 100644
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -93,6 +93,10 @@ static inline bool has_rndis(void)
+ #endif
+ }
+ 
++static char manufacturer[50];
++
++static u16 vendorID;
++
+ /*-------------------------------------------------------------------------*/
+ 
+ /*
+@@ -201,8 +205,6 @@ static const struct usb_descriptor_header *otg_desc[] = {
+ #define STRING_MANUFACTURER_IDX		0
+ #define STRING_PRODUCT_IDX		1
+ 
+-static char manufacturer[50];
+-
+ static struct usb_string strings_dev[] = {
+ 	[STRING_MANUFACTURER_IDX].s = manufacturer,
+ 	[STRING_PRODUCT_IDX].s = PREFIX DRIVER_DESC,
+@@ -323,6 +325,8 @@ static int __init eth_bind(struct usb_composite_dev *cdev)
+ 		device_desc.bNumConfigurations = 2;
+ 	}
+ 
++	vendorID = device_desc.idVendor;
++
+ 	gcnum = usb_gadget_controller_number(gadget);
+ 	if (gcnum >= 0)
+ 		device_desc.bcdDevice = cpu_to_le16(0x0300 | gcnum);
+diff --git a/drivers/usb/gadget/f_rndis.c b/drivers/usb/gadget/f_rndis.c
+index 704d1d9..b6e6dac 100644
+--- a/drivers/usb/gadget/f_rndis.c
++++ b/drivers/usb/gadget/f_rndis.c
+@@ -767,12 +767,9 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
+ 	rndis_set_param_medium(rndis->config, NDIS_MEDIUM_802_3, 0);
+ 	rndis_set_host_mac(rndis->config, rndis->ethaddr);
+ 
+-#if 0
+-// FIXME
+ 	if (rndis_set_param_vendor(rndis->config, vendorID,
+ 				manufacturer))
+-		goto fail0;
+-#endif
++		goto fail;
+ 
+ 	/* NOTE:  all that is done without knowing or caring about
+ 	 * the network link ... which is unavailable to this code
+diff --git a/drivers/usb/gadget/rndis.c b/drivers/usb/gadget/rndis.c
+index d3cdffe..208e574 100644
+--- a/drivers/usb/gadget/rndis.c
++++ b/drivers/usb/gadget/rndis.c
+@@ -314,7 +314,8 @@ static int gen_ndis_query_resp(int configNr, u32 OID, u8 *buf,
+ 	/* mandatory */
+ 	case OID_GEN_CURRENT_PACKET_FILTER:
+ 		pr_debug("%s: OID_GEN_CURRENT_PACKET_FILTER\n", __func__);
+-		*outbuf = cpu_to_le32(*rndis_per_dev_params[configNr].filter);
++		*outbuf =
++		cpu_to_le32(*(u16 *)rndis_per_dev_params[configNr].filter);
+ 		retval = 0;
+ 		break;
+ 
+@@ -336,7 +337,7 @@ static int gen_ndis_query_resp(int configNr, u32 OID, u8 *buf,
+ 
+ 	case OID_GEN_PHYSICAL_MEDIUM:
+ 		pr_debug("%s: OID_GEN_PHYSICAL_MEDIUM\n", __func__);
+-		*outbuf = cpu_to_le32(0);
++		*outbuf = __constant_cpu_to_le32(2);
+ 		retval = 0;
+ 		break;
+ 
+@@ -413,7 +414,7 @@ static int gen_ndis_query_resp(int configNr, u32 OID, u8 *buf,
+ 		if (rndis_per_dev_params[configNr].dev) {
+ 			length = ETH_ALEN;
+ 			memcpy(outbuf,
+-				rndis_per_dev_params[configNr].host_mac,
++				rndis_per_dev_params[configNr].perm_mac,
+ 				length);
+ 			retval = 0;
+ 		}
+@@ -443,7 +444,7 @@ static int gen_ndis_query_resp(int configNr, u32 OID, u8 *buf,
+ 	case OID_802_3_MAXIMUM_LIST_SIZE:
+ 		pr_debug("%s: OID_802_3_MAXIMUM_LIST_SIZE\n", __func__);
+ 		/* Multicast base address only */
+-		*outbuf = cpu_to_le32(1);
++		*outbuf = __constant_cpu_to_le32(32);
+ 		retval = 0;
+ 		break;
+ 
+@@ -549,6 +550,10 @@ static int gen_ndis_set_resp(u8 configNr, u32 OID, u8 *buf, u32 buf_len,
+ 	case OID_802_3_MULTICAST_LIST:
+ 		/* I think we can ignore this */
+ 		pr_debug("%s: OID_802_3_MULTICAST_LIST\n", __func__);
++		memset(rndis_per_dev_params[configNr].mcast_addr, 0,
++			RNDIS_MAX_MULTICAST_SIZE * 6);
++		memcpy(rndis_per_dev_params[configNr].mcast_addr,
++			buf, buf_len);
+ 		retval = 0;
+ 		break;
+ 
+@@ -578,6 +583,9 @@ static int rndis_init_response(int configNr, rndis_init_msg_type *buf)
+ 		return -ENOMEM;
+ 	resp = (rndis_init_cmplt_type *)r->buf;
+ 
++	if (!resp)
++		return -ENOMEM;
++
+ 	resp->MessageType = cpu_to_le32(REMOTE_NDIS_INITIALIZE_CMPLT);
+ 	resp->MessageLength = cpu_to_le32(52);
+ 	resp->RequestID = buf->RequestID; /* Still LE in msg buffer */
+@@ -788,7 +796,8 @@ void rndis_uninit(int configNr)
+ 
+ void rndis_set_host_mac(int configNr, const u8 *addr)
+ {
+-	rndis_per_dev_params[configNr].host_mac = addr;
++	rndis_per_dev_params[configNr].host_mac = (u8 *)addr;
++	memcpy((void *)rndis_per_dev_params[configNr].perm_mac, addr, 6);
+ }
+ 
+ /*
+@@ -830,6 +839,8 @@ int rndis_msg_parser(u8 configNr, u8 *buf)
+ 			__func__);
+ 		params->state = RNDIS_UNINITIALIZED;
+ 		if (params->dev) {
++			memcpy((void *)rndis_per_dev_params[configNr].host_mac,
++			(void *)rndis_per_dev_params[configNr].perm_mac, 6);
+ 			netif_carrier_off(params->dev);
+ 			netif_stop_queue(params->dev);
+ 		}
+diff --git a/drivers/usb/gadget/rndis.h b/drivers/usb/gadget/rndis.h
+index 907c330..026da39 100644
+--- a/drivers/usb/gadget/rndis.h
++++ b/drivers/usb/gadget/rndis.h
+@@ -18,7 +18,8 @@
+ #include "ndis.h"
+ 
+ #define RNDIS_MAXIMUM_FRAME_SIZE	1518
+-#define RNDIS_MAX_TOTAL_SIZE		1558
++#define RNDIS_MAX_TOTAL_SIZE		1514
++#define RNDIS_MAX_MULTICAST_SIZE        32
+ 
+ /* Remote NDIS Versions */
+ #define RNDIS_MAJOR_VERSION		1
+@@ -230,7 +231,8 @@ typedef struct rndis_params
+ 	u32			speed;
+ 	u32			media_state;
+ 
+-	const u8		*host_mac;
++	u8                      perm_mac[6];
++	u8                      *host_mac;
+ 	u16			*filter;
+ 	struct net_device	*dev;
+ 
+@@ -239,6 +241,7 @@ typedef struct rndis_params
+ 	void			(*resp_avail)(void *v);
+ 	void			*v;
+ 	struct list_head	resp_queue;
++	u8			mcast_addr[RNDIS_MAX_MULTICAST_SIZE][6];
+ } rndis_params;
+ 
+ /* RNDIS Message parser and other useless functions */
+-- 
+1.7.11.2
+

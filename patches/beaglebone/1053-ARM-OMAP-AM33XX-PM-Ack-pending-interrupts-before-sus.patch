@@ -1,0 +1,35 @@
+From 2d097615805bcd26d83edfcadf9218b61240917c Mon Sep 17 00:00:00 2001
+From: "Satyanarayana, Sandhya" <sandhya.satyanarayana@ti.com>
+Date: Wed, 1 Aug 2012 18:01:47 +0530
+Subject: [PATCH 1053/1092] ARM: OMAP: AM33XX: PM: Ack pending interrupts
+ before suspend
+
+Any pending interrupt might prevent a successful
+suspend.
+This patch acks any pending interrupt by calling
+omap3_intc_suspend() before entering suspend.
+
+This has been tested on EVM-SK, EVM and BBB.
+
+Suggested-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Signed-off-by: Satyanarayana, Sandhya <sandhya.satyanarayana@ti.com>
+---
+ arch/arm/mach-omap2/pm33xx.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/pm33xx.c b/arch/arm/mach-omap2/pm33xx.c
+index 34d5366..fdfa40d 100644
+--- a/arch/arm/mach-omap2/pm33xx.c
++++ b/arch/arm/mach-omap2/pm33xx.c
+@@ -138,6 +138,8 @@ static int am33xx_pm_suspend(void)
+ 	else
+ 		pr_err("Could not program GFX to low power state\n");
+ 
++	omap3_intc_suspend();
++
+ 	writel(0x0, AM33XX_CM_MPU_MPU_CLKCTRL);
+ 
+ 	ret = cpu_suspend(0, am33xx_do_sram_idle);
+-- 
+1.7.11.2
+

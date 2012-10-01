@@ -1,0 +1,35 @@
+From c27559d0b9529b0d434485ba24d45dfaa90f7ef4 Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Tue, 20 Dec 2011 02:42:22 +0200
+Subject: [PATCH 0449/1092] usb: musb: trivial Kconfig cleanups
+
+Shuffle the code a bit so the description is at the top.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/musb/Kconfig b/drivers/usb/musb/Kconfig
+index 84a0224..f6e305f 100644
+--- a/drivers/usb/musb/Kconfig
++++ b/drivers/usb/musb/Kconfig
+@@ -5,13 +5,13 @@
+ 
+ # (M)HDRC = (Multipoint) Highspeed Dual-Role Controller
+ config USB_MUSB_HDRC
++	tristate 'Inventra Highspeed Dual Role Controller (TI, ADI, ...)'
+ 	depends on USB && USB_GADGET
+ 	select NOP_USB_XCEIV if (ARCH_DAVINCI || MACH_OMAP3EVM || BLACKFIN)
+ 	select TWL4030_USB if MACH_OMAP_3430SDP
+ 	select TWL6030_USB if MACH_OMAP_4430SDP || MACH_OMAP4_PANDA
+ 	select USB_OTG_UTILS
+ 	select USB_GADGET_DUALSPEED
+-	tristate 'Inventra Highspeed Dual Role Controller (TI, ADI, ...)'
+ 	help
+ 	  Say Y here if your system has a dual role high speed USB
+ 	  controller based on the Mentor Graphics silicon IP.  Then
+-- 
+1.7.11.2
+

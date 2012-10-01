@@ -1,0 +1,42 @@
+From b4687f029d27d190dd3b046d04f5ed2fe535055a Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Mon, 2 Jan 2012 12:28:52 +0530
+Subject: [PATCH 0661/1092] arm:omap:am33xx: Drop support for SERIAL_8250
+
+After commit 8a60585159067f110075ef8ffda13abd94826daf
+(ARM: OMAP2+: UART: cleanup 8250 console driver support)
+the omap-serial driver no longer depends on 8250 support.
+
+The omap-serial driver has been the default of AM33XX
+for some time now. We can now drop the support for
+SERIAL_8250 from the defconfig.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index a3c3786..5569aca 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1194,15 +1194,7 @@ CONFIG_DEVKMEM=y
+ #
+ # Serial drivers
+ #
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_NR_UARTS=32
+-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+-CONFIG_SERIAL_8250_EXTENDED=y
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_SHARE_IRQ=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
++# CONFIG_SERIAL_8250 is not set
+ 
+ #
+ # Non-8250 serial port support
+-- 
+1.7.11.2
+

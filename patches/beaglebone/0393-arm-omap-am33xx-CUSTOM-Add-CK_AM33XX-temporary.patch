@@ -1,0 +1,26 @@
+From 87717551d942355d71683d2694308fb7873ad1be Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Wed, 14 Dec 2011 16:13:21 +0530
+Subject: [PATCH 0393/1092] arm:omap:am33xx:CUSTOM: Add CK_AM33XX temporary
+
+With new clock framework we don't need this, but required now
+to get AM335x existing code to build.
+---
+ arch/arm/plat-omap/include/plat/clkdev_omap.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/plat-omap/include/plat/clkdev_omap.h b/arch/arm/plat-omap/include/plat/clkdev_omap.h
+index b299b8d..7b9a934 100644
+--- a/arch/arm/plat-omap/include/plat/clkdev_omap.h
++++ b/arch/arm/plat-omap/include/plat/clkdev_omap.h
+@@ -40,6 +40,7 @@ struct omap_clk {
+ #define CK_443X		(1 << 11)
+ #define CK_TI816X	(1 << 12)
+ #define CK_446X		(1 << 13)
++#define CK_AM33XX	(1 << 14)	/* AM33xx specific clocks */
+ #define CK_1710		(1 << 15)	/* 1710 extra for rate selection */
+ 
+ 
+-- 
+1.7.11.2
+

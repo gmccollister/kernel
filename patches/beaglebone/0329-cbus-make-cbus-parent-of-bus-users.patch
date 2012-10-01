@@ -1,0 +1,63 @@
+From a954bc4fc358c270030210abe9026c6bf72b1f4c Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 13 Jun 2011 19:40:57 +0000
+Subject: [PATCH 0329/1092] cbus: make cbus parent of bus users
+
+CBUS is the underlying bus device, make
+it the parent of the bus users (retu and
+tahvo).
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c | 4 ++++
+ arch/arm/mach-omap2/board-n8x0.c     | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index 6bc6f33..44673b1 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -120,6 +120,7 @@ static struct platform_device retu_device = {
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
+ 	.dev		= {
+ 		.platform_data = &nokia770_retu_data,
++		.parent	= &nokia770_cbus_device.dev,
+ 	},
+ };
+ 
+@@ -135,6 +136,9 @@ static struct platform_device tahvo_device = {
+ 	.id		= -1,
+ 	.resource	= tahvo_resource,
+ 	.num_resources	= ARRAY_SIZE(tahvo_resource),
++	.dev		= {
++		.parent	= &nokia770_cbus_device.dev,
++	},
+ };
+ 
+ static struct platform_device tahvo_usb_device = {
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 5a2a073..1431e3a 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -231,6 +231,7 @@ static struct platform_device retu_device = {
+ 	.num_resources	= ARRAY_SIZE(retu_resource),
+ 	.dev		= {
+ 		.platform_data = &n8x0_retu_data,
++		.parent	= &n8x0_cbus_device.dev,
+ 	},
+ };
+ 
+@@ -246,6 +247,9 @@ static struct platform_device tahvo_device = {
+ 	.id		= -1,
+ 	.resource	= tahvo_resource,
+ 	.num_resources	= ARRAY_SIZE(tahvo_resource),
++	.dev		= {
++		.parent	= &n8x0_cbus_device.dev,
++	},
+ };
+ 
+ static struct platform_device tahvo_usb_device = {
+-- 
+1.7.11.2
+

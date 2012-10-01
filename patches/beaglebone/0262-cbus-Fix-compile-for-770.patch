@@ -1,0 +1,62 @@
+From 49ca19b4bff1f527d0b2a48515719899b5036c50 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 6 Jul 2010 10:50:31 +0300
+Subject: [PATCH 0262/1092] cbus: Fix compile for 770
+
+Recent changes changed omap_otg_init. Rename tahvo specific init
+to tahvo_usb_init to avoid the following error:
+
+tahvo-usb.c:151: error: conflicting types for 'omap_otg_init'
+include/plat/usb.h:95: error: previous declaration of 'omap_otg_init' was here
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo-usb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index 5a344b6..9dc04ad 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -148,7 +148,7 @@ static irqreturn_t omap_otg_irq(int irq, void *arg)
+ 
+ }
+ 
+-static int omap_otg_init(void)
++static int tahvo_otg_init(void)
+ {
+ 	u32 l;
+ 
+@@ -193,9 +193,9 @@ static int omap_otg_probe(struct device *dev)
+ 	int ret;
+ 
+ 	tahvo_otg_dev = to_platform_device(dev);
+-	ret = omap_otg_init();
++	ret = tahvo_otg_init();
+ 	if (ret != 0) {
+-		printk(KERN_ERR "tahvo-usb: omap_otg_init failed\n");
++		printk(KERN_ERR "tahvo-usb: tahvo_otg_init failed\n");
+ 		return ret;
+ 	}
+ 
+@@ -338,7 +338,7 @@ static void tahvo_usb_become_host(struct tahvo_usb *tu)
+ 
+ 	/* Clear system and transceiver controlled bits
+ 	 * also mark the A-session is always valid */
+-	omap_otg_init();
++	tahvo_otg_init();
+ 
+ 	l = omap_readl(OTG_CTRL);
+ 	l &= ~(OTG_CTRL_XCVR_MASK | OTG_CTRL_SYS_MASK);
+@@ -366,7 +366,7 @@ static void tahvo_usb_become_peripheral(struct tahvo_usb *tu)
+ 	/* Clear system and transceiver controlled bits
+ 	 * and enable ID to mark peripheral mode and
+ 	 * BSESSEND to mark no Vbus */
+-	omap_otg_init();
++	tahvo_otg_init();
+ 	l = omap_readl(OTG_CTRL);
+ 	l &= ~(OTG_CTRL_XCVR_MASK | OTG_CTRL_SYS_MASK | OTG_BSESSVLD);
+ 	l |= OTG_ID | OTG_BSESSEND;
+-- 
+1.7.11.2
+

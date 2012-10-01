@@ -1,0 +1,67 @@
+From 85ff8e1eb2e5bfe4af174fb18f416e1df660d9bc Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Thu, 7 Jun 2012 08:33:21 +0530
+Subject: [PATCH 1033/1092] drivers: net: ethernet: cpsw: adding default port
+ VLAN support
+
+This patch enables configuring any VID as default VLAN.
+Default VLAN can be configured in CPSW with adding VLAN to ale and
+configuring the port VLAN
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 18 ++++++++++++++++++
+ include/linux/cpsw.h           |  1 +
+ 2 files changed, 19 insertions(+)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 3d135f5..4bd4165 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -789,6 +789,21 @@ static void cpsw_slave_open(struct cpsw_slave *slave, struct cpsw_priv *priv)
+ 	}
+ }
+ 
++#if defined(VLAN_SUPPORT) && !defined(CONFIG_TI_CPSW_DUAL_EMAC)
++static inline void cpsw_add_default_vlan(struct cpsw_priv *priv)
++{
++	writel(priv->data.default_vlan, &priv->host_port_regs->port_vlan);
++	writel(priv->data.default_vlan, &priv->slaves[0].regs->port_vlan);
++	writel(priv->data.default_vlan, &priv->slaves[1].regs->port_vlan);
++	cpsw_ale_add_vlan(priv->ale, priv->data.default_vlan,
++			ALE_ALL_PORTS << priv->host_port,
++			ALE_ALL_PORTS << priv->host_port,
++			ALE_ALL_PORTS << priv->host_port, 0);
++}
++#else
++#define cpsw_add_default_vlan(priv)
++#endif
++
+ static void cpsw_init_host_port(struct cpsw_priv *priv)
+ {
+ 	u32 control_reg;
+@@ -838,6 +853,9 @@ static int cpsw_ndo_open(struct net_device *ndev)
+ 		cpsw_init_host_port(priv);
+ 	for_each_slave(priv, cpsw_slave_open, priv);
+ 
++	/* Add default VLAN */
++	cpsw_add_default_vlan(priv);
++
+ 	if (!cpsw_common_res_usage_state(priv)) {
+ 		ret = device_create_file(&ndev->dev, &dev_attr_hw_stats);
+ 		if (ret < 0) {
+diff --git a/include/linux/cpsw.h b/include/linux/cpsw.h
+index 6945435..7342912 100644
+--- a/include/linux/cpsw.h
++++ b/include/linux/cpsw.h
+@@ -51,6 +51,7 @@ struct cpsw_platform_data {
+ 
+ 	bool	no_bd_ram; /* no embedded BD ram*/
+ 	u8	version;
++	u32	default_vlan; /* Default VLAN for Untagged packet handling*/
+ };
+ 
+ #endif /* __CPSW_H__ */
+-- 
+1.7.11.2
+

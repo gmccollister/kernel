@@ -1,0 +1,70 @@
+From e98e078d18d3bccc245336ec013e8c434284e8b6 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 23 Apr 2012 14:25:26 +0530
+Subject: [PATCH 0951/1092] ARM: OMAP2+: am335x: add initial support for
+ EVM-SK
+
+This patch adds initial support new EVM-Starter Kit (EVM-SK).
+Only board detection support is added.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c              | 15 +++++++++++++++
+ arch/arm/mach-omap2/include/mach/board-am335xevm.h |  1 +
+ 2 files changed, 16 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index e7635a0..1420ecc 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1720,6 +1720,11 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+ 	{NULL, 0, 0},
+ };
+ 
++/* EVM - Starter Kit */
++static struct evm_dev_cfg evm_sk_dev_cfg[] = {
++	{NULL, 0, 0},
++};
++
+ static void setup_general_purpose_evm(void)
+ {
+ 	u32 prof_sel = am335x_get_profile_selection();
+@@ -1799,6 +1804,13 @@ static void setup_beaglebone(void)
+ 	am33xx_evmid_fillup(BEAGLE_BONE_A3);
+ }
+ 
++/* EVM - Starter Kit */
++static void setup_starterkit(void)
++{
++	pr_info("The board is a AM335x Starter Kit.\n");
++
++	_configure_device(EVM_SK, evm_sk_dev_cfg, PROFILE_NONE);
++}
+ 
+ static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
+ {
+@@ -1876,6 +1888,9 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
+ 			setup_beaglebone_old();
+ 		else
+ 			setup_beaglebone();
++	} else if (!strncmp("A335X_SK", config.name, 8)) {
++		daughter_brd_detected = false;
++		setup_starterkit();
+ 	} else {
+ 		/* only 6 characters of options string used for now */
+ 		snprintf(tmp, 7, "%s", config.opt);
+diff --git a/arch/arm/mach-omap2/include/mach/board-am335xevm.h b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+index 0247db1..2c451aa 100644
+--- a/arch/arm/mach-omap2/include/mach/board-am335xevm.h
++++ b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+@@ -24,6 +24,7 @@
+ #define IND_AUT_MTR_EVM		1
+ #define BEAGLE_BONE_OLD		2
+ #define BEAGLE_BONE_A3		3
++#define EVM_SK			4
+ 
+ /* REVIST : check posibility of PROFILE_(x) syntax usage */
+ #define PROFILE_NONE	-1	/* Few EVM doesn't have profiles */
+-- 
+1.7.11.2
+

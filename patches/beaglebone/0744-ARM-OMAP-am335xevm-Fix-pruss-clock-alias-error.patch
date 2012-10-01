@@ -1,0 +1,35 @@
+From 913f5df54cd774b18a787b8c64319867f43825b4 Mon Sep 17 00:00:00 2001
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+Date: Tue, 24 Jan 2012 11:24:18 +0530
+Subject: [PATCH 0744/1092] ARM: OMAP: am335xevm: Fix pruss clock alias error
+
+Due to changes in clock tree the name of the clock has
+changed, so TEMP create new alias entry for pruss.
+
+NOTE: Revisit this commit/patch, based on final clock tree.
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 3ffacb8..f414ca2 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -2181,10 +2181,12 @@ static void __init am335x_evm_init(void)
+ 	omap_board_config_size = ARRAY_SIZE(am335x_evm_config);
+ 	/* Create an alias for icss clock */
+ 	if (clk_add_alias("pruss", NULL, "icss_uart_gclk", NULL))
+-		pr_err("failed to create an alias: icss_uart_gclk --> pruss\n");
++		pr_warn("failed to create an alias: icss_uart_gclk --> pruss\n");
++	if (clk_add_alias("pruss", NULL, "icss_fck", NULL))
++		pr_warn("failed to create an alias: icss_fck --> pruss\n");
+ 	/* Create an alias for gfx/sgx clock */
+ 	if (clk_add_alias("sgx_ck", NULL, "gfx_fclk", NULL))
+-		pr_err("failed to create an alias: gfx_fclk --> sgx_ck\n");
++		pr_warn("failed to create an alias: gfx_fclk --> sgx_ck\n");
+ }
+ 
+ static void __init am335x_evm_map_io(void)
+-- 
+1.7.11.2
+

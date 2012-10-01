@@ -1,0 +1,40 @@
+From 408ada261552fa72249346493e53a7ad698bf183 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 8 Nov 2011 15:27:00 +0530
+Subject: [PATCH 0643/1092] mfd: TPS65910: Make usable even if interrupt
+ unused
+
+TPS65910 can be used even if interrupt is unused.
+Hence let probe succeed in case interrupt can't be
+configured and let Kernel only to complain about it
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/mfd/tps65910.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/mfd/tps65910.c b/drivers/mfd/tps65910.c
+index 6943aec..2d4bc21 100644
+--- a/drivers/mfd/tps65910.c
++++ b/drivers/mfd/tps65910.c
+@@ -187,15 +187,11 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
+ 
+ 	tps65910_gpio_init(tps65910, pmic_plat_data->gpio_base);
+ 
+-	ret = tps65910_irq_init(tps65910, init_data->irq, init_data);
+-	if (ret < 0)
+-		goto err2;
++	tps65910_irq_init(tps65910, init_data->irq, init_data);
+ 
+ 	kfree(init_data);
+ 	return ret;
+ 
+-err2:
+-	mfd_remove_devices(tps65910->dev);
+ err:
+ 	kfree(tps65910);
+ 	kfree(init_data);
+-- 
+1.7.11.2
+

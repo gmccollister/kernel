@@ -1,0 +1,47 @@
+From cb0d0f40c3334185d25420c014a53e7004e524e8 Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Thu, 23 Dec 2010 23:13:38 +0800
+Subject: [PATCH 0453/1092] usb: musb: export some symbols for glue driver
+ access
+
+Export this functions so that glue drivers can see them if glue drivers
+are built as modules.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+---
+ drivers/usb/musb/musb_core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index b35942c..b3eeace 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -249,6 +249,7 @@ void musb_write_fifo(struct musb_hw_ep *hw_ep, u16 len, const u8 *src)
+ 		writesb(fifo, src, len);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(musb_write_fifo);
+ 
+ #if !defined(CONFIG_USB_MUSB_AM35X)
+ /*
+@@ -289,6 +290,7 @@ void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
+ 		readsb(fifo, dst, len);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(musb_read_fifo);
+ #endif
+ 
+ #endif	/* normal PIO */
+@@ -1299,7 +1301,6 @@ done:
+ 	return 0;
+ }
+ 
+-
+ /*
+  * ep_config_from_hw - when MUSB_C_DYNFIFO_DEF is false
+  * @param musb the controller
+-- 
+1.7.11.2
+

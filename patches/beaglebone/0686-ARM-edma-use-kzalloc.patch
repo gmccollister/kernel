@@ -1,0 +1,45 @@
+From 09d6a0ab50e4ed76dcaa0c9e389eeb75f5650cbb Mon Sep 17 00:00:00 2001
+From: Thomas Meyer <thomas@m3y3r.de>
+Date: Sat, 6 Aug 2011 13:26:13 +0200
+Subject: [PATCH 0686/1092] ARM: edma: use kzalloc()
+
+ Use kzalloc rather than kmalloc followed by memset with 0
+
+ This considers some simple cases that are common and easy to validate
+ Note in particular that there are no ...s in the rule, so all of the
+ matched code has to be contiguous
+
+ The semantic patch that makes this output is available
+ in scripts/coccinelle/api/alloc/kzalloc-simple.cocci.
+
+ More information about semantic patching is available at
+ http://coccinelle.lip6.fr/
+
+Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
+Signed-off-by: Sekhar Nori <nsekhar@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/common/edma.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/arm/common/edma.c b/arch/arm/common/edma.c
+index 64eca18..4d6dd7d 100644
+--- a/arch/arm/common/edma.c
++++ b/arch/arm/common/edma.c
+@@ -1387,12 +1387,11 @@ static int __init edma_probe(struct platform_device *pdev)
+ 			goto fail1;
+ 		}
+ 
+-		edma_cc[j] = kmalloc(sizeof(struct edma), GFP_KERNEL);
++		edma_cc[j] = kzalloc(sizeof(struct edma), GFP_KERNEL);
+ 		if (!edma_cc[j]) {
+ 			status = -ENOMEM;
+ 			goto fail1;
+ 		}
+-		memset(edma_cc[j], 0, sizeof(struct edma));
+ 
+ 		edma_cc[j]->num_channels = min_t(unsigned, info[j].n_channel,
+ 							EDMA_MAX_DMACH);
+-- 
+1.7.11.2
+

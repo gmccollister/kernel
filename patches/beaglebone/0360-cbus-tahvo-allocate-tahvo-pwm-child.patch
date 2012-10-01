@@ -1,0 +1,31 @@
+From 8a99e0b621b45277c923e99760cbcc473e1152eb Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:59 +0300
+Subject: [PATCH 0360/1092] cbus: tahvo: allocate tahvo-pwm child
+
+this will serve as a backlight driver.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 1540042..623dacb 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -301,6 +301,10 @@ static int tahvo_allocate_children(struct device *parent, int irq_base)
+ 	if (!child)
+ 		return -ENOMEM;
+ 
++	child = tahvo_allocate_child("tahvo-pwm", parent, -1);
++	if (!child)
++		return -ENOMEM;
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.11.2
+

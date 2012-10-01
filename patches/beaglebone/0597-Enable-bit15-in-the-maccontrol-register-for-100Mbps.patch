@@ -1,0 +1,27 @@
+From 98c18b7f30207c972513e856dc0d3bc9d347badd Mon Sep 17 00:00:00 2001
+From: Steve Kipisz <s-kipisz2@ti.com>
+Date: Thu, 6 Oct 2011 15:57:45 -0500
+Subject: [PATCH 0597/1092] Enable bit15 in the maccontrol register for
+ 100Mbps.
+
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 402d8f6..080388c 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -399,6 +399,8 @@ static void _cpsw_adjust_link(struct cpsw_slave *slave,
+ 			mac_control &= ~BIT(7);	/* TODO: Do not enable	*/
+ 			phy->speed = 100;	/* gig support now	*/
+ 		}
++		if (phy->speed == 100)
++			mac_control |= BIT(15);
+ 		if (phy->duplex)
+ 			mac_control |= BIT(0);	/* FULLDUPLEXEN	*/
+ 		if (phy->interface == PHY_INTERFACE_MODE_RGMII) /* RGMII */
+-- 
+1.7.11.2
+

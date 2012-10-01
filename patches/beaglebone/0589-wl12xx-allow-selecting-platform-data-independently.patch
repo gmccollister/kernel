@@ -1,0 +1,32 @@
+From 4e579486c84f76309a63824724a3e459c9e46fbb Mon Sep 17 00:00:00 2001
+From: Eyal Reizer <eyalr@ti.com>
+Date: Mon, 10 Oct 2011 11:44:15 +0200
+Subject: [PATCH 0589/1092] wl12xx: allow selecting platform data
+ independently
+
+Needed when working with a compat-wireless package:
+
+* allow selecting WL12XX_PLATFORM_DATA independently
+* Selects WIRELESS_EXT needed for working with tools like iwconfig
+  and can't just be selected using the deconfig file
+
+Signed-off-by: Eyal Reizer <eyalr@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/net/wireless/wl12xx/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/wl12xx/Kconfig b/drivers/net/wireless/wl12xx/Kconfig
+index 3fe388b..f3162eb 100644
+--- a/drivers/net/wireless/wl12xx/Kconfig
++++ b/drivers/net/wireless/wl12xx/Kconfig
+@@ -54,5 +54,5 @@ config WL12XX_SDIO_TEST
+ 
+ config WL12XX_PLATFORM_DATA
+ 	bool
+-	depends on WL12XX_SDIO != n || WL1251_SDIO != n
+ 	default y
++	select WIRELESS_EXT
+-- 
+1.7.11.2
+

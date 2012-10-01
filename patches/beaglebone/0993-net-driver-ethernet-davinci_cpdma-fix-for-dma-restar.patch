@@ -1,0 +1,30 @@
+From feb8c87cdc1c8837e0e38fe3c087e4fb02236937 Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Tue, 29 May 2012 22:35:46 +0530
+Subject: [PATCH 0993/1092] net: driver: ethernet: davinci_cpdma: fix for dma
+ restart on chan teardown
+
+Do not restart dma channel during channel teardown
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/davinci_cpdma.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/ti/davinci_cpdma.c b/drivers/net/ethernet/ti/davinci_cpdma.c
+index c34d895..fa6d314 100644
+--- a/drivers/net/ethernet/ti/davinci_cpdma.c
++++ b/drivers/net/ethernet/ti/davinci_cpdma.c
+@@ -775,7 +775,8 @@ static int __cpdma_chan_process(struct cpdma_chan *chan)
+ 	chan->count--;
+ 	chan->stats.good_dequeue++;
+ 
+-	if (status & CPDMA_DESC_EOQ) {
++	if ((status & CPDMA_DESC_EOQ) && (chan->head) &&
++			(!(status & CPDMA_DESC_TD_COMPLETE))) {
+ 		chan->stats.requeue++;
+ 		chan_write(chan, hdp, desc_phys(pool, chan->head));
+ 	}
+-- 
+1.7.11.2
+

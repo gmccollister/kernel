@@ -1,0 +1,29 @@
+From 91fc7ad3b32447fcf4abc51753f796144c5652d6 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Wed, 23 Nov 2011 16:00:43 +0200
+Subject: [PATCH 0371/1092] cbus: fix compile breakage
+
+we need to include <linux/export.h> and <linux/module.h>
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 486254d..52eab4a 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -26,6 +26,8 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
++#include <linux/export.h>
++#include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+-- 
+1.7.11.2
+

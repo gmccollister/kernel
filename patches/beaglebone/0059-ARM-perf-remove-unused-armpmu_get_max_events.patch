@@ -1,0 +1,57 @@
+From e4a4be6e58d1f2f93ac5c89d19da7ed8680e2c3c Mon Sep 17 00:00:00 2001
+From: Will Deacon <will.deacon@arm.com>
+Date: Mon, 14 Nov 2011 10:33:05 +0000
+Subject: [PATCH 0059/1092] ARM: perf: remove unused armpmu_get_max_events
+
+armpmu_get_max_events is only called from perf_num_counters, so we can
+inline it there. It existed as a separate entity as a hangover from
+the original perf-based oprofile implementation.
+
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+---
+ arch/arm/include/asm/perf_event.h | 3 ---
+ arch/arm/kernel/perf_event.c      | 9 +--------
+ 2 files changed, 1 insertion(+), 11 deletions(-)
+
+diff --git a/arch/arm/include/asm/perf_event.h b/arch/arm/include/asm/perf_event.h
+index 0f8e382..99cfe36 100644
+--- a/arch/arm/include/asm/perf_event.h
++++ b/arch/arm/include/asm/perf_event.h
+@@ -32,7 +32,4 @@ enum arm_perf_pmu_ids {
+ extern enum arm_perf_pmu_ids
+ armpmu_get_pmu_id(void);
+ 
+-extern int
+-armpmu_get_max_events(void);
+-
+ #endif /* __ARM_PERF_EVENT_H__ */
+diff --git a/arch/arm/kernel/perf_event.c b/arch/arm/kernel/perf_event.c
+index ecebb89..5c32d33 100644
+--- a/arch/arm/kernel/perf_event.c
++++ b/arch/arm/kernel/perf_event.c
+@@ -59,8 +59,7 @@ armpmu_get_pmu_id(void)
+ }
+ EXPORT_SYMBOL_GPL(armpmu_get_pmu_id);
+ 
+-int
+-armpmu_get_max_events(void)
++int perf_num_counters(void)
+ {
+ 	int max_events = 0;
+ 
+@@ -69,12 +68,6 @@ armpmu_get_max_events(void)
+ 
+ 	return max_events;
+ }
+-EXPORT_SYMBOL_GPL(armpmu_get_max_events);
+-
+-int perf_num_counters(void)
+-{
+-	return armpmu_get_max_events();
+-}
+ EXPORT_SYMBOL_GPL(perf_num_counters);
+ 
+ #define HW_OP_UNSUPPORTED		0xFFFF
+-- 
+1.7.11.2
+

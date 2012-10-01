@@ -1,0 +1,75 @@
+From ac8368adb273cae5c435db5101fb1c2f2f445d1c Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Tue, 8 Nov 2011 12:18:41 +0530
+Subject: [PATCH 0996/1092] net: driver: ethernet: cpsw_ale: Fix for Multicast
+ address delete
+
+Multicast address is not deleted as port mask comparison is invalid. ALE
+entry is made free only when port mask equals to BIT(ale->ale_ports) which
+is 0x2 but an ALE entry must be freed only when port mask is 0x0.
+
+This patch fixes the issue by making the ALE entry as free entry when port
+mask is 0x0.
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw_ale.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/ti/cpsw_ale.c b/drivers/net/ethernet/ti/cpsw_ale.c
+index 43c8aac..2956c9e 100644
+--- a/drivers/net/ethernet/ti/cpsw_ale.c
++++ b/drivers/net/ethernet/ti/cpsw_ale.c
+@@ -449,20 +449,18 @@ EXPORT_SYMBOL_GPL(cpsw_ale_add_mcast);
+ int cpsw_ale_del_mcast(struct cpsw_ale *ale, u8 *addr, int port_mask)
+ {
+ 	u32 ale_entry[ALE_ENTRY_WORDS] = {0, 0, 0};
+-	int idx, mask;
++	int idx;
+ 
+ 	idx = cpsw_ale_match_addr(ale, addr, 0);
+ 	if (idx < 0)
+ 		return -EINVAL;
+ 
+ 	cpsw_ale_read(ale, idx, ale_entry);
+-	mask = cpsw_ale_get_port_mask(ale_entry);
+-	port_mask = mask & ~port_mask;
+ 
+-	if (port_mask == BIT(ale->ale_ports))
+-		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_FREE);
+-	else
++	if (port_mask)
+ 		cpsw_ale_set_port_mask(ale_entry, port_mask);
++	else
++		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_FREE);
+ 
+ 	cpsw_ale_write(ale, idx, ale_entry);
+ 	return 0;
+@@ -595,20 +593,18 @@ int cpsw_ale_vlan_del_mcast(struct cpsw_ale *ale, u8 *addr,
+ 				int port_mask, u16 vid)
+ {
+ 	u32 ale_entry[ALE_ENTRY_WORDS] = {0, 0, 0};
+-	int idx, mask;
++	int idx;
+ 
+ 	idx = cpsw_ale_match_addr(ale, addr, vid);
+ 	if (idx < 0)
+ 		return -EINVAL;
+ 
+ 	cpsw_ale_read(ale, idx, ale_entry);
+-	mask = cpsw_ale_get_port_mask(ale_entry);
+-	port_mask = mask & ~port_mask;
+ 
+-	if (port_mask == BIT(ale->ale_ports))
+-		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_FREE);
+-	else
++	if (port_mask)
+ 		cpsw_ale_set_port_mask(ale_entry, port_mask);
++	else
++		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_FREE);
+ 
+ 	cpsw_ale_write(ale, idx, ale_entry);
+ 	return 0;
+-- 
+1.7.11.2
+

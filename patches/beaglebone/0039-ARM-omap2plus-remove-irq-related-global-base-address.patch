@@ -1,0 +1,77 @@
+From 67f3e158334dc5162f7df0cd6ddcc677345ba3ea Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Tue, 15 Nov 2011 17:22:45 +0000
+Subject: [PATCH 0039/1092] ARM: omap2plus: remove irq-related global base
+ addresses
+
+After the MULTI_IRQ_HANDLER conversion, a couple of global
+variables can be removed.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/mach-omap2/io.c               | 3 ---
+ arch/arm/mach-omap2/irq.c              | 1 +
+ arch/arm/mach-omap2/omap4-common.c     | 6 +++---
+ arch/arm/plat-omap/include/plat/irqs.h | 1 -
+ 4 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 33f090c..8907c4a 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -316,9 +316,6 @@ static int _set_hwmod_postsetup_state(struct omap_hwmod *oh, void *data)
+ 	return omap_hwmod_set_postsetup_state(oh, *(u8 *)data);
+ }
+ 
+-/* See irq.c, omap4-common.c and entry-macro.S */
+-void __iomem *omap_irq_base;
+-
+ static void __init omap_common_init_early(void)
+ {
+ 	omap2_check_revision();
+diff --git a/arch/arm/mach-omap2/irq.c b/arch/arm/mach-omap2/irq.c
+index ec52bee..42b1d65 100644
+--- a/arch/arm/mach-omap2/irq.c
++++ b/arch/arm/mach-omap2/irq.c
+@@ -149,6 +149,7 @@ omap_alloc_gc(void __iomem *base, unsigned int irq_start, unsigned int num)
+ 
+ static void __init omap_init_irq(u32 base, int nr_irqs)
+ {
++	void __iomem *omap_irq_base;
+ 	unsigned long nr_of_irqs = 0;
+ 	unsigned int nr_banks = 0;
+ 	int i, j;
+diff --git a/arch/arm/mach-omap2/omap4-common.c b/arch/arm/mach-omap2/omap4-common.c
+index f327d74..beecfdd 100644
+--- a/arch/arm/mach-omap2/omap4-common.c
++++ b/arch/arm/mach-omap2/omap4-common.c
+@@ -29,11 +29,11 @@
+ void __iomem *l2cache_base;
+ #endif
+ 
+-void __iomem *gic_dist_base_addr;
+-
+-
+ void __init gic_init_irq(void)
+ {
++	void __iomem *omap_irq_base;
++	void __iomem *gic_dist_base_addr;
++
+ 	/* Static mapping, never released */
+ 	gic_dist_base_addr = ioremap(OMAP44XX_GIC_DIST_BASE, SZ_4K);
+ 	BUG_ON(!gic_dist_base_addr);
+diff --git a/arch/arm/plat-omap/include/plat/irqs.h b/arch/arm/plat-omap/include/plat/irqs.h
+index 631ed2f..2774587 100644
+--- a/arch/arm/plat-omap/include/plat/irqs.h
++++ b/arch/arm/plat-omap/include/plat/irqs.h
+@@ -437,7 +437,6 @@
+ #define INTCPS_NR_IRQS		96
+ 
+ #ifndef __ASSEMBLY__
+-extern void __iomem *omap_irq_base;
+ void omap2_intc_handle_irq(struct pt_regs *regs);
+ void omap3_intc_handle_irq(struct pt_regs *regs);
+ #endif
+-- 
+1.7.11.2
+

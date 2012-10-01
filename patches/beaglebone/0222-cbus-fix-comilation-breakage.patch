@@ -1,0 +1,83 @@
+From f49904d0301a2554b056f3d486edffb1644031b2 Mon Sep 17 00:00:00 2001
+From: Alexander Shishkin <ash@koowaldah.org>
+Date: Wed, 21 Apr 2010 14:26:07 +0000
+Subject: [PATCH 0222/1092] cbus: fix comilation breakage
+
+Just tried to build n8x0_defconfig on the current master and
+got cbus failing to compile due to implicit kzalloc() (and
+others from slab.h) references. I'm not sure that including
+slab.h directly is the right thing to do here, though.
+
+Signed-off-by: Alexander Shishkin <ash@koowaldah.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c         | 1 +
+ drivers/cbus/retu-headset.c | 1 +
+ drivers/cbus/retu-user.c    | 1 +
+ drivers/cbus/retu-wdt.c     | 1 +
+ drivers/cbus/tahvo-user.c   | 1 +
+ 5 files changed, 5 insertions(+)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 00c3c32..18260f2 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -26,6 +26,7 @@
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/gpio.h>
+diff --git a/drivers/cbus/retu-headset.c b/drivers/cbus/retu-headset.c
+index e798bc2..c38abf1 100644
+--- a/drivers/cbus/retu-headset.c
++++ b/drivers/cbus/retu-headset.c
+@@ -22,6 +22,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/input.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/cbus/retu-user.c b/drivers/cbus/retu-user.c
+index 0f35dc5..1a29492 100644
+--- a/drivers/cbus/retu-user.c
++++ b/drivers/cbus/retu-user.c
+@@ -23,6 +23,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index 35932dd..79585d8 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+diff --git a/drivers/cbus/tahvo-user.c b/drivers/cbus/tahvo-user.c
+index c0e8daf..01e7f20 100644
+--- a/drivers/cbus/tahvo-user.c
++++ b/drivers/cbus/tahvo-user.c
+@@ -23,6 +23,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+-- 
+1.7.11.2
+

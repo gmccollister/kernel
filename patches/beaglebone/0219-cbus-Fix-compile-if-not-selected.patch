@@ -1,0 +1,116 @@
+From 9b14d69e375fdf22e8afde67175dfb692baa7919 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 3 Aug 2010 12:10:00 +0300
+Subject: [PATCH 0219/1092] cbus: Fix compile if not selected
+
+Fix compile if not selected
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c | 15 ++++++++++++++-
+ arch/arm/mach-omap2/board-n8x0.c     | 33 +++++++++++++++++++++++----------
+ 2 files changed, 37 insertions(+), 11 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index ade98b2..ec21d9c 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -83,6 +83,8 @@ static struct platform_device nokia770_kp_device = {
+ 	.resource	= nokia770_kp_resources,
+ };
+ 
++#if defined(CONFIG_CBUS) || defined(CONFIG_CBUS_MODULE)
++
+ static struct cbus_host_platform_data nokia770_cbus_data = {
+ 	.clk_gpio	= OMAP_MPUIO(11),
+ 	.dat_gpio	= OMAP_MPUIO(10),
+@@ -97,9 +99,19 @@ static struct platform_device nokia770_cbus_device = {
+ 	},
+ };
+ 
++static void __init nokia770_cbus_init(void)
++{
++	platform_device_register(&nokia770_cbus_device);
++}
++
++#else
++static inline void __init nokia770_cbus_init(void)
++{
++}
++#endif
++
+ static struct platform_device *nokia770_devices[] __initdata = {
+ 	&nokia770_kp_device,
+-	&nokia770_cbus_device,
+ };
+ 
+ static void mipid_shutdown(struct mipid_platform_data *pdata)
+@@ -255,6 +267,7 @@ static void __init omap_nokia770_init(void)
+ 	/* Unmask SleepX signal */
+ 	omap_writew((omap_readw(0xfffb5004) & ~2), 0xfffb5004);
+ 
++	nokia770_cbus_init();
+ 	platform_add_devices(nokia770_devices, ARRAY_SIZE(nokia770_devices));
+ 	spi_register_board_info(nokia770_spi_board_info,
+ 				ARRAY_SIZE(nokia770_spi_board_info));
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 5572401..35a6c78 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -183,6 +183,19 @@ static struct mtd_partition onenand_partitions[] = {
+ 	},
+ };
+ 
++static struct omap_onenand_platform_data board_onenand_data[] = {
++	{
++		.cs		= 0,
++		.gpio_irq	= 26,
++		.parts		= onenand_partitions,
++		.nr_parts	= ARRAY_SIZE(onenand_partitions),
++		.flags		= ONENAND_SYNC_READ,
++	}
++};
++#endif
++
++#if defined(CONFIG_CBUS) || defined(CONFIG_CBUS_MODULE)
++
+ static struct cbus_host_platform_data n8x0_cbus_data = {
+ 	.clk_gpio	= 66,
+ 	.dat_gpio	= 65,
+@@ -197,15 +210,15 @@ static struct platform_device n8x0_cbus_device = {
+ 	},
+ };
+ 
+-static struct omap_onenand_platform_data board_onenand_data[] = {
+-	{
+-		.cs		= 0,
+-		.gpio_irq	= 26,
+-		.parts		= onenand_partitions,
+-		.nr_parts	= ARRAY_SIZE(onenand_partitions),
+-		.flags		= ONENAND_SYNC_READ,
+-	}
+-};
++static void __init n8x0_cbus_init(void)
++{
++	platform_device_register(&n8x0_cbus_device);
++}
++
++#else
++static inline void __init n8x0_cbus_init(void)
++{
++}
+ #endif
+ 
+ #if defined(CONFIG_MENELAUS) &&						\
+@@ -682,7 +695,7 @@ static inline void board_serial_init(void)
+ static void __init n8x0_init_machine(void)
+ {
+ 	omap2420_mux_init(board_mux, OMAP_PACKAGE_ZAC);
+-	platform_device_register(&n8x0_cbus_device);
++	n8x0_cbus_init();
+ 
+ 	/* FIXME: add n810 spi devices */
+ 	spi_register_board_info(n800_spi_board_info,
+-- 
+1.7.11.2
+

@@ -1,0 +1,35 @@
+From 552a9a07d9a0f81f293ae6edf8bd8e0606fb9cc3 Mon Sep 17 00:00:00 2001
+From: Ravi B <ravibabu@ti.com>
+Date: Thu, 9 Dec 2010 12:01:39 +0530
+Subject: [PATCH 0511/1092] musb: gadget: Read ep0 fifo only if rxcount is non
+ zero
+
+Fixes the read_fifo call with '0' rxcount.
+
+Signed-off-by: Ravi B <ravibabu@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_gadget_ep0.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_gadget_ep0.c b/drivers/usb/musb/musb_gadget_ep0.c
+index 32fd014..22d7ef2 100644
+--- a/drivers/usb/musb/musb_gadget_ep0.c
++++ b/drivers/usb/musb/musb_gadget_ep0.c
+@@ -505,8 +505,10 @@ static void ep0_rxstate(struct musb *musb)
+ 			req->status = -EOVERFLOW;
+ 			count = len;
+ 		}
+-		musb->ops->read_fifo(&musb->endpoints[0], count, buf);
+-		req->actual += count;
++		if (count > 0) {
++			musb->ops->read_fifo(&musb->endpoints[0], count, buf);
++			req->actual += count;
++		}
+ 		csr = MUSB_CSR0_P_SVDRXPKTRDY;
+ 		if (count < 64 || req->actual == req->length) {
+ 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
+-- 
+1.7.11.2
+

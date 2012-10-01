@@ -1,0 +1,44 @@
+From ee1921e18cc48ac7b24d9f6f3f7ec89521032a76 Mon Sep 17 00:00:00 2001
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 9 Dec 2011 13:38:00 -0800
+Subject: [PATCH 0002/1092] ARM: OMAP2+: DMA: Workaround for invalid
+ destination position
+
+If the DMA destination position has been asked before the
+first actual data transfer has been done, the CDAC
+register still contains 0 (it is initialized to 0 at
+omsp_dma_start).
+If CDAC == 0, return the programmed start address.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Reviewed-by: Jarkko Nikula <jarkko.nikula@bitmer.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/plat-omap/dma.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
+index a9983b6..002fb4d 100644
+--- a/arch/arm/plat-omap/dma.c
++++ b/arch/arm/plat-omap/dma.c
+@@ -1074,8 +1074,16 @@ dma_addr_t omap_get_dma_dst_pos(int lch)
+ 	 * omap 3.2/3.3 erratum: sometimes 0 is returned if CSAC/CDAC is
+ 	 * read before the DMA controller finished disabling the channel.
+ 	 */
+-	if (!cpu_is_omap15xx() && offset == 0)
++	if (!cpu_is_omap15xx() && offset == 0) {
+ 		offset = p->dma_read(CDAC, lch);
++		/*
++		 * CDAC == 0 indicates that the DMA transfer on the channel has
++		 * not been started (no data has been transferred so far).
++		 * Return the programmed destination start address in this case.
++		 */
++		if (unlikely(!offset))
++			offset = p->dma_read(CDSA, lch);
++	}
+ 
+ 	if (cpu_class_is_omap1())
+ 		offset |= (p->dma_read(CDSA, lch) & 0xFFFF0000);
+-- 
+1.7.11.2
+

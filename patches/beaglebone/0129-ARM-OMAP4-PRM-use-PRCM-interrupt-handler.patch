@@ -1,0 +1,66 @@
+From 378ac7b004d9a7081054ed5271e7400ab845efaa Mon Sep 17 00:00:00 2001
+From: Tero Kristo <t-kristo@ti.com>
+Date: Fri, 16 Dec 2011 14:37:00 -0700
+Subject: [PATCH 0129/1092] ARM: OMAP4: PRM: use PRCM interrupt handler
+
+Use the new PRCM interrupt handler code on OMAP4 systems.
+
+The OMAP code will need to be converted to use sparse IRQs for this
+to work.  Until that time, the following message will appear on boot:
+
+PRCM: failed to allocate irq descs: -12
+
+Signed-off-by: Tero Kristo <t-kristo@ti.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+[paul@pwsan.com: split this from a previous patch to this patch; call
+ omap4xxx_prcm_init() during init; write trivial commit log]
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ arch/arm/mach-omap2/prm44xx.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/prm44xx.c b/arch/arm/mach-omap2/prm44xx.c
+index 1c8e31b..33dd655 100644
+--- a/arch/arm/mach-omap2/prm44xx.c
++++ b/arch/arm/mach-omap2/prm44xx.c
+@@ -27,6 +27,24 @@
+ #include "prcm44xx.h"
+ #include "prminst44xx.h"
+ 
++static const struct omap_prcm_irq omap4_prcm_irqs[] = {
++	OMAP_PRCM_IRQ("wkup",   0,      0),
++	OMAP_PRCM_IRQ("io",     9,      1),
++};
++
++static struct omap_prcm_irq_setup omap4_prcm_irq_setup = {
++	.ack			= OMAP4_PRM_IRQSTATUS_MPU_OFFSET,
++	.mask			= OMAP4_PRM_IRQENABLE_MPU_OFFSET,
++	.nr_regs		= 2,
++	.irqs			= omap4_prcm_irqs,
++	.nr_irqs		= ARRAY_SIZE(omap4_prcm_irqs),
++	.irq			= OMAP44XX_IRQ_PRCM,
++	.read_pending_irqs	= &omap44xx_prm_read_pending_irqs,
++	.ocp_barrier		= &omap44xx_prm_ocp_barrier,
++	.save_and_clear_irqen	= &omap44xx_prm_save_and_clear_irqen,
++	.restore_irqen		= &omap44xx_prm_restore_irqen,
++};
++
+ /* PRM low-level functions */
+ 
+ /* Read a register in a CM/PRM instance in the PRM module */
+@@ -211,3 +229,11 @@ void omap44xx_prm_restore_irqen(u32 *saved_mask)
+ 	omap4_prm_write_inst_reg(saved_mask[1], OMAP4430_PRM_DEVICE_INST,
+ 				 OMAP4_PRM_IRQENABLE_MPU_2_OFFSET);
+ }
++
++static int __init omap4xxx_prcm_init(void)
++{
++	if (cpu_is_omap44xx())
++		return omap_prcm_register_chain_handler(&omap4_prcm_irq_setup);
++	return 0;
++}
++subsys_initcall(omap4xxx_prcm_init);
+-- 
+1.7.11.2
+

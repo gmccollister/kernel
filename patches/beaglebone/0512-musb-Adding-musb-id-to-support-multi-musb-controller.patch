@@ -1,0 +1,93 @@
+From 4335358182d880850870d98708f8dc557ec6d778 Mon Sep 17 00:00:00 2001
+From: Ravi B <ravibabu@ti.com>
+Date: Wed, 8 Dec 2010 17:28:03 +0530
+Subject: [PATCH 0512/1092] musb: Adding musb->id to support multi-musb
+ controller
+
+Added musb->id field to differenciate two controllers.
+
+Signed-off-by: Ravi B <ravibabu@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/am35x.c     | 3 ++-
+ drivers/usb/musb/musb_core.c | 3 +++
+ drivers/usb/musb/musb_core.h | 2 ++
+ drivers/usb/musb/omap2430.c  | 3 ++-
+ 4 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/musb/am35x.c b/drivers/usb/musb/am35x.c
+index 41dbcdc..dbe7fa1 100644
+--- a/drivers/usb/musb/am35x.c
++++ b/drivers/usb/musb/am35x.c
+@@ -684,12 +684,13 @@ static int __init am35x_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	musb = platform_device_alloc("musb-hdrc", -1);
++	musb = platform_device_alloc("musb-hdrc", pdev->id);
+ 	if (!musb) {
+ 		dev_err(&pdev->dev, "failed to allocate musb device\n");
+ 		goto err1;
+ 	}
+ 
++	dev_set_name(&pdev->dev, "musb-am35x");
+ 	phy_clk = clk_get(&pdev->dev, "fck");
+ 	if (IS_ERR(phy_clk)) {
+ 		dev_err(&pdev->dev, "failed to get PHY clock\n");
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 2e50eb9..4077e6c 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -1878,6 +1878,7 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
+ 	int			status;
+ 	struct musb		*musb;
+ 	struct musb_hdrc_platform_data *plat = dev->platform_data;
++	struct platform_device *pdev = to_platform_device(dev);
+ 
+ 	/* The driver might handle more features than the board; OK.
+ 	 * Fail when the board needs a feature that's not enabled.
+@@ -1905,6 +1906,8 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
+ 	musb->board_set_power = plat->set_power;
+ 	musb->min_power = plat->min_power;
+ 	musb->ops = plat->platform_ops;
++	musb->id = pdev->id;
++
+ 	if (fifo_mode == -1)
+ 		fifo_mode = musb->ops->fifo_mode;
+ 
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index 823f315..0b711e0 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -458,6 +458,8 @@ struct musb {
+ #ifdef MUSB_CONFIG_PROC_FS
+ 	struct proc_dir_entry *proc_entry;
+ #endif
++	/* id for multiple musb instances */
++	u8			id;
+ };
+ 
+ static inline struct musb *gadget_to_musb(struct usb_gadget *g)
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index 504cf2c..15ca16d 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -433,12 +433,13 @@ static int __init omap2430_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	musb = platform_device_alloc("musb-hdrc", -1);
++	musb = platform_device_alloc("musb-hdrc", pdev->id);
+ 	if (!musb) {
+ 		dev_err(&pdev->dev, "failed to allocate musb device\n");
+ 		goto err1;
+ 	}
+ 
++	ev_set_name(&pdev->dev, "musb-omap2430");
+ 	musb->dev.parent		= &pdev->dev;
+ 	musb->dev.dma_mask		= &omap2430_dmamask;
+ 	musb->dev.coherent_dma_mask	= omap2430_dmamask;
+-- 
+1.7.11.2
+

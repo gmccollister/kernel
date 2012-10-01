@@ -1,0 +1,40 @@
+From ff821e341c3f38df0638856f19d8df1621a452c6 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Mon, 10 Jan 2011 01:02:15 +0530
+Subject: [PATCH 0115/1092] ARM: OMAP4: PM: Add power domain statistics
+ support
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/omap-mpuss-lowpower.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap-mpuss-lowpower.c b/arch/arm/mach-omap2/omap-mpuss-lowpower.c
+index 549aff1..1d5d010 100644
+--- a/arch/arm/mach-omap2/omap-mpuss-lowpower.c
++++ b/arch/arm/mach-omap2/omap-mpuss-lowpower.c
+@@ -256,6 +256,8 @@ int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state)
+ 		return -ENXIO;
+ 	}
+ 
++	pwrdm_pre_transition();
++
+ 	/*
+ 	 * Check MPUSS next state and save interrupt controller if needed.
+ 	 * In MPUSS OSWR or device OFF, interrupt controller  contest is lost.
+@@ -288,6 +290,8 @@ int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state)
+ 	wakeup_cpu = smp_processor_id();
+ 	set_cpu_next_pwrst(wakeup_cpu, PWRDM_POWER_ON);
+ 
++	pwrdm_post_transition();
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.11.2
+

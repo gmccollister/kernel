@@ -1,0 +1,40 @@
+From da58f7adfd70b165696478db1b752ff3d0915f3b Mon Sep 17 00:00:00 2001
+From: Michael Buesch <mb@bu3sch.de>
+Date: Wed, 9 Mar 2011 18:09:00 +0000
+Subject: [PATCH 0321/1092] cbus-tahvo-usb: Fix struct tahvo_usb memory leak
+ on exit
+
+The struct tahvo_usb must be free'd on remove.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo-usb.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index 1ada7d3..63f0791 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -725,6 +725,8 @@ static int __init tahvo_usb_probe(struct platform_device *pdev)
+ 
+ static int __exit tahvo_usb_remove(struct platform_device *pdev)
+ {
++	struct tahvo_usb *tu = platform_get_drvdata(pdev);
++
+ 	dev_dbg(&pdev->dev, "remove\n");
+ 
+ 	tahvo_free_irq(TAHVO_INT_VBUSON);
+@@ -734,6 +736,8 @@ static int __exit tahvo_usb_remove(struct platform_device *pdev)
+ #ifdef CONFIG_USB_OTG
+ 	device_remove_file(&pdev->dev, &dev_attr_otg_mode);
+ #endif
++
++	kfree(tu);
+ 	tahvo_usb_device = NULL;
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

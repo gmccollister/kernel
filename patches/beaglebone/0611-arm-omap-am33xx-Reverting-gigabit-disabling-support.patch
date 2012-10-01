@@ -1,0 +1,54 @@
+From 871b2a6dbda5dffa860a84cf73c56ca5b67c11f0 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Fri, 11 Nov 2011 16:12:48 +0530
+Subject: [PATCH 0611/1092] arm:omap:am33xx: Reverting gigabit disabling
+ support
+
+This patch is added to revert back gigabit disable changes.
+Due to hw issue gigabit support was disabled in alpha revision
+and now this will be handled with respect to evm revision which
+will be pushed after this patch.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index e47c05c..d028f62 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -397,8 +397,7 @@ static void _cpsw_adjust_link(struct cpsw_slave *slave,
+ 		if (phy->speed == 10)
+ 			mac_control |= BIT(18); /* In Band mode */
+ 		if (phy->speed == 1000) {
+-			mac_control &= ~BIT(7);	/* TODO: Do not enable	*/
+-			phy->speed = 100;	/* gig support now	*/
++			mac_control |= BIT(7);	/* Enable gigabit mode */
+ 		}
+ 		if (phy->speed == 100)
+ 			mac_control |= BIT(15);
+@@ -539,18 +538,12 @@ static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
+ 	miibus->write(miibus, phy_addr, MII_BMCR, val);
+ 	tmp = miibus->read(miibus, phy_addr, MII_BMCR);
+ 
+-	/* TODO: Disable 1 Gig mode support due to hw issue */
+-	phy->supported &= ~(SUPPORTED_1000baseT_Half |
+-				SUPPORTED_1000baseT_Full);
+-
+ 	/* Enable gigabit support only if the speed is 1000Mbps */
+ 	if (phy->speed == CPSW_PHY_SPEED) {
+ 		tmp = miibus->read(miibus, phy_addr, MII_BMSR);
+ 		if (tmp & 0x1) {
+ 			val = miibus->read(miibus, phy_addr, MII_CTRL1000);
+-			/* TODO: Disable gig addadvertisement currently */
+-			val &= ~BIT(9);
+-			val &= ~BIT(8);
++			val |= BIT(9);
+ 			miibus->write(miibus, phy_addr, MII_CTRL1000, val);
+ 			tmp = miibus->read(miibus, phy_addr, MII_CTRL1000);
+ 		}
+-- 
+1.7.11.2
+

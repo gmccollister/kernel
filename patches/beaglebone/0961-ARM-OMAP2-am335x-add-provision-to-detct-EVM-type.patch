@@ -1,0 +1,66 @@
+From 5baa3b3721d1ede5dc6d4bbef267a62ea5802196 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Fri, 11 May 2012 15:39:02 +0530
+Subject: [PATCH 0961/1092] ARM: OMAP2+: am335x: add provision to detct EVM
+ type
+
+Many modules (currently Audio, PM) reguire to know the EVM type to
+decide its next step. (i2c bus, DDR type).
+
+This Patch adds support by providing an api for the same.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/devices.c                      | 9 ++++++++-
+ arch/arm/mach-omap2/include/mach/board-am335xevm.h | 1 +
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 9e029da..e7710a4 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -15,6 +15,7 @@
+ #include <linux/io.h>
+ #include <linux/clk.h>
+ #include <linux/err.h>
++#include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/of.h>
+ #include <linux/davinci_emac.h>
+@@ -1292,7 +1293,7 @@ static struct platform_device am33xx_cpsw_device = {
+ 
+ static unsigned char  am33xx_macid0[ETH_ALEN];
+ static unsigned char  am33xx_macid1[ETH_ALEN];
+-static unsigned int   am33xx_evmid;
++static unsigned int   am33xx_evmid = GEN_PURP_EVM;
+ 
+ /*
+ * am33xx_evmid_fillup - set up board evmid
+@@ -1309,6 +1310,12 @@ void am33xx_evmid_fillup(unsigned int evmid)
+ 	return;
+ }
+ 
++unsigned int get_am33xx_evmid(void)
++{
++	return am33xx_evmid;
++}
++EXPORT_SYMBOL(get_am33xx_evmid);
++
+ /*
+ * am33xx_cpsw_macidfillup - setup mac adrresses
+ * @eeprommacid0 - mac id 0 which needs to be configured
+diff --git a/arch/arm/mach-omap2/include/mach/board-am335xevm.h b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+index 2c451aa..b34226c 100644
+--- a/arch/arm/mach-omap2/include/mach/board-am335xevm.h
++++ b/arch/arm/mach-omap2/include/mach/board-am335xevm.h
+@@ -39,6 +39,7 @@
+ #define PROFILE_ALL		0xFF
+ 
+ void am33xx_evmid_fillup(unsigned int evmid);
++unsigned int get_am33xx_evmid(void);
+ void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
+ void am33xx_cpsw_init(unsigned int gigen);
+ void am33xx_d_can_init(unsigned int instance);
+-- 
+1.7.11.2
+

@@ -1,0 +1,29 @@
+From be61c5daabf086c6dd365cf37d2978f2c08e42e3 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Tue, 8 May 2012 12:15:36 +0530
+Subject: [PATCH 0956/1092] ARM: OMAP2+: am335x: Add support for TSC on am335x
+ evm-sk
+
+Touchscreen on AM335x EVM-SK is a four wire resistive
+touchscreen. Enabling the same.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 8c7d8eb..81486ef 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1745,6 +1745,7 @@ static struct evm_dev_cfg evm_sk_dev_cfg[] = {
+ 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{rgmii2_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{lcdc_init,     DEV_ON_BASEBOARD, PROFILE_ALL},
++	{tsc_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{NULL, 0, 0},
+ };
+ 
+-- 
+1.7.11.2
+

@@ -1,0 +1,30 @@
+From e4564c278bb2f8b37527decf4b23a82889dc8d0b Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 17 Jan 2012 11:28:44 +0530
+Subject: [PATCH 0722/1092] ARM: OMAP2+: UART: Don't register errata i291 for
+ AM33XX
+
+UART_ERRATA_i291_DMA_FORCEIDLE is not applicable to the
+AM33XX family
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/serial.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index 247d894..ad5bed3 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -362,7 +362,7 @@ void __init omap_serial_init_port(struct omap_board_data *bdata,
+ 		omap_up.errata |= UART_ERRATA_i202_MDR1_ACCESS;
+ 
+ 	/* Enable DMA Mode Force Idle Errata i291 for omap34xx/3630 */
+-	if (cpu_is_omap34xx() || cpu_is_omap3630())
++	if ((cpu_is_omap34xx() || cpu_is_omap3630()) && !cpu_is_am33xx())
+ 		omap_up.errata |= UART_ERRATA_i291_DMA_FORCEIDLE;
+ 
+ 	pdata = &omap_up;
+-- 
+1.7.11.2
+

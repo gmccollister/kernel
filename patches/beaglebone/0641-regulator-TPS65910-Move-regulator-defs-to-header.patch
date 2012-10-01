@@ -1,0 +1,89 @@
+From c82ef03484659db908855e6c43bfd69d36228099 Mon Sep 17 00:00:00 2001
+From: Kyle Manna <kyle.manna@fuel7.com>
+Date: Wed, 2 Nov 2011 17:30:19 +0530
+Subject: [PATCH 0641/1092] regulator: TPS65910: Move regulator defs to header
+
+Move the regulator defintions to the header so that platform board file
+can use them to configure specific regulators.
+
+Signed-off-by: Kyle Manna <kyle.manna@fuel7.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/regulator/tps65910-regulator.c | 24 ------------------------
+ include/linux/mfd/tps65910.h           | 25 +++++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/regulator/tps65910-regulator.c b/drivers/regulator/tps65910-regulator.c
+index b552aae..a623574 100644
+--- a/drivers/regulator/tps65910-regulator.c
++++ b/drivers/regulator/tps65910-regulator.c
+@@ -25,30 +25,6 @@
+ #include <linux/gpio.h>
+ #include <linux/mfd/tps65910.h>
+ 
+-#define TPS65910_REG_VRTC		0
+-#define TPS65910_REG_VIO		1
+-#define TPS65910_REG_VDD1		2
+-#define TPS65910_REG_VDD2		3
+-#define TPS65910_REG_VDD3		4
+-#define TPS65910_REG_VDIG1		5
+-#define TPS65910_REG_VDIG2		6
+-#define TPS65910_REG_VPLL		7
+-#define TPS65910_REG_VDAC		8
+-#define TPS65910_REG_VAUX1		9
+-#define TPS65910_REG_VAUX2		10
+-#define TPS65910_REG_VAUX33		11
+-#define TPS65910_REG_VMMC		12
+-
+-#define TPS65911_REG_VDDCTRL		4
+-#define TPS65911_REG_LDO1		5
+-#define TPS65911_REG_LDO2		6
+-#define TPS65911_REG_LDO3		7
+-#define TPS65911_REG_LDO4		8
+-#define TPS65911_REG_LDO5		9
+-#define TPS65911_REG_LDO6		10
+-#define TPS65911_REG_LDO7		11
+-#define TPS65911_REG_LDO8		12
+-
+ #define TPS65910_SUPPLY_STATE_ENABLED	0x1
+ 
+ /* supported VIO voltages in milivolts */
+diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps65910.h
+index 9d1580a..6586209 100644
+--- a/include/linux/mfd/tps65910.h
++++ b/include/linux/mfd/tps65910.h
+@@ -747,6 +747,31 @@
+ #define TPS65910_GPIO_STS				BIT(1)
+ #define TPS65910_GPIO_SET				BIT(0)
+ 
++/* Regulator Index Definitions */
++#define TPS65910_REG_VRTC				0
++#define TPS65910_REG_VIO				1
++#define TPS65910_REG_VDD1				2
++#define TPS65910_REG_VDD2				3
++#define TPS65910_REG_VDD3				4
++#define TPS65910_REG_VDIG1				5
++#define TPS65910_REG_VDIG2				6
++#define TPS65910_REG_VPLL				7
++#define TPS65910_REG_VDAC				8
++#define TPS65910_REG_VAUX1				9
++#define TPS65910_REG_VAUX2				10
++#define TPS65910_REG_VAUX33				11
++#define TPS65910_REG_VMMC				12
++
++#define TPS65911_REG_VDDCTRL				4
++#define TPS65911_REG_LDO1				5
++#define TPS65911_REG_LDO2				6
++#define TPS65911_REG_LDO3				7
++#define TPS65911_REG_LDO4				8
++#define TPS65911_REG_LDO5				9
++#define TPS65911_REG_LDO6				10
++#define TPS65911_REG_LDO7				11
++#define TPS65911_REG_LDO8				12
++
+ /**
+  * struct tps65910_board
+  * Board platform data may be used to initialize regulators.
+-- 
+1.7.11.2
+

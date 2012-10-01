@@ -1,0 +1,47 @@
+From 6dac23b031f42609682d595146bc7e6ac0368816 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Mon, 14 Feb 2011 20:50:24 +0200
+Subject: [PATCH 0308/1092] cbus: retu: set pm_power_off to NULL when removing
+ retu
+
+we need to clear pm_power_off otherwise we
+will have kernel trying to call an unexistent
+function.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/cbus/retu.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index a4c565b..0ca58b7 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -489,6 +489,7 @@ static int __init retu_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err2:
++	pm_power_off = NULL;
+ 	__retu_write_reg(retu, RETU_REG_IMR, 0xffff);
+ 	free_irq(retu->irq, retu);
+ 
+@@ -504,13 +505,15 @@ static int __exit retu_remove(struct platform_device *pdev)
+ {
+ 	struct retu		*retu = platform_get_drvdata(pdev);
+ 
++	pm_power_off = NULL;
++	the_retu = NULL;
++
+ 	/* Mask all RETU interrupts */
+ 	__retu_write_reg(retu, RETU_REG_IMR, 0xffff);
+ 
+ 	free_irq(retu->irq, retu);
+ 	retu_irq_exit(retu);
+ 	kfree(retu);
+-	the_retu = NULL;
+ 
+ 	return 0;
+ }
+-- 
+1.7.11.2
+

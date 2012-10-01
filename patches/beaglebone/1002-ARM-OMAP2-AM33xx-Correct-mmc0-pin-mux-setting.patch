@@ -1,0 +1,30 @@
+From 0f80baca53b4dcd258b1ef93ef765a1609b9d0d1 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Fri, 25 May 2012 14:35:32 +0530
+Subject: [PATCH 1002/1092] ARM: OMAP2: AM33xx: Correct mmc0 pin mux setting
+
+GPIO pin is used for write protect signal of MMC0 Instance. The mux
+table was configuring it as a MMC/SD functional pin. This patch corrects
+the same.
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 35e6964..aea9617 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -567,7 +567,7 @@ static struct pinmux_config mmc0_common_pin_mux[] = {
+ };
+ 
+ static struct pinmux_config mmc0_wp_only_pin_mux[] = {
+-	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
++	{"mcasp0_aclkr.gpio3_18", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+ 	{NULL, 0},
+ };
+ 
+-- 
+1.7.11.2
+

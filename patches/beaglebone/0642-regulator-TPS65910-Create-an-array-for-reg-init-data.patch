@@ -1,0 +1,77 @@
+From 25a43960e20a10727df080c4ff0598a56e42d629 Mon Sep 17 00:00:00 2001
+From: Kyle Manna <kyle.manna@fuel7.com>
+Date: Wed, 2 Nov 2011 17:31:30 +0530
+Subject: [PATCH 0642/1092] regulator: TPS65910: Create an array for reg init
+ data
+
+Create an array of fixed size for the platform to pass regulator
+initalization data through.
+
+Passing an array of pointers to init data also allows more flexible
+definition of init data as well as prevents reading past the end of the
+array should the platform define an incorrectly sized array.
+
+Signed-off-by: Kyle Manna <kyle.manna@fuel7.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/regulator/tps65910-regulator.c | 13 ++++++++++---
+ include/linux/mfd/tps65910.h           |  5 ++++-
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/regulator/tps65910-regulator.c b/drivers/regulator/tps65910-regulator.c
+index a623574..bb2a08d 100644
+--- a/drivers/regulator/tps65910-regulator.c
++++ b/drivers/regulator/tps65910-regulator.c
+@@ -861,8 +861,6 @@ static __devinit int tps65910_probe(struct platform_device *pdev)
+ 	if (!pmic_plat_data)
+ 		return -EINVAL;
+ 
+-	reg_data = pmic_plat_data->tps65910_pmic_init_data;
+-
+ 	pmic = kzalloc(sizeof(*pmic), GFP_KERNEL);
+ 	if (!pmic)
+ 		return -ENOMEM;
+@@ -913,7 +911,16 @@ static __devinit int tps65910_probe(struct platform_device *pdev)
+ 		goto err_free_info;
+ 	}
+ 
+-	for (i = 0; i < pmic->num_regulators; i++, info++, reg_data++) {
++	for (i = 0; i < pmic->num_regulators && i < TPS65910_NUM_REGS;
++			i++, info++) {
++
++		reg_data = pmic_plat_data->tps65910_pmic_init_data[i];
++
++		/* Regulator API handles empty constraints but not NULL
++		 * constraints */
++		if (!reg_data)
++			continue;
++
+ 		/* Register the regulators */
+ 		pmic->info[i] = info;
+ 
+diff --git a/include/linux/mfd/tps65910.h b/include/linux/mfd/tps65910.h
+index 6586209..cfc1f76 100644
+--- a/include/linux/mfd/tps65910.h
++++ b/include/linux/mfd/tps65910.h
+@@ -772,6 +772,9 @@
+ #define TPS65911_REG_LDO7				11
+ #define TPS65911_REG_LDO8				12
+ 
++/* Max number of TPS65910/11 regulators */
++#define TPS65910_NUM_REGS				13
++
+ /**
+  * struct tps65910_board
+  * Board platform data may be used to initialize regulators.
+@@ -783,7 +786,7 @@ struct tps65910_board {
+ 	int irq_base;
+ 	int vmbch_threshold;
+ 	int vmbch2_threshold;
+-	struct regulator_init_data *tps65910_pmic_init_data;
++	struct regulator_init_data *tps65910_pmic_init_data[TPS65910_NUM_REGS];
+ };
+ 
+ /**
+-- 
+1.7.11.2
+

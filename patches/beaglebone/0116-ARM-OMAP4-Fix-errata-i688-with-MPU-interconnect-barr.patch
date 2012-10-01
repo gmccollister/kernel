@@ -1,0 +1,284 @@
+From 50231db0337e5cec1258fc1e5f47d557e1b77b47 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Sat, 25 Jun 2011 18:04:31 -0700
+Subject: [PATCH 0116/1092] ARM: OMAP4: Fix errata i688 with MPU interconnect
+ barriers.
+
+On OMAP4 SOC, intecronnects has many write buffers in the async bridges
+and they need to be drained before CPU enters into standby state.
+
+Patch 'OMAP4: PM: Add CPUX OFF mode support' added CPU PM support
+but OMAP errata i688 (Async Bridge Corruption) needs to be taken
+care to avoid issues like system freeze, CPU deadlocks, random
+crashes with register accesses, synchronisation loss on initiators
+operating on both interconnect port simultaneously.
+
+As per the errata, if a data is stalled inside asynchronous bridge
+because of back pressure, it may be accepted multiple times, creating
+pointer misalignment that will corrupt next transfers on that data
+path until next reset of the system (No recovery procedure once
+the issue is hit, the path remains consistently broken).
+Async bridge can be found on path between MPU to EMIF and
+MPU to L3 interconnect. This situation can happen only when the
+idle is initiated by a Master Request Disconnection (which is
+trigged by software when executing WFI on CPU).
+
+The work-around for this errata needs all the initiators
+connected through async bridge must ensure that data path
+is properly drained before issuing WFI. This condition will be
+met if one Strongly ordered access is performed to the
+target right before executing the WFI. In MPU case, L3 T2ASYNC
+FIFO and DDR T2ASYNC FIFO needs to be drained. IO barrier ensure
+that there is no synchronisation loss on initiators operating
+on both interconnect port simultaneously.
+
+Thanks to Russell for a tip to conver assembly function to
+C fuction there by reducing 40 odd lines of code from the patch.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Richard Woodruff <r-woodruff2@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/Kconfig                 | 21 ++++++++++++
+ arch/arm/mach-omap2/include/mach/barriers.h | 31 ++++++++++++++++++
+ arch/arm/mach-omap2/io.c                    |  9 +++++
+ arch/arm/mach-omap2/omap4-common.c          | 51 +++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/sleep44xx.S             |  8 +++++
+ arch/arm/plat-omap/include/plat/sram.h      |  6 +++-
+ arch/arm/plat-omap/sram.c                   |  8 +++++
+ 7 files changed, 133 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/mach-omap2/include/mach/barriers.h
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index bdd5b68..19a30e8 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -352,6 +352,27 @@ config OMAP3_SDRC_AC_TIMING
+ 	  wish to say no.  Selecting yes without understanding what is
+ 	  going on could result in system crashes;
+ 
++config OMAP4_ERRATA_I688
++	bool "OMAP4 errata: Async Bridge Corruption"
++	depends on ARCH_OMAP4
++	select ARCH_HAS_BARRIERS
++	help
++	  If a data is stalled inside asynchronous bridge because of back
++	  pressure, it may be accepted multiple times, creating pointer
++	  misalignment that will corrupt next transfers on that data path
++	  until next reset of the system (No recovery procedure once the
++	  issue is hit, the path remains consistently broken). Async bridge
++	  can be found on path between MPU to EMIF and MPU to L3 interconnect.
++	  This situation can happen only when the idle is initiated by a
++	  Master Request Disconnection (which is trigged by software when
++	  executing WFI on CPU).
++	  The work-around for this errata needs all the initiators connected
++	  through async bridge must ensure that data path is properly drained
++	  before issuing WFI. This condition will be met if one Strongly ordered
++	  access is performed to the target right before executing the WFI.
++	  In MPU case, L3 T2ASYNC FIFO and DDR T2ASYNC FIFO needs to be drained.
++	  IO barrier ensure that there is no synchronisation loss on initiators
++	  operating on both interconnect port simultaneously.
+ endmenu
+ 
+ endif
+diff --git a/arch/arm/mach-omap2/include/mach/barriers.h b/arch/arm/mach-omap2/include/mach/barriers.h
+new file mode 100644
+index 0000000..4fa72c7
+--- /dev/null
++++ b/arch/arm/mach-omap2/include/mach/barriers.h
+@@ -0,0 +1,31 @@
++/*
++ * OMAP memory barrier header.
++ *
++ * Copyright (C) 2011 Texas Instruments, Inc.
++ *  Santosh Shilimkar <santosh.shilimkar@ti.com>
++ *  Richard Woodruff <r-woodruff2@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++
++#ifndef __MACH_BARRIERS_H
++#define __MACH_BARRIERS_H
++
++extern void omap_bus_sync(void);
++
++#define rmb()		dsb()
++#define wmb()		do { dsb(); outer_sync(); omap_bus_sync(); } while (0)
++#define mb()		wmb()
++
++#endif	/* __MACH_BARRIERS_H */
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 3f565dd..6584339 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -237,6 +237,15 @@ static struct map_desc omap44xx_io_desc[] __initdata = {
+ 		.length		= L4_EMU_44XX_SIZE,
+ 		.type		= MT_DEVICE,
+ 	},
++#ifdef CONFIG_OMAP4_ERRATA_I688
++	{
++		.virtual	= OMAP4_SRAM_VA,
++		.pfn		= __phys_to_pfn(OMAP4_SRAM_PA),
++		.length		= PAGE_SIZE,
++		.type		= MT_MEMORY_SO,
++	},
++#endif
++
+ };
+ #endif
+ 
+diff --git a/arch/arm/mach-omap2/omap4-common.c b/arch/arm/mach-omap2/omap4-common.c
+index 1b93d31..bc16c81 100644
+--- a/arch/arm/mach-omap2/omap4-common.c
++++ b/arch/arm/mach-omap2/omap4-common.c
+@@ -15,11 +15,14 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/memblock.h>
+ 
+ #include <asm/hardware/gic.h>
+ #include <asm/hardware/cache-l2x0.h>
++#include <asm/mach/map.h>
+ 
+ #include <plat/irqs.h>
++#include <plat/sram.h>
+ 
+ #include <mach/hardware.h>
+ #include <mach/omap-wakeupgen.h>
+@@ -33,6 +36,54 @@ static void __iomem *l2cache_base;
+ 
+ static void __iomem *sar_ram_base;
+ 
++#ifdef CONFIG_OMAP4_ERRATA_I688
++/* Used to implement memory barrier on DRAM path */
++#define OMAP4_DRAM_BARRIER_VA			0xfe600000
++
++void __iomem *dram_sync, *sram_sync;
++
++void omap_bus_sync(void)
++{
++	if (dram_sync && sram_sync) {
++		writel_relaxed(readl_relaxed(dram_sync), dram_sync);
++		writel_relaxed(readl_relaxed(sram_sync), sram_sync);
++		isb();
++	}
++}
++
++static int __init omap_barriers_init(void)
++{
++	struct map_desc dram_io_desc[1];
++	phys_addr_t paddr;
++	u32 size;
++
++	if (!cpu_is_omap44xx())
++		return -ENODEV;
++
++	size = ALIGN(PAGE_SIZE, SZ_1M);
++	paddr = memblock_alloc(size, SZ_1M);
++	if (!paddr) {
++		pr_err("%s: failed to reserve 4 Kbytes\n", __func__);
++		return -ENOMEM;
++	}
++	memblock_free(paddr, size);
++	memblock_remove(paddr, size);
++	dram_io_desc[0].virtual = OMAP4_DRAM_BARRIER_VA;
++	dram_io_desc[0].pfn = __phys_to_pfn(paddr);
++	dram_io_desc[0].length = size;
++	dram_io_desc[0].type = MT_MEMORY_SO;
++	iotable_init(dram_io_desc, ARRAY_SIZE(dram_io_desc));
++	dram_sync = (void __iomem *) dram_io_desc[0].virtual;
++	sram_sync = (void __iomem *) OMAP4_SRAM_VA;
++
++	pr_info("OMAP4: Map 0x%08llx to 0x%08lx for dram barrier\n",
++		(long long) paddr, dram_io_desc[0].virtual);
++
++	return 0;
++}
++core_initcall(omap_barriers_init);
++#endif
++
+ void __init gic_init_irq(void)
+ {
+ 	void __iomem *omap_irq_base;
+diff --git a/arch/arm/mach-omap2/sleep44xx.S b/arch/arm/mach-omap2/sleep44xx.S
+index 3154b63..abd2834 100644
+--- a/arch/arm/mach-omap2/sleep44xx.S
++++ b/arch/arm/mach-omap2/sleep44xx.S
+@@ -325,8 +325,16 @@ skip_l2en:
+ ENDPROC(omap4_cpu_resume)
+ #endif
+ 
++#ifndef CONFIG_OMAP4_ERRATA_I688
++ENTRY(omap_bus_sync)
++	mov	pc, lr
++ENDPROC(omap_bus_sync)
++#endif
++
+ ENTRY(omap_do_wfi)
+ 	stmfd	sp!, {lr}
++	/* Drain interconnect write buffers. */
++	bl omap_bus_sync
+ 
+ 	/*
+ 	 * Execute an ISB instruction to ensure that all of the
+diff --git a/arch/arm/plat-omap/include/plat/sram.h b/arch/arm/plat-omap/include/plat/sram.h
+index f500fc3..75aa1b2 100644
+--- a/arch/arm/plat-omap/include/plat/sram.h
++++ b/arch/arm/plat-omap/include/plat/sram.h
+@@ -95,6 +95,10 @@ static inline void omap_push_sram_idle(void) {}
+  */
+ #define OMAP2_SRAM_PA		0x40200000
+ #define OMAP3_SRAM_PA           0x40200000
++#ifdef CONFIG_OMAP4_ERRATA_I688
++#define OMAP4_SRAM_PA		0x40304000
++#define OMAP4_SRAM_VA		0xfe404000
++#else
+ #define OMAP4_SRAM_PA		0x40300000
+-
++#endif
+ #endif
+diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
+index 6b058a6..4243bdc 100644
+--- a/arch/arm/plat-omap/sram.c
++++ b/arch/arm/plat-omap/sram.c
+@@ -40,7 +40,11 @@
+ #define OMAP1_SRAM_PA		0x20000000
+ #define OMAP2_SRAM_PUB_PA	(OMAP2_SRAM_PA + 0xf800)
+ #define OMAP3_SRAM_PUB_PA       (OMAP3_SRAM_PA + 0x8000)
++#ifdef CONFIG_OMAP4_ERRATA_I688
++#define OMAP4_SRAM_PUB_PA	OMAP4_SRAM_PA
++#else
+ #define OMAP4_SRAM_PUB_PA	(OMAP4_SRAM_PA + 0x4000)
++#endif
+ 
+ #if defined(CONFIG_ARCH_OMAP2PLUS)
+ #define SRAM_BOOTLOADER_SZ	0x00
+@@ -161,6 +165,10 @@ static void __init omap_map_sram(void)
+ 	if (omap_sram_size == 0)
+ 		return;
+ 
++#ifdef CONFIG_OMAP4_ERRATA_I688
++		omap_sram_start += PAGE_SIZE;
++		omap_sram_size -= SZ_16K;
++#endif
+ 	if (cpu_is_omap34xx()) {
+ 		/*
+ 		 * SRAM must be marked as non-cached on OMAP3 since the
+-- 
+1.7.11.2
+

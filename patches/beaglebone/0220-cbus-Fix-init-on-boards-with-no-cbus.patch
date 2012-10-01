@@ -1,0 +1,104 @@
+From fc8d93b97ea5c9b7402d8706ffbee7799d8fa51f Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 3 Aug 2010 12:10:00 +0300
+Subject: [PATCH 0220/1092] cbus: Fix init on boards with no cbus
+
+This really should get fixed by converting cbus to
+use drivers/mfd.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu-rtc.c |  4 ++++
+ drivers/cbus/retu-wdt.c |  9 +++++++++
+ drivers/cbus/retu.c     | 13 +++++++++++++
+ drivers/cbus/retu.h     |  1 +
+ 4 files changed, 27 insertions(+)
+
+diff --git a/drivers/cbus/retu-rtc.c b/drivers/cbus/retu-rtc.c
+index 1ebc33b..f34780b 100644
+--- a/drivers/cbus/retu-rtc.c
++++ b/drivers/cbus/retu-rtc.c
+@@ -365,6 +365,10 @@ static int __devinit retu_rtc_probe(struct device *dev)
+ {
+ 	int r;
+ 
++	r = retu_get_status();
++	if (!r)
++		return -ENODEV;
++
+ 	retu_rtc_alarm_expired = retu_read_reg(RETU_REG_IDR) &
+ 					       (0x1 << RETU_INT_RTCA);
+ 
+diff --git a/drivers/cbus/retu-wdt.c b/drivers/cbus/retu-wdt.c
+index 689a5dc..35932dd 100644
+--- a/drivers/cbus/retu-wdt.c
++++ b/drivers/cbus/retu-wdt.c
+@@ -229,6 +229,11 @@ static int retu_wdt_ioctl(struct inode *inode, struct file *file,
+ /* Start kicking retu watchdog until user space starts doing the kicking */
+ static int __init retu_wdt_ping(void)
+ {
++	int r;
++
++	r = retu_get_status();
++	if (!r)
++		return -ENODEV;
+ 
+ #ifdef CONFIG_WATCHDOG_NOWAYOUT
+ 	retu_modify_counter(RETU_WDT_MAX_TIMER);
+@@ -341,6 +346,10 @@ static int __init retu_wdt_init(void)
+ {
+ 	int ret;
+ 
++	ret = retu_get_status();
++	if (!ret)
++		return -ENODEV;
++
+ 	init_completion(&retu_wdt_completion);
+ 
+ 	ret = driver_register(&retu_wdt_driver);
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 39493fb..cf2fe65 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -67,6 +67,16 @@ struct retu_irq_handler_desc {
+ static struct retu_irq_handler_desc retu_irq_handlers[MAX_RETU_IRQ_HANDLERS];
+ 
+ /**
++ *
++ *
++ */
++int retu_get_status(void)
++{
++	return retu_initialized;
++}
++EXPORT_SYMBOL(retu_get_status);
++
++/**
+  * retu_read_reg - Read a value from a register in Retu
+  * @reg: the register to read from
+  *
+@@ -252,6 +262,9 @@ int retu_request_irq(int id, void *irq_handler, unsigned long arg, char *name)
+ {
+ 	struct retu_irq_handler_desc *hnd;
+ 
++	if (!retu_initialized)
++		return -ENODEV;
++
+ 	if (irq_handler == NULL || id >= MAX_RETU_IRQ_HANDLERS ||
+ 	    name == NULL) {
+ 		printk(KERN_ERR PFX "Invalid arguments to %s\n",
+diff --git a/drivers/cbus/retu.h b/drivers/cbus/retu.h
+index c9e044c..fbd1981 100644
+--- a/drivers/cbus/retu.h
++++ b/drivers/cbus/retu.h
+@@ -57,6 +57,7 @@
+ 
+ #define	MAX_RETU_IRQ_HANDLERS	16
+ 
++int retu_get_status(void);
+ int retu_read_reg(int reg);
+ void retu_write_reg(int reg, u16 val);
+ void retu_set_clear_reg_bits(int reg, u16 set, u16 clear);
+-- 
+1.7.11.2
+

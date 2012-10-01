@@ -1,0 +1,37 @@
+From 02dece00f043b8654d1c4ceb93b8e3f4a1352870 Mon Sep 17 00:00:00 2001
+From: Francisco Alecrim <francisco.alecrim@openbossa.org>
+Date: Tue, 3 Aug 2010 12:10:00 +0300
+Subject: [PATCH 0218/1092] fix compile for tahvo-usb.c
+
+drivers/cbus/tahvo-usb.c:138: undefined reference to 'usb_bus_start_enum'
+
+usb_bus_start_enum only exported if USB_OTG enabled
+
+Signed-off-by: Francisco Alecrim <francisco.alecrim@openbossa.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo-usb.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cbus/tahvo-usb.c b/drivers/cbus/tahvo-usb.c
+index 9f8bbcc..762671a 100644
+--- a/drivers/cbus/tahvo-usb.c
++++ b/drivers/cbus/tahvo-usb.c
+@@ -132,12 +132,14 @@ static irqreturn_t omap_otg_irq(int irq, void *arg)
+ 	} else if (otg_irq & A_VBUS_ERR) {
+ 		omap_writew(A_VBUS_ERR, OTG_IRQ_SRC);
+ 	} else if (otg_irq & DRIVER_SWITCH) {
++#ifdef CONFIG_USB_OTG
+ 		if ((!(omap_readl(OTG_CTRL) & OTG_DRIVER_SEL)) &&
+ 		   tu->otg.host && tu->otg.state == OTG_STATE_A_HOST) {
+ 			/* role is host */
+ 			usb_bus_start_enum(tu->otg.host,
+ 					   tu->otg.host->otg_port);
+ 		}
++#endif
+ 		omap_writew(DRIVER_SWITCH, OTG_IRQ_SRC);
+ 	} else
+ 		return IRQ_NONE;
+-- 
+1.7.11.2
+

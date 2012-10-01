@@ -1,0 +1,26 @@
+From e56b7e4765c805ddff9d1f2e1eb941d0cfd97397 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Tue, 24 Jan 2012 10:13:18 +0530
+Subject: [PATCH 0741/1092] input: touchscreen: fix TSC related build warning
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ drivers/input/touchscreen/ti_tscadc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/input/touchscreen/ti_tscadc.c b/drivers/input/touchscreen/ti_tscadc.c
+index a27fa70..e3b5775 100644
+--- a/drivers/input/touchscreen/ti_tscadc.c
++++ b/drivers/input/touchscreen/ti_tscadc.c
+@@ -545,7 +545,7 @@ static int __devexit tscadc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int tscadc_suspend(struct platform_device *pdev)
++static int tscadc_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+ 	struct tscadc *ts_dev = platform_get_drvdata(pdev);
+ 	unsigned int  status;
+-- 
+1.7.11.2
+

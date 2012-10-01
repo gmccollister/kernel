@@ -1,0 +1,40 @@
+From 76f9626fc9e465a3eee47d97910f4c060ff91707 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Thu, 3 Mar 2011 17:36:52 +0530
+Subject: [PATCH 0096/1092] ARM: OMAP4: Use WARN_ON() instead of BUG_ON() with
+ graceful exit
+
+OMAP4 L2X0 initialisation code uses BUG_ON() for the ioremap()
+failure scenarios.
+
+Use WARN_ON() instead and allow graceful function exits.
+
+This was suggsted by Kevin Hilman <khilman@ti.com> during
+OMAP4 PM code review.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Acked-by: Jean Pihet <j-pihet@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Vishwanath BS <vishwanath.bs@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/omap4-common.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/omap4-common.c b/arch/arm/mach-omap2/omap4-common.c
+index beecfdd..21d4821 100644
+--- a/arch/arm/mach-omap2/omap4-common.c
++++ b/arch/arm/mach-omap2/omap4-common.c
+@@ -72,7 +72,8 @@ static int __init omap_l2_cache_init(void)
+ 
+ 	/* Static mapping, never released */
+ 	l2cache_base = ioremap(OMAP44XX_L2CACHE_BASE, SZ_4K);
+-	BUG_ON(!l2cache_base);
++	if (WARN_ON(!l2cache_base))
++		return -ENOMEM;
+ 
+ 	/*
+ 	 * 16-way associativity, parity disabled
+-- 
+1.7.11.2
+

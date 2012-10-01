@@ -1,0 +1,41 @@
+From 4c6d8ba406e52849eb8d1b1ec0b12aac84306632 Mon Sep 17 00:00:00 2001
+From: Vikram Pandita <vikram.pandita@ti.com>
+Date: Wed, 7 Sep 2011 09:19:23 -0700
+Subject: [PATCH 0438/1092] usb: musb: omap2+: fix context api's
+
+RxFifoSz, TxFifoSz, RxFifoAddr, TxFifoAddr
+are all indexed registers.
+
+So before doing a context save or restore, INDEX register
+should be set, then only one gets to the right register offset.
+
+Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
+Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/musb_core.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 920f04e..bb5ff73 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -2156,6 +2156,7 @@ static void musb_save_context(struct musb *musb)
+ 		if (!epio)
+ 			continue;
+ 
++		musb_writeb(musb_base, MUSB_INDEX, i);
+ 		musb->context.index_regs[i].txmaxp =
+ 			musb_readw(epio, MUSB_TXMAXP);
+ 		musb->context.index_regs[i].txcsr =
+@@ -2231,6 +2232,7 @@ static void musb_restore_context(struct musb *musb)
+ 		if (!epio)
+ 			continue;
+ 
++		musb_writeb(musb_base, MUSB_INDEX, i);
+ 		musb_writew(epio, MUSB_TXMAXP,
+ 			musb->context.index_regs[i].txmaxp);
+ 		musb_writew(epio, MUSB_TXCSR,
+-- 
+1.7.11.2
+

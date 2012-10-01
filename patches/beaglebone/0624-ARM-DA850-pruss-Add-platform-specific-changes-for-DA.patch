@@ -1,0 +1,190 @@
+From 0c6ca0bc84446781303ddd73c9bda10bea3e2463 Mon Sep 17 00:00:00 2001
+From: Amit Shah <amit.shah@ti.com>
+Date: Wed, 16 Nov 2011 21:02:30 +0530
+Subject: [PATCH 0624/1092] ARM:DA850:pruss: Add platform specific changes for
+ DA850 in UIO PRUSS driver
+
+	PRU specific resources like RAM base address, PRUSS clock, IRQs for DA8XX, uio_pruss driver register were added.
+
+Signed-off-by: Amit Shah <amit.shah@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-davinci/board-da850-evm.c    | 11 +++++
+ arch/arm/mach-davinci/da850.c              | 12 +++++-
+ arch/arm/mach-davinci/devices-da8xx.c      | 65 ++++++++++++++++++++++++++++++
+ arch/arm/mach-davinci/include/mach/da8xx.h |  3 ++
+ 4 files changed, 89 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-davinci/board-da850-evm.c b/arch/arm/mach-davinci/board-da850-evm.c
+index c5d808a..f044671 100644
+--- a/arch/arm/mach-davinci/board-da850-evm.c
++++ b/arch/arm/mach-davinci/board-da850-evm.c
+@@ -1249,6 +1249,17 @@ static __init int da850_wl12xx_init(void)
+ 
+ #define DA850EVM_SATA_REFCLKPN_RATE	(100 * 1000 * 1000)
+ 
++#ifdef CONFIG_UIO_PRUSS
++struct uio_pruss_pdata da8xx_pruss_uio_pdata = {
++	.pintc_base	= 0x4000,
++};
++
++	ret = da8xx_register_pruss_uio(&da8xx_pruss_uio_pdata);
++	if (ret)
++		pr_warning("%s: pruss_uio initialization failed: %d\n",
++				__func__, ret);
++#endif
++
+ static __init void da850_evm_init(void)
+ {
+ 	int ret;
+diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
+index 547b222..c7e9839 100644
+--- a/arch/arm/mach-davinci/da850.c
++++ b/arch/arm/mach-davinci/da850.c
+@@ -240,6 +240,12 @@ static struct clk tptc2_clk = {
+ 	.flags		= ALWAYS_ENABLED,
+ };
+ 
++static struct clk pruss_clk = {
++	.name		= "pruss",
++	.parent		= &pll0_sysclk2,
++	.lpsc		= DA8XX_LPSC0_PRUSS,
++};
++
+ static struct clk uart0_clk = {
+ 	.name		= "uart0",
+ 	.parent		= &pll0_sysclk2,
+@@ -411,6 +417,7 @@ static struct clk_lookup da850_clks[] = {
+ 	CLK(NULL,		"tpcc1",	&tpcc1_clk),
+ 	CLK(NULL,		"tptc2",	&tptc2_clk),
+ 	CLK(NULL,		"uart0",	&uart0_clk),
++	CLK(NULL,		"pruss",	&pruss_clk),
+ 	CLK(NULL,		"uart1",	&uart1_clk),
+ 	CLK(NULL,		"uart2",	&uart2_clk),
+ 	CLK(NULL,		"aintc",	&aintc_clk),
+@@ -747,7 +754,7 @@ static struct map_desc da850_io_desc[] = {
+ 	},
+ 	{
+ 		.virtual	= SRAM_VIRT,
+-		.pfn		= __phys_to_pfn(DA8XX_ARM_RAM_BASE),
++		.pfn		= __phys_to_pfn(DA8XX_SHARED_RAM_BASE),
+ 		.length		= SZ_8K,
+ 		.type		= MT_DEVICE
+ 	},
+@@ -1120,7 +1127,8 @@ static struct davinci_soc_info davinci_soc_info_da850 = {
+ 	.serial_dev		= &da8xx_serial_device,
+ 	.emac_pdata		= &da8xx_emac_pdata,
+ 	.sram_phys		= DA8XX_ARM_RAM_BASE,
+-	.sram_len		= SZ_8K,
++	.sram_dma		= DA8XX_SHARED_RAM_BASE,
++	.sram_len		= SZ_128K,
+ 	.reset_device		= &da8xx_wdt_device,
+ };
+ 
+diff --git a/arch/arm/mach-davinci/devices-da8xx.c b/arch/arm/mach-davinci/devices-da8xx.c
+index 98959de..b899238 100644
+--- a/arch/arm/mach-davinci/devices-da8xx.c
++++ b/arch/arm/mach-davinci/devices-da8xx.c
+@@ -519,6 +519,71 @@ void __init da8xx_register_mcasp(int id, struct snd_platform_data *pdata)
+ 	}
+ }
+ 
++#define DA8XX_PRUSS_MEM_BASE		0x01C30000
++
++static struct resource da8xx_pruss_resources[] = {
++	{
++		.start	= DA8XX_PRUSS_MEM_BASE,
++		.end	= DA8XX_PRUSS_MEM_BASE + 0xFFFF,
++		.flags	= IORESOURCE_MEM,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT0,
++		.end	= IRQ_DA8XX_EVTOUT0,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT1,
++		.end	= IRQ_DA8XX_EVTOUT1,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT2,
++		.end	= IRQ_DA8XX_EVTOUT2,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT3,
++		.end	= IRQ_DA8XX_EVTOUT3,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT4,
++		.end	= IRQ_DA8XX_EVTOUT4,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT5,
++		.end	= IRQ_DA8XX_EVTOUT5,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT6,
++		.end	= IRQ_DA8XX_EVTOUT6,
++		.flags	= IORESOURCE_IRQ,
++	},
++	{
++		.start	= IRQ_DA8XX_EVTOUT7,
++		.end	= IRQ_DA8XX_EVTOUT7,
++		.flags	= IORESOURCE_IRQ,
++	},
++;
++
++static struct platform_device da8xx_pruss_uio_dev = {
++	.name		= "pruss_uio",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(da8xx_pruss_resources),
++	.resource	= da8xx_pruss_resources,
++	.dev	 =	{
++		.coherent_dma_mask = 0xffffffff,
++	}
++};
++
++int __init da8xx_register_pruss_uio(struct uio_pruss_pdata *config)
++{
++	da8xx_pruss_uio_dev.dev.platform_data = config;
++	return platform_device_register(&da8xx_pruss_uio_dev);
++
+ static const struct display_panel disp_panel = {
+ 	QVGA,
+ 	16,
+diff --git a/arch/arm/mach-davinci/include/mach/da8xx.h b/arch/arm/mach-davinci/include/mach/da8xx.h
+index 2b2240e..f9a577d 100644
+--- a/arch/arm/mach-davinci/include/mach/da8xx.h
++++ b/arch/arm/mach-davinci/include/mach/da8xx.h
+@@ -16,6 +16,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/davinci_emac.h>
+ #include <linux/spi/spi.h>
++#include <linux/platform_data/uio_pruss.h>
+ 
+ #include <mach/serial.h>
+ #include <mach/edma.h>
+@@ -69,6 +70,7 @@ extern unsigned int da850_max_speed;
+ #define DA8XX_AEMIF_CS3_BASE	0x62000000
+ #define DA8XX_AEMIF_CTL_BASE	0x68000000
+ #define DA8XX_ARM_RAM_BASE	0xffff0000
++#define DA8XX_SHARED_RAM_BASE	0x80000000
+ 
+ void __init da830_init(void);
+ void __init da850_init(void);
+@@ -81,6 +83,7 @@ int da8xx_register_watchdog(void);
+ int da8xx_register_usb20(unsigned mA, unsigned potpgt);
+ int da8xx_register_usb11(struct da8xx_ohci_root_hub *pdata);
+ int da8xx_register_emac(void);
++int da8xx_register_pruss_uio(struct uio_pruss_pdata *config);
+ int da8xx_register_lcdc(struct da8xx_lcdc_platform_data *pdata);
+ int da8xx_register_mmcsd0(struct davinci_mmc_config *config);
+ int da850_register_mmcsd1(struct davinci_mmc_config *config);
+-- 
+1.7.11.2
+

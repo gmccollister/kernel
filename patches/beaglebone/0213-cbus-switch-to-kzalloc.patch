@@ -1,0 +1,35 @@
+From df7fc18d3ba50d56899ad98cf5cfa99b4e17e186 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Tue, 28 Sep 2010 12:00:28 -0700
+Subject: [PATCH 0213/1092] cbus: switch to kzalloc
+
+change kmalloc() + memset() to kzalloc(), no functional
+changes.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/cbus.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index c80cede..0bcc211 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -224,12 +224,10 @@ int __init cbus_bus_init(void)
+ 	struct cbus_host *chost;
+ 	int ret;
+ 
+-	chost = kmalloc(sizeof (*chost), GFP_KERNEL);
++	chost = kzalloc(sizeof (*chost), GFP_KERNEL);
+ 	if (chost == NULL)
+ 		return -ENOMEM;
+ 
+-	memset(chost, 0, sizeof (*chost));
+-
+ 	spin_lock_init(&chost->lock);
+ 
+ 	/* REVISIT: Pass these from board-*.c files in platform_data */
+-- 
+1.7.11.2
+

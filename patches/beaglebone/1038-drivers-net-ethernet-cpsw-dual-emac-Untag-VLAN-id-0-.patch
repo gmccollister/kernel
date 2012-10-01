@@ -1,0 +1,32 @@
+From 50aa8c9ec5b8fa4b07d7e6a6bd5cc96dbbbcd890 Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Tue, 19 Jun 2012 17:41:40 +0530
+Subject: [PATCH 1038/1092] drivers: net: ethernet: cpsw: dual-emac: Untag
+ VLAN id 0 on Egress
+
+On egress, packets are sent with VLAN id 0, as ALE is in VLAN-aware mode and
+port VLAN of host port is zero. Due to VLAN id 0 tagged packet, VLAN unaware
+external device will drop the packet so VLAN id 0 must be untagged on egress
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 56ec9d8..b60c00f 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -361,7 +361,8 @@ static inline void cpsw_add_dual_emac_mode_default_ale_entries(
+ 	cpsw_ale_add_ucast(priv->ale, priv->mac_addr,
+ 		priv->host_port, 0);
+ 	cpsw_ale_add_vlan(priv->ale, 0,
+-		ALE_ALL_PORTS << priv->host_port, 1, 1, 0);
++		ALE_ALL_PORTS << priv->host_port,
++		ALE_ALL_PORTS << priv->host_port, priv->host_port, 0);
+ }
+ 
+ static int cpsw_common_res_usage_state(struct cpsw_priv *priv)
+-- 
+1.7.11.2
+

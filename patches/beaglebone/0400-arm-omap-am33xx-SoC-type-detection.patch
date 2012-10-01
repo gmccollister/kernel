@@ -1,0 +1,29 @@
+From 970959d4afbf6585b1b3cc23c51629f0877f7f73 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 11 Oct 2011 17:24:05 +0530
+Subject: [PATCH 0400/1092] arm:omap:am33xx: SoC type detection
+
+Determine SoC type
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/id.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/id.c b/arch/arm/mach-omap2/id.c
+index 92e4d55..148bd1b 100644
+--- a/arch/arm/mach-omap2/id.c
++++ b/arch/arm/mach-omap2/id.c
+@@ -44,6 +44,8 @@ int omap_type(void)
+ 
+ 	if (cpu_is_omap24xx()) {
+ 		val = omap_ctrl_readl(OMAP24XX_CONTROL_STATUS);
++	} else if (cpu_is_am33xx()) {
++		val = omap_ctrl_readl(AM33XX_CONTROL_STATUS_OFF);
+ 	} else if (cpu_is_omap34xx()) {
+ 		val = omap_ctrl_readl(OMAP343X_CONTROL_STATUS);
+ 	} else if (cpu_is_omap44xx()) {
+-- 
+1.7.11.2
+

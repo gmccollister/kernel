@@ -1,0 +1,35 @@
+From 069dbfa6a963b35fa65a3069354bc51a4d50d800 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 7 May 2012 18:20:13 +0530
+Subject: [PATCH 0960/1092] ARM: OMAP2+: am335x: enable LED support in
+ def-config
+
+This patch enables LED support for AM335x platform.
+Currently LED's are supported on EVM-SK board.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 8f23cca..d105c61 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -2126,7 +2126,12 @@ CONFIG_MMC_OMAP_HS=y
+ # CONFIG_MMC_VUB300 is not set
+ # CONFIG_MMC_USHC is not set
+ # CONFIG_MEMSTICK is not set
+-# CONFIG_NEW_LEDS is not set
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_TIMER=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ # CONFIG_ACCESSIBILITY is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-- 
+1.7.11.2
+

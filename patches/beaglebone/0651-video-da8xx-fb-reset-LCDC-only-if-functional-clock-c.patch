@@ -1,0 +1,66 @@
+From 4e5d46e1aa82103b8202a215c98e24534dfb2f4e Mon Sep 17 00:00:00 2001
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Thu, 22 Dec 2011 10:58:11 +0530
+Subject: [PATCH 0651/1092] video: da8xx-fb: reset LCDC only if functional
+ clock changes with DVFS
+
+LCDC functional clock may or may not be derived from CPU/MPU DPLL,
+For example,
+AM335x => Separate independent DPLL for LCDC
+Davinci => Same DPLL as MPU
+
+So, on platforms where LCDC functional clock is not derived from CPU/MPU
+PLL it is not required to reset LCDC module as its functional clock does
+not change with DVFS.
+
+This patch adds check to do reset only if functional clock changes
+between pre and post notifier callbacks with DVFS.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 8c50985..2f0799d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -172,6 +172,7 @@ struct da8xx_fb_par {
+ 	unsigned int		which_dma_channel_done;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
++	unsigned int		lcd_fck_rate;
+ #endif
+ 	void (*panel_power_ctrl)(int);
+ };
+@@ -955,11 +956,12 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 	struct da8xx_fb_par *par;
+ 
+ 	par = container_of(nb, struct da8xx_fb_par, freq_transition);
+-	if (val == CPUFREQ_PRECHANGE) {
+-		lcd_disable_raster();
+-	} else if (val == CPUFREQ_POSTCHANGE) {
+-		lcd_calc_clk_divider(par);
+-		lcd_enable_raster();
++	if (val == CPUFREQ_POSTCHANGE) {
++		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
++			lcd_disable_raster();
++			lcd_calc_clk_divider(par);
++			lcd_enable_raster();
++		}
+ 	}
+ 
+ 	return 0;
+@@ -1290,6 +1292,9 @@ static int __devinit fb_probe(struct platform_device *device)
+ 
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
++#ifdef CONFIG_CPU_FREQ
++	par->lcd_fck_rate = clk_get_rate(fb_clk);
++#endif
+ 	par->pxl_clk = lcdc_info->pxl_clk;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+-- 
+1.7.11.2
+

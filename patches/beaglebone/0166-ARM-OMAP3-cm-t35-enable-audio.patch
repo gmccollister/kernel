@@ -1,0 +1,32 @@
+From 183fa27b460c795a60068d6bd2f53d508d6778ae Mon Sep 17 00:00:00 2001
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Tue, 13 Dec 2011 10:48:52 -0800
+Subject: [PATCH 0166/1092] ARM: OMAP3: cm-t35: enable audio
+
+TWL4030 audio codec is not being registered if no platform data is
+supplied. Provide platform data for the TWL4030 audio codec.
+
+Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
+[tony@atomide.com: updated subject]
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-cm-t35.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 635c15d..5d5b979 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -476,7 +476,8 @@ static struct twl4030_platform_data cm_t35_twldata = {
+ static void __init cm_t35_init_i2c(void)
+ {
+ 	omap3_pmic_get_config(&cm_t35_twldata, TWL_COMMON_PDATA_USB,
+-			TWL_COMMON_REGULATOR_VDAC);
++			      TWL_COMMON_REGULATOR_VDAC |
++			      TWL_COMMON_PDATA_AUDIO);
+ 
+ 	omap3_pmic_init("tps65930", &cm_t35_twldata);
+ }
+-- 
+1.7.11.2
+

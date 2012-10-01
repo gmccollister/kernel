@@ -1,0 +1,68 @@
+From 27784b463c0317075202358c17f903d8bcd21207 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 16 Jun 2011 11:27:16 +0000
+Subject: [PATCH 0333/1092] cbus: drop unneeded headers
+
+we don't use anything from those headers
+so we might as well just drop them.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c  | 10 ----------
+ drivers/cbus/tahvo.c | 10 ----------
+ 2 files changed, 20 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index be07938..708b811 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -30,21 +30,11 @@
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/device.h>
+-#include <linux/miscdevice.h>
+-#include <linux/poll.h>
+-#include <linux/fs.h>
+ #include <linux/mutex.h>
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
+ #include <linux/platform_data/cbus.h>
+-#include <linux/gpio.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/mach-types.h>
+-
+-#include <plat/mux.h>
+-#include <plat/board.h>
+ 
+ #include "cbus.h"
+ #include "retu.h"
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index bc440bc..d4a89a6 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -29,19 +29,9 @@
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/device.h>
+-#include <linux/miscdevice.h>
+-#include <linux/poll.h>
+-#include <linux/fs.h>
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
+-#include <linux/gpio.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/mach-types.h>
+-
+-#include <plat/mux.h>
+-#include <plat/board.h>
+ 
+ #include "cbus.h"
+ #include "tahvo.h"
+-- 
+1.7.11.2
+

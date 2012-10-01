@@ -1,0 +1,66 @@
+From 80a4c64544e5b70dc69aa2178d12e210a16b4d22 Mon Sep 17 00:00:00 2001
+From: Shubhrajyoti D <shubhrajyoti@ti.com>
+Date: Tue, 13 Dec 2011 16:25:55 +0530
+Subject: [PATCH 0192/1092] ARM: OMAP: omap_device: add omap_device_reset to
+ reset all the hwmods in the device
+
+Add a function omap_device_reset() to reset all the hwmods in the hwmod device.
+This is intended to be used by device drivers to reset all the hwmods in the
+device. This is needed to support some ips like i2c which  may have to do reset
+in error paths or in errata.
+
+Signed-off-by: Shubhrajyoti D <shubhrajyoti@ti.com>
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ arch/arm/plat-omap/include/plat/omap_device.h |  1 +
+ arch/arm/plat-omap/omap_device.c              | 22 ++++++++++++++++++++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/arch/arm/plat-omap/include/plat/omap_device.h b/arch/arm/plat-omap/include/plat/omap_device.h
+index 05f7615..71aa35d 100644
+--- a/arch/arm/plat-omap/include/plat/omap_device.h
++++ b/arch/arm/plat-omap/include/plat/omap_device.h
+@@ -123,6 +123,7 @@ int omap_device_enable_hwmods(struct omap_device *od);
+ 
+ int omap_device_disable_clocks(struct omap_device *od);
+ int omap_device_enable_clocks(struct omap_device *od);
++int omap_device_reset(struct device *dev);
+ 
+ /*
+  * Entries should be kept in latency order ascending
+diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
+index f72fafc..3733877 100644
+--- a/arch/arm/plat-omap/omap_device.c
++++ b/arch/arm/plat-omap/omap_device.c
+@@ -1123,6 +1123,28 @@ int omap_device_enable_clocks(struct omap_device *od)
+ 	return 0;
+ }
+ 
++/**
++ * omap_device_reset - reset the module.
++ * @dev: struct device *
++ *
++ * Reset all the hwmods associated with the device @dev.
++ */
++int omap_device_reset(struct device *dev)
++{
++	int r = 0;
++	int i;
++	struct platform_device *pdev = to_platform_device(dev);
++	struct omap_device *odev = to_omap_device(pdev);
++	struct omap_hwmod *oh;
++
++	for (i = 0; i < odev->hwmods_cnt; i++) {
++		oh = odev->hwmods[i];
++		r |= omap_hwmod_reset(oh);
++	}
++	return r;
++}
++
++
+ struct device omap_device_parent = {
+ 	.init_name	= "omap",
+ 	.parent         = &platform_bus,
+-- 
+1.7.11.2
+

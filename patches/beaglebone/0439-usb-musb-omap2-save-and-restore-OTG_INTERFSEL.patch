@@ -1,0 +1,58 @@
+From 960822f4e528387dbb78b812bf386a8d924cacef Mon Sep 17 00:00:00 2001
+From: Hema HK <hemahk@ti.com>
+Date: Wed, 7 Sep 2011 09:19:24 -0700
+Subject: [PATCH 0439/1092] usb: musb: omap2+: save and restore OTG_INTERFSEL
+
+we need to save and restore OTG_INTERFSEL register
+else we will be unable to function on resume after
+OFF mode.
+
+Reported-by: Devaraj Rangasamy <dev@ti.com>
+Signed-off-by: Hema HK <hemahk@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/musb_core.h | 1 +
+ drivers/usb/musb/omap2430.c  | 6 ++++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index b3c065a..3259a6b 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -311,6 +311,7 @@ struct musb_context_registers {
+ 	u8 index, testmode;
+ 
+ 	u8 devctl, busctl, misc;
++	u32 otg_interfsel;
+ 
+ 	struct musb_csr_regs index_regs[MUSB_C_NUM_EPS];
+ };
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index a8f0c09..9c3ca10 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -492,6 +492,9 @@ static int omap2430_runtime_suspend(struct device *dev)
+ 	struct omap2430_glue		*glue = dev_get_drvdata(dev);
+ 	struct musb			*musb = glue_to_musb(glue);
+ 
++	musb->context.otg_interfsel = musb_readl(musb->mregs,
++						OTG_INTERFSEL);
++
+ 	omap2430_low_level_exit(musb);
+ 	otg_set_suspend(musb->xceiv, 1);
+ 
+@@ -504,6 +507,9 @@ static int omap2430_runtime_resume(struct device *dev)
+ 	struct musb			*musb = glue_to_musb(glue);
+ 
+ 	omap2430_low_level_init(musb);
++	musb_writel(musb->mregs, OTG_INTERFSEL,
++					musb->context.otg_interfsel);
++
+ 	otg_set_suspend(musb->xceiv, 0);
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

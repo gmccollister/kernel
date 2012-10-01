@@ -1,0 +1,69 @@
+From f72962dfcc5939eccdd5d4b18c66698630a30117 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Wed, 17 Aug 2011 11:17:48 +0530
+Subject: [PATCH 0591/1092] arm:omap:am33xx: Board support for AM335X IA EVM
+
+UART3 is used as boot console for IA EVM.
+To capture decompressor logs & early prints,
+a different mach-id is required and so a new
+board support. It has machine specific entry
+points same as that of AM335XEVM.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/Kconfig           |  5 +++++
+ arch/arm/mach-omap2/Makefile          |  1 +
+ arch/arm/mach-omap2/board-am335xevm.c | 10 ++++++++++
+ 3 files changed, 16 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index ad20271..e44e942 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -337,6 +337,11 @@ config MACH_AM335XEVM
+ 	depends on SOC_OMAPAM33XX
+ 	default y
+ 
++config MACH_AM335XIAEVM
++	bool "AM335X IA Evaluation Module"
++	depends on SOC_OMAPAM33XX
++	default y
++
+ config MACH_OMAP_4430SDP
+ 	bool "OMAP 4430 SDP board"
+ 	default y
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index d72558c..b7c9dc9 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -249,6 +249,7 @@ obj-$(CONFIG_MACH_SBC3530)		+= board-omap3stalker.o
+ obj-$(CONFIG_MACH_TI8168EVM)		+= board-ti8168evm.o
+ obj-$(CONFIG_MACH_TI8148EVM)		+= board-ti8168evm.o
+ obj-$(CONFIG_MACH_AM335XEVM)		+= board-am335xevm.o
++obj-$(CONFIG_MACH_AM335XIAEVM)		+= board-am335xevm.o
+ 
+ # Platform specific device init code
+ 
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index be0ef90..fa250e0 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1387,3 +1387,13 @@ MACHINE_START(AM335XEVM, "am335xevm")
+ 	.timer		= &omap3_am33xx_timer,
+ 	.init_machine	= am335x_evm_init,
+ MACHINE_END
++
++MACHINE_START(AM335XIAEVM, "am335xiaevm")
++	/* Maintainer: Texas Instruments */
++	.atag_offset	= 0x100,
++	.map_io		= am335x_evm_map_io,
++	.init_irq	= ti81xx_init_irq,
++	.init_early	= am33xx_init_early,
++	.timer		= &omap3_am33xx_timer,
++	.init_machine	= am335x_evm_init,
++MACHINE_END
+-- 
+1.7.11.2
+

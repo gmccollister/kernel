@@ -1,0 +1,72 @@
+From 6a8d4ed65d5adaa3ab33476f0b561e3d1f7c731d Mon Sep 17 00:00:00 2001
+From: Igor Dmitriev <ext-dmitriev.igor@nokia.com>
+Date: Tue, 13 Dec 2011 10:48:54 -0800
+Subject: [PATCH 0170/1092] ARM: OMAP3: sdram-nokia: add 200 MHz memory
+ timings info
+
+Add memory timing info regarding the 200 MHz memory in sdram-nokia.
+Note that 100 MHz mode uses these same timings too.
+
+Signed-off-by: Igor Dmitriev <ext-dmitriev.igor@nokia.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@nokia.com>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+[tony@atomide.com: updated comments for 100 MHz timings]
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/sdram-nokia.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/sdram-nokia.c b/arch/arm/mach-omap2/sdram-nokia.c
+index ee3a8ad..7479d7e 100644
+--- a/arch/arm/mach-omap2/sdram-nokia.c
++++ b/arch/arm/mach-omap2/sdram-nokia.c
+@@ -1,7 +1,7 @@
+ /*
+  * SDRC register values for Nokia boards
+  *
+- * Copyright (C) 2008, 2010 Nokia Corporation
++ * Copyright (C) 2008, 2010-2011 Nokia Corporation
+  *
+  * Lauri Leukkunen <lauri.leukkunen@nokia.com>
+  *
+@@ -107,14 +107,37 @@ static const struct sdram_timings nokia_195dot2mhz_timings[] = {
+ 	},
+ };
+ 
++static const struct sdram_timings nokia_200mhz_timings[] = {
++	{
++		.casl = 3,
++		.tDAL = 30000,
++		.tDPL = 15000,
++		.tRRD = 10000,
++		.tRCD = 20000,
++		.tRP = 15000,
++		.tRAS = 40000,
++		.tRC = 55000,
++		.tRFC = 140000,
++		.tXSR = 200000,
++
++		.tREF = 7800,
++
++		.tXP = 2,
++		.tCKE = 4,
++		.tWTR = 2
++	},
++};
++
+ static const struct {
+ 	long rate;
+ 	struct sdram_timings const *data;
+ } nokia_timings[] = {
+ 	{ 83000000, nokia_166mhz_timings },
+ 	{ 97600000, nokia_97dot6mhz_timings },
++	{ 100000000, nokia_200mhz_timings },
+ 	{ 166000000, nokia_166mhz_timings },
+ 	{ 195200000, nokia_195dot2mhz_timings },
++	{ 200000000, nokia_200mhz_timings },
+ };
+ static struct omap_sdrc_params nokia_sdrc_params[ARRAY_SIZE(nokia_timings) + 1];
+ 
+-- 
+1.7.11.2
+

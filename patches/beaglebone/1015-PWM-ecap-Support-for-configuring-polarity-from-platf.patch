@@ -1,0 +1,34 @@
+From a51e8b469bebaf6b664680a153320d1f78ee6825 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Thu, 17 May 2012 11:56:47 +0530
+Subject: [PATCH 1015/1092] PWM: ecap: Support for configuring polarity from
+ platform data
+
+On some boards (like AM335x EVM-SK board), polarity of PWM wave has to
+be inversed. Hence add support for configuring PWM polarity during
+initialization.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ drivers/pwm/ecap.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/pwm/ecap.c b/drivers/pwm/ecap.c
+index 614be36..a75ef36 100644
+--- a/drivers/pwm/ecap.c
++++ b/drivers/pwm/ecap.c
+@@ -327,6 +327,11 @@ static int ecap_probe(struct platform_device *pdev)
+ 	pwm_set_drvdata(&ep->pwm, ep);
+ 	ret =  pwm_register(&ep->pwm, &pdev->dev, -1);
+ 	platform_set_drvdata(pdev, ep);
++	/* Inverse the polarity of PWM wave */
++	if (pdata->chan_attrib[0].inverse_pol) {
++		ep->pwm.active_high = 1;
++		ecap_pwm_set_polarity(&ep->pwm, 1);
++	}
+ 	return 0;
+ 
+ err_ioremap:
+-- 
+1.7.11.2
+

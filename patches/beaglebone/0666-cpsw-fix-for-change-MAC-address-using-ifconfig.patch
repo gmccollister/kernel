@@ -1,0 +1,49 @@
+From 23ff97f076846b4b63a5aaff15bbbebd567e8465 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 2 Jan 2012 16:25:32 +0530
+Subject: [PATCH 0666/1092] cpsw: fix for change MAC address using ifconfig
+
+When MAC address is changed using ifconfig, driver MAC address is
+not changes as pointer holding the new MAC address is not utilised.
+Changed the driver code to utilize the new MAC address and change
+the MAC address in driver if it is a valid MAC address.
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 0643847..e209fa0 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -828,15 +828,22 @@ static void cpsw_ndo_change_rx_flags(struct net_device *ndev, int flags)
+ 		dev_err(&ndev->dev, "multicast traffic cannot be filtered!\n");
+ }
+ 
+-static int cpsw_ndo_set_mac_address(struct net_device *ndev, void *addr)
++static int cpsw_ndo_set_mac_address(struct net_device *ndev, void *p)
+ {
+ 	struct cpsw_priv *priv = netdev_priv(ndev);
++	struct sockaddr *addr = (struct sockaddr *)p;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
+ 
+ 	cpsw_ale_del_ucast(priv->ale, priv->mac_addr, priv->host_port);
+-	memcpy(priv->mac_addr, ndev->dev_addr, ETH_ALEN);
++
++	memcpy(priv->mac_addr, addr->sa_data, ETH_ALEN);
++	memcpy(ndev->dev_addr, priv->mac_addr, ETH_ALEN);
++
+ 	cpsw_ale_add_ucast(priv->ale, priv->mac_addr, priv->host_port,
+ 			   0);
+-			   /* ALE_SECURE); */
++	/* ALE_SECURE); */
+ 	for_each_slave(priv, cpsw_set_slave_mac, priv);
+ 	return 0;
+ }
+-- 
+1.7.11.2
+

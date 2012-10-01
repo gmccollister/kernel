@@ -1,0 +1,115 @@
+From c66086e0e80f41ec6a27918a198389b1cc654ebd Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 20 Dec 2011 17:02:38 +0530
+Subject: [PATCH 0653/1092] arm:omap:am33xx: Register mailbox hwmod
+
+Add the base address for mailbox and register
+the hwmod for the same
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_33xx_data.c | 67 ++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/plat/am33xx.h   |  2 +
+ 2 files changed, 69 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+index cd9cadd..32fb5d9 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+@@ -1021,6 +1021,71 @@ static struct omap_hwmod am33xx_lcdc_hwmod = {
+ 	},
+ };
+ 
++/*
++ * 'mailbox' class
++ * mailbox module allowing communication between the on-chip processors using a
++ * queued mailbox-interrupt mechanism.
++ */
++
++static struct omap_hwmod_class_sysconfig am33xx_mailbox_sysc = {
++	.rev_offs	= 0x0000,
++	.sysc_offs	= 0x0010,
++	.sysc_flags	= (SYSC_HAS_RESET_STATUS | SYSC_HAS_SIDLEMODE |
++			   SYSC_HAS_SOFTRESET),
++	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
++	.sysc_fields	= &omap_hwmod_sysc_type2,
++};
++
++static struct omap_hwmod_class am33xx_mailbox_hwmod_class = {
++	.name	= "mailbox",
++	.sysc	= &am33xx_mailbox_sysc,
++};
++
++/* mailbox */
++static struct omap_hwmod am33xx_mailbox_hwmod;
++static struct omap_hwmod_irq_info am33xx_mailbox_irqs[] = {
++	{ .irq = AM33XX_IRQ_MAILBOX },
++	{ .irq = -1 }
++};
++
++static struct omap_hwmod_addr_space am33xx_mailbox_addrs[] = {
++	{
++		.pa_start	= AM33XX_MAILBOX0_BASE,
++		.pa_end		= AM33XX_MAILBOX0_BASE + (SZ_4K - 1),
++		.flags		= ADDR_TYPE_RT
++	},
++	{ }
++};
++
++/* l4_cfg -> mailbox */
++static struct omap_hwmod_ocp_if am33xx_l4_per__mailbox = {
++	.master		= &am33xx_l4per_hwmod,
++	.slave		= &am33xx_mailbox_hwmod,
++	.addr		= am33xx_mailbox_addrs,
++	.user		= OCP_USER_MPU,
++};
++
++/* mailbox slave ports */
++static struct omap_hwmod_ocp_if *am33xx_mailbox_slaves[] = {
++	&am33xx_l4_per__mailbox,
++};
++
++static struct omap_hwmod am33xx_mailbox_hwmod = {
++	.name		= "mailbox",
++	.class		= &am33xx_mailbox_hwmod_class,
++	.clkdm_name	= "l4ls_clkdm",
++	.mpu_irqs	= am33xx_mailbox_irqs,
++	.main_clk	= "mailbox0_fck",
++	.prcm = {
++		.omap4 = {
++			.clkctrl_offs	= AM33XX_CM_PER_MAILBOX0_CLKCTRL_OFFSET,
++			.modulemode	= MODULEMODE_SWCTRL,
++		},
++	},
++	.slaves		= am33xx_mailbox_slaves,
++	.slaves_cnt	= ARRAY_SIZE(am33xx_mailbox_slaves),
++};
++
+ /* 'mcasp' class */
+ static struct omap_hwmod_class am33xx_mcasp_hwmod_class = {
+ 	.name		= "mcasp",
+@@ -2514,6 +2579,8 @@ static __initdata struct omap_hwmod *am33xx_hwmods[] = {
+ 	&am33xx_icss_hwmod,
+ 	/* ieee5000 class */
+ 	&am33xx_ieee5000_hwmod,
++	/* mailbox class */
++	&am33xx_mailbox_hwmod,
+ 	/* mcasp class */
+ 	&am33xx_mcasp0_hwmod,
+ 	/* mmc class */
+diff --git a/arch/arm/plat-omap/include/plat/am33xx.h b/arch/arm/plat-omap/include/plat/am33xx.h
+index 475d020..18b1629 100644
+--- a/arch/arm/plat-omap/include/plat/am33xx.h
++++ b/arch/arm/plat-omap/include/plat/am33xx.h
+@@ -47,6 +47,8 @@
+ #define AM33XX_ASP0_BASE	0x48038000
+ #define AM33XX_ASP1_BASE	0x4803C000
+ 
++#define AM33XX_MAILBOX0_BASE	0x480C8000
++
+ #define AM33XX_MMC0_BASE	0x48060100
+ #define AM33XX_MMC1_BASE	0x481D8100
+ #define AM33XX_MMC2_BASE	0x47810100
+-- 
+1.7.11.2
+

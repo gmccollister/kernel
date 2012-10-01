@@ -1,0 +1,34 @@
+From 0858cf5c2ed70acd5f1df87417bf57a8c04b1fa6 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Mon, 5 Dec 2011 09:46:24 +0100
+Subject: [PATCH 0056/1092] ARM: 7189/1: OMAP3: Fix build break in
+ cpuidle34xx.c because of irq function
+
+Fix the below build break by including common.h
+
+arch/arm/mach-omap2/cpuidle34xx.c: In function 'omap3_enter_idle':
+arch/arm/mach-omap2/cpuidle34xx.c:117: error: implicit declaration of function 'omap_irq_pending'
+make[1]: *** [arch/arm/mach-omap2/cpuidle34xx.o] Error 1
+make: *** [arch/arm/mach-omap2] Error 2
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/arm/mach-omap2/cpuidle34xx.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+index 942bb4f..e20332f 100644
+--- a/arch/arm/mach-omap2/cpuidle34xx.c
++++ b/arch/arm/mach-omap2/cpuidle34xx.c
+@@ -34,6 +34,7 @@
+ 
+ #include "pm.h"
+ #include "control.h"
++#include "common.h"
+ 
+ #ifdef CONFIG_CPU_IDLE
+ 
+-- 
+1.7.11.2
+

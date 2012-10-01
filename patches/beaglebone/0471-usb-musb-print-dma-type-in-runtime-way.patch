@@ -1,0 +1,60 @@
+From 60c909632cfc25cd0e9752f52508732c268b2679 Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Thu, 23 Dec 2010 23:13:57 +0800
+Subject: [PATCH 0471/1092] usb: musb: print dma type in runtime way
+
+We will support multiple dma controller type in one single
+musb core driver(binary), so print dma type by the
+information from hw glue driver.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Ajay Kumar Gupta <ajay.gupta@ti.com>
+Signed-off-by: Sriramakrishnan A G <srk@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/usb/musb/musb_core.c |  2 ++
+ drivers/usb/musb/musb_core.h | 16 ++++++++++++++++
+ 2 files changed, 18 insertions(+)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 3cb4efc..55d058e 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -1929,6 +1929,8 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
+ 		musb_writeb = __musb_writeb;
+ 	}
+ 
++	dev_info(dev, "dma type: %s\n", get_dma_name(musb));
++
+ 	/* The musb_platform_init() call:
+ 	 *   - adjusts musb->mregs and musb->isr if needed,
+ 	 *   - may initialize an integrated tranceiver
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index 7d2f58a..585e1bc 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -614,4 +614,20 @@ static inline u16 musb_platform_get_hw_revision(struct musb *musb)
+ 	return musb->ops->get_hw_revision(musb);
+ }
+ 
++static inline const char *get_dma_name(struct musb *musb)
++{
++#ifdef CONFIG_MUSB_PIO_ONLY
++	return "pio";
++#else
++	if (musb->ops->flags & MUSB_GLUE_DMA_INVENTRA)
++		return "dma-inventra";
++	else if (musb->ops->flags & MUSB_GLUE_DMA_CPPI)
++		return "dma-cppi3";
++	else if (musb->ops->flags & MUSB_GLUE_DMA_TUSB)
++		return "dma-tusb-omap";
++	else
++		return "?dma?";
++#endif
++}
++
+ #endif	/* __MUSB_CORE_H__ */
+-- 
+1.7.11.2
+

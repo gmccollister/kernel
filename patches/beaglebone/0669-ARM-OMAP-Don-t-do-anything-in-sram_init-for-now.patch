@@ -1,0 +1,29 @@
+From dfe34b5440c7efe7e25a3be0742b4a30a24cb8b1 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 3 Jan 2012 18:21:46 +0530
+Subject: [PATCH 0669/1092] ARM: OMAP: Don't do anything in sram_init for now
+
+Needs to be merged with 45cd51a8e934bd996963a6de582ae43947c7ff28
+(arm:omap: Add SRAM support for AM33xx)
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/plat-omap/sram.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
+index 46378a2..ff0b66f 100644
+--- a/arch/arm/plat-omap/sram.c
++++ b/arch/arm/plat-omap/sram.c
+@@ -374,7 +374,7 @@ int __init omap_sram_init(void)
+ 		omap243x_sram_init();
+ 	else if (cpu_is_omap34xx() && !cpu_is_am33xx())
+ 		omap34xx_sram_init();
+-	else if (!cpu_is_am33xx())
++	else if (cpu_is_am33xx())
+ 		am33xx_sram_init();
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

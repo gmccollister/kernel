@@ -1,0 +1,71 @@
+From 5228d23369b6fd48bf0d4a63e726d75c13e5bc2b Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 17 Jan 2012 12:14:34 +0530
+Subject: [PATCH 0728/1092] ARM: OMAP: AM33XX: Add an API for obtaining the
+ virt EMIF addr
+
+The low level code for suspend needs the virtual address
+of EMIF so that the SDRAM can be put in self-refresh.
+Since the emif is ioremapped very early on, add an API
+which returns the virtual address of the EMIF address space
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c  | 9 ++++++++-
+ arch/arm/plat-omap/include/plat/emif.h | 4 ++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 93885e7..829cdd1 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -52,6 +52,7 @@
+ #include <plat/lcdc.h>
+ #include <plat/usb.h>
+ #include <plat/mmc.h>
++#include <plat/emif.h>
+ 
+ #include "board-flash.h"
+ #include "cpuidle33xx.h"
+@@ -1918,9 +1919,10 @@ static void __init clkout2_enable(void)
+ 	setup_pin_mux(clkout2_pin_mux);
+ }
+ 
++void __iomem *am33xx_emif_base;
++
+ void __iomem * __init am33xx_get_mem_ctlr(void)
+ {
+-	void __iomem *am33xx_emif_base;
+ 
+ 	am33xx_emif_base = ioremap(AM33XX_EMIF0_BASE, SZ_32K);
+ 
+@@ -1930,6 +1932,11 @@ void __iomem * __init am33xx_get_mem_ctlr(void)
+ 	return am33xx_emif_base;
+ }
+ 
++void __iomem *am33xx_get_ram_base(void)
++{
++	return am33xx_emif_base;
++}
++
+ static struct resource am33xx_cpuidle_resources[] = {
+ 	{
+ 		.start		= AM33XX_EMIF0_BASE,
+diff --git a/arch/arm/plat-omap/include/plat/emif.h b/arch/arm/plat-omap/include/plat/emif.h
+index 314c126..e1b39d6 100644
+--- a/arch/arm/plat-omap/include/plat/emif.h
++++ b/arch/arm/plat-omap/include/plat/emif.h
+@@ -16,6 +16,10 @@
+ #ifndef __EMIF_H
+ #define __EMIF_H
+ 
++#ifndef __ASSEMBLER__
++extern void __iomem *am33xx_get_ram_base(void);
++#endif /* ASSEMBLER */
++
+ #define EMIF_MOD_ID_REV			(0x0)
+ #define EMIF4_0_SDRAM_STATUS            (0x04)
+ #define EMIF4_0_SDRAM_CONFIG            (0x08)
+-- 
+1.7.11.2
+

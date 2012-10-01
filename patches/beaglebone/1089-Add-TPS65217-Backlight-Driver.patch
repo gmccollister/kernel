@@ -1,0 +1,150 @@
+From b7f229470e9ff6dde7b4130f4eb5f7fbc7db4447 Mon Sep 17 00:00:00 2001
+From: Umakanta Patro <umakanta.patro@ti.com>
+Date: Wed, 22 Aug 2012 14:24:49 +0530
+Subject: [PATCH 1089/1092] Add TPS65217 Backlight Driver
+
+This adds support for backlight driver using the WLED Driver module of TPS65217.
+
+Modified the default brightness level to be 50%, from 0%.
+
+Based on the patch submitted by Matthias Kaehlcke to Mainline Kernel:
+https://patchwork.kernel.org/patch/1302931/
+
+Change-Id: I09ffb41bb53de311f8ead11c5f0f2abeca300ef5
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+Signed-off-by: Umakanta Patro <umakanta.patro@ti.com>
+---
+ drivers/mfd/tps65217.c           | 28 ++++++++++++++++++++++++++++
+ drivers/video/backlight/Kconfig  |  7 +++++++
+ drivers/video/backlight/Makefile |  1 +
+ include/linux/mfd/tps65217.h     | 24 ++++++++++++++++++++++++
+ 4 files changed, 60 insertions(+)
+
+diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
+index f7d854e..92ac02a 100644
+--- a/drivers/mfd/tps65217.c
++++ b/drivers/mfd/tps65217.c
+@@ -189,8 +189,33 @@ static int __devinit tps65217_probe(struct i2c_client *client,
+ 		platform_device_add(pdev);
+ 	}
+ 
++	if (pdata->bl_pdata || pdata->of_node[TPS65217_SUBDEV_BL]) {
++		tps->bl_pdev = platform_device_alloc("tps65217-bl", 0);
++		if (!tps->bl_pdev) {
++			dev_err(tps->dev, "Cannot create backlight platform device\n");
++			ret = -ENOMEM;
++			goto err_alloc_bl_pdev;
++		}
++
++		tps->bl_pdev->dev.parent = tps->dev;
++
++		if (pdata->bl_pdata)
++			tps->bl_pdev->dev.platform_data = pdata->bl_pdata;
++		else
++			tps->bl_pdev->dev.of_node =
++				pdata->of_node[TPS65217_SUBDEV_BL];
++
++		platform_device_add(tps->bl_pdev);
++	}
++
+ 	return 0;
+ 
++err_alloc_bl_pdev:
++	for (i = 0; i < TPS65217_NUM_REGULATOR; i++)
++		platform_device_unregister(tps->regulator_pdev[i]);
++
++	return ret;
++
+ err_regmap:
+ 	regmap_exit(tps->regmap);
+ 
+@@ -202,6 +227,9 @@ static int __devexit tps65217_remove(struct i2c_client *client)
+ 	struct tps65217 *tps = i2c_get_clientdata(client);
+ 	int i;
+ 
++	if (tps->bl_pdev)
++		platform_device_unregister(tps->bl_pdev);
++
+ 	for (i = 0; i < TPS65217_NUM_REGULATOR; i++)
+ 		platform_device_unregister(tps->regulator_pdev[i]);
+ 
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index df9dac7..0de0842 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -350,6 +350,13 @@ config BACKLIGHT_TLC59108
+ 	  If you have an LCD Panel with backlight control via TLC59108,
+ 	  say Y to enable its LCD control driver.
+ 
++config BACKLIGHT_TPS65217
++	tristate "Backlight driver for TI TPS65217 using WLED"
++	depends on BACKLIGHT_CLASS_DEVICE && MFD_TPS65217
++	help
++	  If you have a Texas Instruments TPS65217 say Y to enable the
++	  backlight driver.
++
+ endif # BACKLIGHT_CLASS_DEVICE
+ 
+ endif # BACKLIGHT_LCD_SUPPORT
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index ba31474..3978d97 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -40,4 +40,5 @@ obj-$(CONFIG_BACKLIGHT_88PM860X) += 88pm860x_bl.o
+ obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
+ obj-$(CONFIG_BACKLIGHT_AAT2870) += aat2870_bl.o
+ obj-$(CONFIG_BACKLIGHT_TLC59108)	+= tlc59108.o
++obj-$(CONFIG_BACKLIGHT_TPS65217) += tps65217_bl.o
+ 
+diff --git a/include/linux/mfd/tps65217.h b/include/linux/mfd/tps65217.h
+index 234cd0d..a93911b 100644
+--- a/include/linux/mfd/tps65217.h
++++ b/include/linux/mfd/tps65217.h
+@@ -209,6 +209,27 @@ enum tps65217_regulator_id {
+ #define TPS65217_NUM_LDO		4
+ /* Number of total regulators available */
+ #define TPS65217_NUM_REGULATOR		(TPS65217_NUM_DCDC + TPS65217_NUM_LDO)
++/* Number of subdevices (regulators + backlight) */
++#define TPS65217_NUM_SUBDEVS		(TPS65217_NUM_REGULATOR + 1)
++/* Index of the backlight subdevice */
++#define TPS65217_SUBDEV_BL		TPS65217_NUM_REGULATOR
++
++enum tps65217_bl_isel {
++	TPS65217_BL_ISET1 = 1,
++	TPS65217_BL_ISET2 = 2,
++};
++
++enum tps65217_bl_fdim {
++	TPS65217_BL_FDIM_100HZ,
++	TPS65217_BL_FDIM_200HZ,
++	TPS65217_BL_FDIM_500HZ,
++	TPS65217_BL_FDIM_1000HZ,
++};
++
++struct tps65217_bl_pdata {
++	enum tps65217_bl_isel isel;
++	enum tps65217_bl_fdim fdim;
++};
+ 
+ /**
+  * struct tps65217_board - packages regulator init data
+@@ -218,6 +239,8 @@ enum tps65217_regulator_id {
+  */
+ struct tps65217_board {
+ 	struct regulator_init_data *tps65217_init_data;
++	struct device_node *of_node[TPS65217_NUM_SUBDEVS];
++	struct tps65217_bl_pdata *bl_pdata;
+ };
+ 
+ struct tps65217_rdelay {
+@@ -270,6 +293,7 @@ struct tps65217 {
+ 
+ 	/* Client devices */
+ 	struct platform_device *regulator_pdev[TPS65217_NUM_REGULATOR];
++	struct platform_device *bl_pdev;
+ };
+ 
+ static inline struct tps65217 *dev_to_tps65217(struct device *dev)
+-- 
+1.7.11.2
+

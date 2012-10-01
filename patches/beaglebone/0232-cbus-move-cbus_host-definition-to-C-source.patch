@@ -1,0 +1,58 @@
+From b30673817d1ee6ea90a63be9a76eb717ab640ea3 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:20:36 -0700
+Subject: [PATCH 0232/1092] cbus: move cbus_host definition to C source
+
+no-one else besides cbus.c wants to deal with
+struct cbus_host, so move the definition to
+the C source interested in it.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/cbus.c | 9 +++++++++
+ drivers/cbus/cbus.h | 9 ---------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cbus/cbus.c b/drivers/cbus/cbus.c
+index 1cc5487..6f28ef4 100644
+--- a/drivers/cbus/cbus.c
++++ b/drivers/cbus/cbus.c
+@@ -46,6 +46,15 @@
+ #define CBUS_XFER_READ		1
+ #define CBUS_XFER_WRITE		0
+ 
++struct cbus_host {
++	/* host lock */
++	spinlock_t lock;
++
++	int	clk_gpio;
++	int	dat_gpio;
++	int	sel_gpio;
++};
++
+ static struct cbus_host *cbus_host;
+ 
+ static void cbus_send_bit(struct cbus_host *host, int bit, int set_to_input)
+diff --git a/drivers/cbus/cbus.h b/drivers/cbus/cbus.h
+index 62f1874..d53bb70 100644
+--- a/drivers/cbus/cbus.h
++++ b/drivers/cbus/cbus.h
+@@ -23,15 +23,6 @@
+ #ifndef __DRIVERS_CBUS_CBUS_H
+ #define __DRIVERS_CBUS_CBUS_H
+ 
+-struct cbus_host {
+-	/* host lock */
+-	spinlock_t lock;
+-
+-	int	clk_gpio;
+-	int	dat_gpio;
+-	int	sel_gpio;
+-};
+-
+ extern int cbus_read_reg(unsigned dev, unsigned reg);
+ extern int cbus_write_reg(unsigned dev, unsigned reg, unsigned val);
+ 
+-- 
+1.7.11.2
+

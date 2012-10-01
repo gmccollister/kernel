@@ -1,0 +1,31 @@
+From 7cf7e5436fb30a3db3eb7d4b29252d845892d6fb Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Thu, 17 May 2012 11:57:05 +0530
+Subject: [PATCH 1014/1092] PWM: Add platform data support for configuring
+ polarity
+
+Some platforms/boards require an option to configure polarity of PWM
+wave from platform data. This patch adds a flag "inverse_pol" to
+pwm_chan_attrib structure for the platforms/boards to configure as
+required.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ include/linux/pwm/pwm.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/linux/pwm/pwm.h b/include/linux/pwm/pwm.h
+index 99c08f5..d2db831 100644
+--- a/include/linux/pwm/pwm.h
++++ b/include/linux/pwm/pwm.h
+@@ -116,6 +116,7 @@ enum {
+ 
+ struct pwm_chan_attrib {
+ 	int max_freq;
++	bool inverse_pol;
+ };
+ 
+ #define PWM_CHANNEL NCHAN
+-- 
+1.7.11.2
+

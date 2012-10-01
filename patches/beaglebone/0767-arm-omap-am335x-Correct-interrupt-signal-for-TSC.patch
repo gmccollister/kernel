@@ -1,0 +1,28 @@
+From d29300e8c85c9a12e3fb814a05f3a39edf429984 Mon Sep 17 00:00:00 2001
+From: "Patil, Rachna" <rachna@ti.com>
+Date: Fri, 10 Feb 2012 16:06:03 +0530
+Subject: [PATCH 0767/1092] arm:omap:am335x: Correct interrupt signal for TSC
+
+Interrupt signal entry in HwMod data of TSC has been corrected
+
+Signed-off-by: Patil, Rachna <rachna@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_33xx_data.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+index ceaf244..8aa77c7 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_33xx_data.c
+@@ -293,7 +293,7 @@ static struct omap_hwmod_class am33xx_adc_tsc_hwmod_class = {
+ 
+ /* adc_tsc */
+ static struct omap_hwmod_irq_info am33xx_adc_tsc_irqs[] = {
+-	{ .irq = AM33XX_IRQ_TSC },
++	{ .irq = AM33XX_IRQ_ADC_GEN },
+ 	{ .irq = -1 }
+ };
+ 
+-- 
+1.7.11.2
+

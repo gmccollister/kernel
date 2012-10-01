@@ -1,0 +1,33 @@
+From 1b934ac9f7bc37f8b0b6eb083cb30293d3fb93fe Mon Sep 17 00:00:00 2001
+From: "Basheer, Mansoor Ahamed" <mansoor.ahamed@ti.com>
+Date: Fri, 15 Jul 2011 13:02:37 +0530
+Subject: [PATCH 0553/1092] arm:omap:nand - Release memory region in remove
+ API
+
+  OMAP2 NAND driver does not release memory region
+  in the remove API hence loadable module support for
+  OMAP2 NAND driver was broken. This patch releases
+  memory region in the remove API.
+
+Signed-off-by: Basheer, Mansoor Ahamed <mansoor.ahamed@ti.com>
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/mtd/nand/omap2.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
+index f745f00..f3c9433 100644
+--- a/drivers/mtd/nand/omap2.c
++++ b/drivers/mtd/nand/omap2.c
+@@ -1132,6 +1132,7 @@ static int omap_nand_remove(struct platform_device *pdev)
+ 	/* Release NAND device, its internal structures and partitions */
+ 	nand_release(&info->mtd);
+ 	iounmap(info->nand.IO_ADDR_R);
++	release_mem_region(info->phys_base, NAND_IO_SIZE);
+ 	kfree(&info->mtd);
+ 	return 0;
+ }
+-- 
+1.7.11.2
+

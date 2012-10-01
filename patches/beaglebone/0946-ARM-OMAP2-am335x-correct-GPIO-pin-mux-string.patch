@@ -1,0 +1,44 @@
+From be66df0af97a893298dca738230ec58e35d91652 Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 7 May 2012 12:05:38 +0530
+Subject: [PATCH 0946/1092] ARM: OMAP2+: am335x: correct GPIO pin-mux string
+
+Even though MMC1 instance uses GPIO pin for card detect, the pin-mux
+name used is mmc_cd. For clarity and consistency, maintain the pin-mux
+name as gpio.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ arch/arm/mach-omap2/mux33xx.c         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index f673c91..fd4c0fc 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -627,7 +627,7 @@ static struct pinmux_config mmc1_wp_only_pin_mux[] = {
+ };
+ 
+ static struct pinmux_config mmc1_cd_only_pin_mux[] = {
+-	{"gpmc_advn_ale.mmc1_sdcd", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
++	{"gpmc_advn_ale.gpio2_2", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+ 	{NULL, 0},
+ };
+ 
+diff --git a/arch/arm/mach-omap2/mux33xx.c b/arch/arm/mach-omap2/mux33xx.c
+index 59e51e0..928aa9b 100644
+--- a/arch/arm/mach-omap2/mux33xx.c
++++ b/arch/arm/mach-omap2/mux33xx.c
+@@ -139,7 +139,7 @@ static struct omap_mux __initdata am33xx_muxmodes[] = {
+ 		NULL, NULL, "mcasp0_fsr", "gpio2_1"),
+ 	_AM33XX_MUXENTRY(GPMC_ADVN_ALE, 0,
+ 		"gpmc_advn_ale", NULL, NULL, NULL,
+-		NULL, NULL, NULL, "mmc1_sdcd"),
++		NULL, NULL, NULL, "gpio2_2"),
+ 	_AM33XX_MUXENTRY(GPMC_OEN_REN, 0,
+ 		"gpmc_oen_ren", NULL, NULL, NULL,
+ 		NULL, NULL, NULL, "gpio2_3"),
+-- 
+1.7.11.2
+

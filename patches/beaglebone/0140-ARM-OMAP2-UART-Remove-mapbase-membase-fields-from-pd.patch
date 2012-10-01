@@ -1,0 +1,69 @@
+From 1a6306f2c8aceea872a405874698e0d35cb49d96 Mon Sep 17 00:00:00 2001
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Date: Tue, 11 Oct 2011 14:55:41 +0530
+Subject: [PATCH 0140/1092] ARM: OMAP2+: UART: Remove mapbase/membase fields
+ from pdata.
+
+The mapbase (start_address), membase(io_remap cookie) part of
+pdata struct omap_uart_port_info are removed as this should be
+derived within driver.
+
+Signed-off-by: Govindraj.R <govindraj.raja@ti.com>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de> (for drivers/tty changes)
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/serial.c                  |  2 --
+ arch/arm/plat-omap/include/plat/omap-serial.h |  2 --
+ drivers/tty/serial/omap-serial.c              | 10 ++++++++--
+ 3 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index 77feaab..2456cfd 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -605,8 +605,6 @@ void __init omap_serial_init_port(struct omap_board_data *bdata)
+ 
+ 	omap_up.dma_enabled = uart->dma_enabled;
+ 	omap_up.uartclk = OMAP24XX_BASE_BAUD * 16;
+-	omap_up.mapbase = oh->slaves[0]->addr->pa_start;
+-	omap_up.membase = omap_hwmod_get_mpu_rt_va(oh);
+ 	omap_up.flags = UPF_BOOT_AUTOCONF;
+ 
+ 	pdata = &omap_up;
+diff --git a/arch/arm/plat-omap/include/plat/omap-serial.h b/arch/arm/plat-omap/include/plat/omap-serial.h
+index 307cd6f..db9bda9 100644
+--- a/arch/arm/plat-omap/include/plat/omap-serial.h
++++ b/arch/arm/plat-omap/include/plat/omap-serial.h
+@@ -59,8 +59,6 @@
+ struct omap_uart_port_info {
+ 	bool			dma_enabled;	/* To specify DMA Mode */
+ 	unsigned int		uartclk;	/* UART clock rate */
+-	void __iomem		*membase;	/* ioremap cookie or NULL */
+-	resource_size_t		mapbase;	/* resource base */
+ 	upf_t			flags;		/* UPF_* flags */
+ };
+ 
+diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
+index be368cf7..31f0cbf 100644
+--- a/drivers/tty/serial/omap-serial.c
++++ b/drivers/tty/serial/omap-serial.c
+@@ -1275,8 +1275,14 @@ static int serial_omap_probe(struct platform_device *pdev)
+ 	up->port.ops = &serial_omap_pops;
+ 	up->port.line = pdev->id;
+ 
+-	up->port.membase = omap_up_info->membase;
+-	up->port.mapbase = omap_up_info->mapbase;
++	up->port.mapbase = mem->start;
++	up->port.membase = ioremap(mem->start, resource_size(mem));
++	if (!up->port.membase) {
++		dev_err(&pdev->dev, "can't ioremap UART\n");
++		ret = -ENOMEM;
++		goto err;
++	}
++
+ 	up->port.flags = omap_up_info->flags;
+ 	up->port.uartclk = omap_up_info->uartclk;
+ 	up->uart_dma.uart_base = mem->start;
+-- 
+1.7.11.2
+

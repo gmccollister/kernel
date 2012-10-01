@@ -1,0 +1,34 @@
+From 6e614053b1f6021e45613a11a92eca31e92340c6 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Fri, 21 Oct 2011 15:12:06 +0530
+Subject: [PATCH 0604/1092] arm:omap:am335x: Corrects cpsw sa_lo and sa_hi
+ offset
+
+This patch is added to correct register offset of cpgmac
+sl1 source low register address and cpgmac sl2 source high
+register address. The register offset were 0x21c, 0x220 and
+0x31c, 0x320. Instead they are corrected as 0x220, 0x224 and
+0x320, 0x324. This is corrected by adding missing P1_TS_SEQ_MTYPE
+register in cpsw_slave_reg structure.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ drivers/net/ethernet/ti/cpsw.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 080388c..e47c05c 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -121,6 +121,7 @@ struct cpsw_slave_regs {
+ 	u32	flow_thresh;
+ 	u32	port_vlan;
+ 	u32	tx_pri_map;
++	u32	ts_seq_mtype;
+ #ifdef CONFIG_ARCH_TI814X
+ 	u32	ts_ctl;
+ 	u32	ts_seq_ltype;
+-- 
+1.7.11.2
+

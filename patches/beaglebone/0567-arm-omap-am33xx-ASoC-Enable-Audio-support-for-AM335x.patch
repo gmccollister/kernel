@@ -1,0 +1,32 @@
+From 12821376c4c0c1245dc0c37fd01a9f59b82d6b3c Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Mon, 26 Sep 2011 17:52:52 +0530
+Subject: [PATCH 0567/1092] arm:omap:am33xx: ASoC: Enable Audio support for
+ AM335x
+
+This enable Ausio support for am335x in defconfig
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 3e27519..8cbf9da 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -187,6 +187,10 @@ CONFIG_SND_RAWMIDI=y
+ CONFIG_SND_DRIVERS=y
+ CONFIG_SND_USB=y
+ CONFIG_SND_USB_AUDIO=y
++CONFIG_SND_SOC=y
++CONFIG_SND_AM33XX_SOC=y
++CONFIG_SND_AM335X_SOC_EVM=y
++# CONFIG_SND_OMAP_SOC is not set
+ CONFIG_USB=y
+ CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+ CONFIG_USB_DEVICEFS=y
+-- 
+1.7.11.2
+

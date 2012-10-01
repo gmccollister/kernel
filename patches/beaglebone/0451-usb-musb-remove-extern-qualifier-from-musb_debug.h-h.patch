@@ -1,0 +1,33 @@
+From 8ee6ec8386dfb2b45e02f5bec4a22407c6e1c642 Mon Sep 17 00:00:00 2001
+From: Vladimir Zapolskiy <vladimir.zapolskiy@nokia.com>
+Date: Mon, 19 Dec 2011 16:54:02 +0200
+Subject: [PATCH 0451/1092] usb: musb: remove extern qualifier from
+ musb_debug.h header
+
+This change removes confusing extern qualifier, which doesn't have any practical
+sense there.
+
+Signed-off-by: Vladimir Zapolskiy <vladimir.zapolskiy@nokia.com>
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/musb/musb_debug.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_debug.h b/drivers/usb/musb/musb_debug.h
+index 742eada..27ba8f7 100644
+--- a/drivers/usb/musb/musb_debug.h
++++ b/drivers/usb/musb/musb_debug.h
+@@ -43,8 +43,8 @@
+ #define ERR(fmt, args...) yprintk(KERN_ERR, fmt, ## args)
+ 
+ #ifdef CONFIG_DEBUG_FS
+-extern int musb_init_debugfs(struct musb *musb);
+-extern void musb_exit_debugfs(struct musb *musb);
++int musb_init_debugfs(struct musb *musb);
++void musb_exit_debugfs(struct musb *musb);
+ #else
+ static inline int musb_init_debugfs(struct musb *musb)
+ {
+-- 
+1.7.11.2
+

@@ -1,0 +1,41 @@
+From c0bbc82f2abf5267be8d3e752433c669105dd373 Mon Sep 17 00:00:00 2001
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 13 Dec 2011 10:48:54 -0800
+Subject: [PATCH 0172/1092] ARM: OMAP4: board-4430sdp: Register platform
+ device for digimic codec
+
+OMAP4 SDP/Blaze boards have onboard digital microphones.
+Register the platform device for the dmic-codec to be
+able to use the microphones.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-4430sdp.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 43f2746..c4ca90b 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -373,11 +373,17 @@ static struct platform_device sdp4430_vbat = {
+ 	},
+ };
+ 
++static struct platform_device sdp4430_dmic_codec = {
++	.name	= "dmic-codec",
++	.id	= -1,
++};
++
+ static struct platform_device *sdp4430_devices[] __initdata = {
+ 	&sdp4430_gpio_keys_device,
+ 	&sdp4430_leds_gpio,
+ 	&sdp4430_leds_pwm,
+ 	&sdp4430_vbat,
++	&sdp4430_dmic_codec,
+ };
+ 
+ static struct omap_musb_board_data musb_board_data = {
+-- 
+1.7.11.2
+

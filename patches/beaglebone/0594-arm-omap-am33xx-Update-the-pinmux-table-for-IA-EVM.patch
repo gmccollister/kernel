@@ -1,0 +1,31 @@
+From cb5bf76246bb462c59c5e923c027377669b4c7f8 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Mon, 14 Nov 2011 19:11:17 +0530
+Subject: [PATCH 0594/1092] arm:omap:am33xx: Update the pinmux table for IA
+ EVM
+
+Add second I2C instance and MMC/SD to the device list
+
+Signed-off-by: Amit Shah <amit.shah@ti.com>
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 7ebffc0..2ff0581 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -1033,6 +1033,8 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
+ 	{evm_nand_init, DEV_ON_DGHTR_BRD, PROFILE_ALL},
+ 	{spi1_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
+ 	{uart3_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
++	{i2c1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
++	{mmc0_no_cd_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{NULL, 0, 0},
+ };
+ 
+-- 
+1.7.11.2
+

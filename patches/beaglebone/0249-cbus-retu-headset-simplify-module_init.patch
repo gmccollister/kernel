@@ -1,0 +1,41 @@
+From 225a6043cf2d05910038c5dff7f008eb76309c5c Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:22:18 -0700
+Subject: [PATCH 0249/1092] cbus: retu-headset: simplify module_init
+
+it's enough to have it as:
+
+return platform_driver_register();
+
+in case of failure, platform code should print
+any necessary info.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu-headset.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/cbus/retu-headset.c b/drivers/cbus/retu-headset.c
+index c38abf1..c86c665 100644
+--- a/drivers/cbus/retu-headset.c
++++ b/drivers/cbus/retu-headset.c
+@@ -332,15 +332,7 @@ static struct platform_driver retu_headset_driver = {
+ 
+ static int __init retu_headset_init(void)
+ {
+-	int r;
+-
+-	printk(KERN_INFO "Retu/Vilma headset driver initializing\n");
+-
+-	r = platform_driver_register(&retu_headset_driver);
+-	if (r < 0)
+-		return r;
+-
+-	return 0;
++	return platform_driver_register(&retu_headset_driver);
+ }
+ 
+ static void __exit retu_headset_exit(void)
+-- 
+1.7.11.2
+

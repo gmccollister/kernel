@@ -1,0 +1,47 @@
+From 53430b0db4469f769282240b81f0bbb7f40172d7 Mon Sep 17 00:00:00 2001
+From: Chandan Nath <chandan.nath@ti.com>
+Date: Mon, 3 Oct 2011 10:55:57 +0530
+Subject: [PATCH 0574/1092] arm:omap:am33xx: CPSW fix for using macid from
+ efuse
+
+This patch is added to use proper mac id from efuse and use it
+for getting ip address from dhcp server. If mac id from efuse is
+not used, cpsw will generate some random mac id and used for
+getting new ip address in every  boot.
+
+Signed-off-by: Chandan Nath <chandan.nath@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/devices.c  | 2 ++
+ drivers/net/ethernet/ti/cpsw.c | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index d945710..f5ef613 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -1276,6 +1276,8 @@ void am33xx_cpsw_init(void)
+ 			am33xx_cpsw_slaves[1].mac_addr[i] = am33xx_macid1[i];
+ 	}
+ 
++	memcpy(am33xx_cpsw_pdata.mac_addr,
++			am33xx_cpsw_slaves[0].mac_addr, ETH_ALEN);
+ 	platform_device_register(&am33xx_cpsw_mdiodevice);
+ 	platform_device_register(&am33xx_cpsw_device);
+ 	clk_add_alias(NULL, dev_name(&am33xx_cpsw_mdiodevice.dev),
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 6872de5..cff7495 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -916,7 +916,7 @@ static int __devinit cpsw_probe(struct platform_device *pdev)
+ 			priv->mac_addr[4], priv->mac_addr[5]);
+ 	} else {
+ 		random_ether_addr(priv->mac_addr);
+-		printk(KERN_INFO"Detected MACID=%x:%x:%x:%x:%x:%x\n",
++		printk(KERN_INFO"Random MACID=%x:%x:%x:%x:%x:%x\n",
+ 			priv->mac_addr[0], priv->mac_addr[1],
+ 			priv->mac_addr[2], priv->mac_addr[3],
+ 			priv->mac_addr[4], priv->mac_addr[5]);
+-- 
+1.7.11.2
+

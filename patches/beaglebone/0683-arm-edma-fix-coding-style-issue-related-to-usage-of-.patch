@@ -1,0 +1,87 @@
+From a62e3c4ce61665028bf58c13d7ce22b99bda9bf9 Mon Sep 17 00:00:00 2001
+From: Sekhar Nori <nsekhar@ti.com>
+Date: Tue, 4 May 2010 14:11:36 +0530
+Subject: [PATCH 0683/1092] arm: edma: fix coding style issue related to usage
+ of braces
+
+In the edma driver, there are couple of instances where braces
+are used for a single statement 'if' construct.
+
+There are other instances where 'else' part of the if-else construct
+does not use braces even if the 'if' part is a multi-line statement.
+
+This patch fixes both.
+
+Signed-off-by: Sekhar Nori <nsekhar@ti.com>
+Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/common/edma.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/common/edma.c b/arch/arm/common/edma.c
+index 6f4119a..fdaa909 100644
+--- a/arch/arm/common/edma.c
++++ b/arch/arm/common/edma.c
+@@ -283,10 +283,9 @@ setup_dma_interrupt(unsigned lch,
+ 	ctlr = EDMA_CTLR(lch);
+ 	lch = EDMA_CHAN_SLOT(lch);
+ 
+-	if (!callback) {
++	if (!callback)
+ 		edma_shadow0_write_array(ctlr, SH_IECR, lch >> 5,
+ 				(1 << (lch & 0x1f)));
+-	}
+ 
+ 	edma_cc[ctlr]->intr_data[lch].callback = callback;
+ 	edma_cc[ctlr]->intr_data[lch].data = data;
+@@ -346,12 +345,11 @@ static irqreturn_t dma_irq_handler(int irq, void *data)
+ 				/* Clear the corresponding IPR bits */
+ 				edma_shadow0_write_array(ctlr, SH_ICR, j,
+ 							(1 << i));
+-				if (edma_cc[ctlr]->intr_data[k].callback) {
++				if (edma_cc[ctlr]->intr_data[k].callback)
+ 					edma_cc[ctlr]->intr_data[k].callback(
+ 						k, DMA_COMPLETE,
+ 						edma_cc[ctlr]->intr_data[k].
+ 						data);
+-				}
+ 			}
+ 		}
+ 		cnt++;
+@@ -443,9 +441,8 @@ static irqreturn_t dma_ccerr_handler(int irq, void *data)
+ 		if ((edma_read_array(ctlr, EDMA_EMR, 0) == 0)
+ 		    && (edma_read_array(ctlr, EDMA_EMR, 1) == 0)
+ 		    && (edma_read(ctlr, EDMA_QEMR) == 0)
+-		    && (edma_read(ctlr, EDMA_CCERR) == 0)) {
++		    && (edma_read(ctlr, EDMA_CCERR) == 0))
+ 			break;
+-		}
+ 		cnt++;
+ 		if (cnt > 10)
+ 			break;
+@@ -483,8 +480,9 @@ static int reserve_contiguous_slots(int ctlr, unsigned int id,
+ 			if (id == EDMA_CONT_PARAMS_FIXED_EXACT) {
+ 				stop_slot = i;
+ 				break;
+-			} else
++			} else {
+ 				count = num_slots;
++			}
+ 		}
+ 	}
+ 
+@@ -1366,8 +1364,9 @@ static int __init edma_probe(struct platform_device *pdev)
+ 				break;
+ 			else
+ 				return -ENODEV;
+-		} else
++		} else {
+ 			found = 1;
++		}
+ 
+ 		len[j] = resource_size(r[j]);
+ 
+-- 
+1.7.11.2
+

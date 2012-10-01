@@ -1,0 +1,27 @@
+From a70c86bad76f061a1b7358d0b21e0dc63bdbd995 Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 27 Dec 2011 14:55:31 +0530
+Subject: [PATCH 0659/1092] arm:omap:am33xx: Enable MBOX in defconfig
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 88804ca..a3c3786 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -271,7 +271,8 @@ CONFIG_OMAP_MUX=y
+ CONFIG_OMAP_MUX_DEBUG=y
+ CONFIG_OMAP_MUX_WARNINGS=y
+ # CONFIG_OMAP_MCBSP is not set
+-# CONFIG_OMAP_MBOX_FWK is not set
++CONFIG_OMAP_MBOX_FWK=y
++CONFIG_OMAP_MBOX_KFIFO_SIZE=256
+ # CONFIG_OMAP_32K_TIMER is not set
+ # CONFIG_OMAP3_L2_AUX_SECURE_SAVE_RESTORE is not set
+ CONFIG_OMAP_DM_TIMER=y
+-- 
+1.7.11.2
+

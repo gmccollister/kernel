@@ -1,0 +1,28 @@
+From d898f7f816c988e42e8ed5a1e71f07e8d196cadd Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Wed, 5 Oct 2011 13:56:56 +0530
+Subject: [PATCH 0575/1092] arm:omap:serial: Change MAX_HSUART_PORTS to 6
+
+In case of AM335x we have 6 UART ports.
+
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/plat-omap/include/plat/omap-serial.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/omap-serial.h b/arch/arm/plat-omap/include/plat/omap-serial.h
+index 9ff4444..7f5281e 100644
+--- a/arch/arm/plat-omap/include/plat/omap-serial.h
++++ b/arch/arm/plat-omap/include/plat/omap-serial.h
+@@ -54,7 +54,7 @@
+ 
+ #define OMAP_UART_DMA_CH_FREE	-1
+ 
+-#define OMAP_MAX_HSUART_PORTS	4
++#define OMAP_MAX_HSUART_PORTS	6
+ 
+ #define MSR_SAVE_FLAGS		UART_MSR_ANY_DELTA
+ 
+-- 
+1.7.11.2
+

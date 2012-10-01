@@ -1,0 +1,45 @@
+From 966841af17389bbbbe31f7bf95a361b1e8e0220e Mon Sep 17 00:00:00 2001
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Mon, 19 Sep 2011 00:28:45 -0400
+Subject: [PATCH 0084/1092] ARM: move VMALLOC_END down temporarily for
+ shmobile
+
+THIS IS A TEMPORARY HACK.  The purpose of this is _only_ to avoid a
+regression on an existing machine while a better fix is implemented.
+
+On shmobile the consistent DMA memory area was set to 158MB in commit
+28f0721a79 with no explanation.  The documented size for this area should
+vary between 2MB and 14MB, and none of the other ARM targets exceed that.
+
+The included #warning is therefore meant to be noisy on purpose to get
+shmobile maintainers attention and this commit reverted once this
+consistent DMA size conflict is resolved.
+
+Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Magnus Damm <damm@opensource.se>
+Cc: Paul Mundt <lethal@linux-sh.org>
+---
+ arch/arm/include/asm/pgtable.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
+index f2cfe39..8b9251d 100644
+--- a/arch/arm/include/asm/pgtable.h
++++ b/arch/arm/include/asm/pgtable.h
+@@ -37,6 +37,13 @@
+ #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
+ #define VMALLOC_END		0xff000000UL
+ 
++/* This is a temporary hack until shmobile's DMA area size is sorted out */
++#ifdef CONFIG_ARCH_SHMOBILE
++#warning "SH-Mobile's consistent DMA size conflicts with VMALLOC_END by 144MB"
++#undef VMALLOC_END
++#define VMALLOC_END		0xF6000000UL
++#endif
++
+ #define LIBRARY_TEXT_START	0x0c000000
+ 
+ #ifndef __ASSEMBLY__
+-- 
+1.7.11.2
+

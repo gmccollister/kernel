@@ -1,0 +1,29 @@
+From 0821d2ed02a8f51a3bb13a7a2e41812cd8af7531 Mon Sep 17 00:00:00 2001
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Thu, 25 Aug 2011 00:33:59 -0400
+Subject: [PATCH 0062/1092] ARM: mach-dove: remove inclusion of
+ <mach/vmalloc.h>
+
+This include is unnecessary.
+
+Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+---
+ arch/arm/mach-dove/include/mach/dove.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/mach-dove/include/mach/dove.h b/arch/arm/mach-dove/include/mach/dove.h
+index b20ec9a..ad1165d 100644
+--- a/arch/arm/mach-dove/include/mach/dove.h
++++ b/arch/arm/mach-dove/include/mach/dove.h
+@@ -11,8 +11,6 @@
+ #ifndef __ASM_ARCH_DOVE_H
+ #define __ASM_ARCH_DOVE_H
+ 
+-#include <mach/vmalloc.h>
+-
+ /*
+  * Marvell Dove address maps.
+  *
+-- 
+1.7.11.2
+

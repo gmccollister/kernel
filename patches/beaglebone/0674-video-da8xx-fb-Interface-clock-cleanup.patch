@@ -1,0 +1,71 @@
+From 09fec4ee0ed28662cc2ea1568cdbed5b8554325d Mon Sep 17 00:00:00 2001
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 10 Jan 2012 16:33:56 +0530
+Subject: [PATCH 0674/1092] video: da8xx-fb: Interface clock cleanup
+
+Patch does interface clock cleanup in driver suspend and remove
+callbacks.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 2f0799d..125647b 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -135,6 +135,7 @@ static resource_size_t da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
+ static unsigned int lcd_revision;
+ static irq_handler_t lcdc_irq_handler;
++struct clk *lcdc_ick;
+ 
+ static inline unsigned int lcdc_read(unsigned int addr)
+ {
+@@ -1010,6 +1011,8 @@ static int __devexit fb_remove(struct platform_device *dev)
+ 		free_irq(par->irq, par);
+ 		clk_disable(par->lcdc_clk);
+ 		clk_put(par->lcdc_clk);
++		clk_disable(lcdc_ick);
++		clk_put(lcdc_ick);
+ 		framebuffer_release(info);
+ 		iounmap((void __iomem *)da8xx_fb_reg_base);
+ 		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
+@@ -1197,7 +1200,6 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	struct da8xx_panel *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+-	struct clk *lcdc_ick = NULL;
+ 	struct da8xx_fb_par *par;
+ 	resource_size_t len;
+ 	int ret, i;
+@@ -1453,6 +1455,9 @@ err_clk_put:
+ 	clk_put(fb_clk);
+ 
+ err_ioremap:
++	clk_disable(lcdc_ick);
++	clk_put(lcdc_ick);
++
+ 	iounmap((void __iomem *)da8xx_fb_reg_base);
+ 
+ err_request_mem:
+@@ -1496,6 +1501,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	}
+ 
+ 	clk_disable(par->lcdc_clk);
++	clk_disable(lcdc_ick);
+ 	console_unlock();
+ 
+ 	return 0;
+@@ -1509,6 +1515,7 @@ static int fb_resume(struct platform_device *dev)
+ 	if (par->panel_power_ctrl)
+ 		par->panel_power_ctrl(1);
+ 
++	clk_enable(lcdc_ick);
+ 	clk_enable(par->lcdc_clk);
+ 
+ 	lcd_enable_raster();
+-- 
+1.7.11.2
+

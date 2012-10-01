@@ -1,0 +1,64 @@
+From 10db21be9d051bde4d1d6c75b5e1c9bee6342564 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:46 +0300
+Subject: [PATCH 0347/1092] cbus: retu: IRQ demux optimization
+
+it's definitely not always that we will have
+all 16 interrupts fired at the same time, so
+in order to avoid looping so many times, we
+are now using ffs() which is implemented
+(on ARM) using the far better clz instruction.
+
+This will save us quite some loops and could
+improve IRQ latency on Retu significantly
+(no actual measurements were made, though)
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index b7fbd18..e749c0e 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -36,6 +36,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/platform_data/cbus.h>
+ 
++#include <asm/bitops.h>
++
+ #include "cbus.h"
+ #include "retu.h"
+ 
+@@ -183,8 +185,6 @@ static irqreturn_t retu_irq_handler(int irq, void *_retu)
+ {
+ 	struct retu		*retu = _retu;
+ 
+-	int			i;
+-
+ 	u16			idr;
+ 	u16			imr;
+ 
+@@ -199,11 +199,13 @@ static irqreturn_t retu_irq_handler(int irq, void *_retu)
+ 		return IRQ_NONE;
+ 	}
+ 
+-	for (i = retu->irq_base; idr != 0; i++, idr >>= 1) {
+-		if (!(idr & 1))
+-			continue;
++	while (idr) {
++		unsigned long	pending = __ffs(idr);
++		unsigned int	irq;
+ 
+-		handle_nested_irq(i);
++		idr &= ~BIT(pending);
++		irq = pending + retu->irq_base;
++		handle_nested_irq(irq);
+ 	}
+ 
+ 	return IRQ_HANDLED;
+-- 
+1.7.11.2
+

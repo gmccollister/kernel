@@ -1,0 +1,53 @@
+From 7960ababf525fe8ad407bfbb93424c97964ca659 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Tue, 6 Dec 2011 12:48:49 +0530
+Subject: [PATCH 0555/1092] arm:omap:am335x - Disabled JFFS2 filesystem
+ support
+
+JFFS2 requires 8 byte in OOB area for clean markers leaving 56 bytes for
+ECC. However with BCH8 support requires 58 bytes for ECC which leaves 6
+bytes. This causes JFSS2 to fail.
+
+This patch removes JFFS2 Support. Instead UBIFS will be used in NAND
+flash device.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index 3866e3f..c72158b 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -217,12 +217,20 @@ CONFIG_QFMT_V2=y
+ CONFIG_MSDOS_FS=y
+ CONFIG_VFAT_FS=y
+ CONFIG_TMPFS=y
+-CONFIG_JFFS2_FS=y
+-CONFIG_JFFS2_SUMMARY=y
+-CONFIG_JFFS2_FS_XATTR=y
+-CONFIG_JFFS2_COMPRESSION_OPTIONS=y
+-CONFIG_JFFS2_LZO=y
+-CONFIG_JFFS2_RUBIN=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_TMPFS_XATTR is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++CONFIG_MISC_FILESYSTEMS=y
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_ECRYPT_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_JFFS2_FS is not set
+ CONFIG_UBIFS_FS=y
+ CONFIG_CRAMFS=y
+ CONFIG_NFS_FS=y
+-- 
+1.7.11.2
+

@@ -1,0 +1,78 @@
+From fa6d500883c1933fe9eb998c8a0798868ce5a2e4 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 13 Oct 2011 11:34:40 +0300
+Subject: [PATCH 0341/1092] cbus: tahvo: drop the tasklet
+
+by moving to threaded IRQ.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/tahvo.c | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/cbus/tahvo.c b/drivers/cbus/tahvo.c
+index 0e28208..4b062de 100644
+--- a/drivers/cbus/tahvo.c
++++ b/drivers/cbus/tahvo.c
+@@ -43,7 +43,6 @@
+ static int tahvo_initialized;
+ static int tahvo_is_betty;
+ 
+-static struct tasklet_struct tahvo_tasklet;
+ static struct mutex tahvo_lock;
+ 
+ static struct device *the_dev;
+@@ -174,12 +173,6 @@ EXPORT_SYMBOL(tahvo_set_backlight_level);
+ 
+ static irqreturn_t tahvo_irq_handler(int irq, void *dev_id)
+ {
+-	tasklet_schedule(&tahvo_tasklet);
+-	return IRQ_HANDLED;
+-}
+-
+-static void tahvo_tasklet_handler(unsigned long data)
+-{
+ 	struct tahvo_irq_handler_desc *hnd;
+ 	u16 id;
+ 	u16 im;
+@@ -212,6 +205,8 @@ static void tahvo_tasklet_handler(unsigned long data)
+ 			 */
+ 		}
+ 	}
++
++	return IRQ_HANDLED;
+ }
+ 
+ /*
+@@ -276,9 +271,6 @@ static int __devinit tahvo_probe(struct platform_device *pdev)
+ 	mutex_init(&tahvo_lock);
+ 	the_dev = &pdev->dev;
+ 
+-	/* Prepare tasklet */
+-	tasklet_init(&tahvo_tasklet, tahvo_tasklet_handler, 0);
+-
+ 	tahvo_initialized = 1;
+ 
+ 	rev = tahvo_read_reg(TAHVO_REG_ASICR);
+@@ -308,7 +300,8 @@ static int __devinit tahvo_probe(struct platform_device *pdev)
+ 	/* Mask all TAHVO interrupts */
+ 	tahvo_write_reg(TAHVO_REG_IMR, 0xffff);
+ 
+-	ret = request_irq(irq, tahvo_irq_handler, IRQF_TRIGGER_RISING,
++	ret = request_threaded_irq(irq, NULL, tahvo_irq_handler,
++			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+ 			"tahvo", 0);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register IRQ handler\n");
+@@ -326,7 +319,6 @@ static int __devexit tahvo_remove(struct platform_device *pdev)
+ 	/* Mask all TAHVO interrupts */
+ 	tahvo_write_reg(TAHVO_REG_IMR, 0xffff);
+ 	free_irq(irq, 0);
+-	tasklet_kill(&tahvo_tasklet);
+ 	the_dev = NULL;
+ 
+ 	return 0;
+-- 
+1.7.11.2
+

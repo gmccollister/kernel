@@ -1,0 +1,72 @@
+From bc83045aaaad363bc57d32346cf19dcdb4a2beda Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Tue, 20 Dec 2011 16:48:39 +0530
+Subject: [PATCH 0652/1092] arm:omap:am33xx: Don't register non-existent or
+ unused devices
+
+Remove some of the platform devices which either do
+not exist or are not being used right now.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ arch/arm/mach-omap2/devices.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 9dcb188..8d43913 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -67,7 +67,7 @@ static int __init omap3_l3_init(void)
+ 	 * To avoid code running on other OMAPs in
+ 	 * multi-omap builds
+ 	 */
+-	if (!(cpu_is_omap34xx()))
++	if (!(cpu_is_omap34xx()) || (cpu_is_am33xx()))
+ 		return -ENODEV;
+ 
+ 	l = snprintf(oh_name, L3_MODULES_MAX_LEN, "l3_main");
+@@ -406,11 +406,12 @@ static void omap_init_audio(void)
+ {
+ 	platform_device_register(&omap_mcbsp1);
+ 	platform_device_register(&omap_mcbsp2);
+-	if (cpu_is_omap243x() || cpu_is_omap34xx() || cpu_is_omap44xx()) {
++	if ((cpu_is_omap243x() || cpu_is_omap34xx() || cpu_is_omap44xx()) &&
++		!cpu_is_am33xx()) {
+ 		platform_device_register(&omap_mcbsp3);
+ 		platform_device_register(&omap_mcbsp4);
+ 	}
+-	if (cpu_is_omap243x() || cpu_is_omap34xx())
++	if ((cpu_is_omap243x() || cpu_is_omap34xx()) && !cpu_is_am33xx())
+ 		platform_device_register(&omap_mcbsp5);
+ 
+ 	platform_device_register(&omap_pcm);
+@@ -561,7 +562,7 @@ static void omap_init_pmu(void)
+ {
+ 	if (cpu_is_omap24xx())
+ 		omap_pmu_device.resource = &omap2_pmu_resource;
+-	else if (cpu_is_omap34xx())
++	else if (cpu_is_omap34xx() && !cpu_is_am33xx())
+ 		omap_pmu_device.resource = &omap3_pmu_resource;
+ 	else
+ 		return;
+@@ -622,7 +623,7 @@ static void omap_init_sham(void)
+ 	if (cpu_is_omap24xx()) {
+ 		sham_device.resource = omap2_sham_resources;
+ 		sham_device.num_resources = omap2_sham_resources_sz;
+-	} else if (cpu_is_omap34xx()) {
++	} else if (cpu_is_omap34xx() && !cpu_is_am33xx()) {
+ 		sham_device.resource = omap3_sham_resources;
+ 		sham_device.num_resources = omap3_sham_resources_sz;
+ 	} else {
+@@ -691,7 +692,7 @@ static void omap_init_aes(void)
+ 	if (cpu_is_omap24xx()) {
+ 		aes_device.resource = omap2_aes_resources;
+ 		aes_device.num_resources = omap2_aes_resources_sz;
+-	} else if (cpu_is_omap34xx()) {
++	} else if (cpu_is_omap34xx() && !cpu_is_am33xx()) {
+ 		aes_device.resource = omap3_aes_resources;
+ 		aes_device.num_resources = omap3_aes_resources_sz;
+ 	} else {
+-- 
+1.7.11.2
+

@@ -1,0 +1,60 @@
+From fbe6203bcd69ccaaf74ddfac4b15385ef1b3baf7 Mon Sep 17 00:00:00 2001
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Date: Tue, 18 Oct 2011 17:09:10 +0530
+Subject: [PATCH 0153/1092] ARM: OMAP2+: UART: Avoid uart idling on suspend
+ for no_console_suspend usecase
+
+If no_console_suspend is used we have prevent uart idling during suspend
+to provide debug prints.
+
+Power domain hooks can idle uarts if left enabled during system wide suspend
+so re-use the omap_device_disable_idle_on_suspend API's to ensure console_uart
+is not idled during suspend.
+
+omap_device_disable_idle_on_suspend API was used on all uarts since the uart
+driver was not runtime adapted, now with runtime adaptation we can re-use this
+API only for no_console_suspend use cases.
+
+Signed-off-by: Govindraj.R <govindraj.raja@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/serial.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index 85516c9..6c8135a 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -64,6 +64,7 @@ struct omap_uart_state {
+ static LIST_HEAD(uart_list);
+ static u8 num_uarts;
+ static u8 console_uart_id = -1;
++static u8 no_console_suspend;
+ 
+ #define DEFAULT_RXDMA_POLLRATE		1	/* RX DMA polling rate (us) */
+ #define DEFAULT_RXDMA_BUFSIZE		4096	/* RX DMA buffer size */
+@@ -298,6 +299,10 @@ static int __init omap_serial_early_init(void)
+ 
+ 		if (cmdline_find_option(uart_name)) {
+ 			console_uart_id = uart->num;
++
++			if (cmdline_find_option("no_console_suspend"))
++				no_console_suspend = true;
++
+ 			/*
+ 			 * omap-uart can be used for earlyprintk logs
+ 			 * So if omap-uart is used as console then prevent
+@@ -385,7 +390,9 @@ void __init omap_serial_init_port(struct omap_board_data *bdata,
+ 	WARN(IS_ERR(pdev), "Could not build omap_device for %s: %s.\n",
+ 	     name, oh->name);
+ 
+-	omap_device_disable_idle_on_suspend(pdev);
++	if ((console_uart_id == bdata->id) && no_console_suspend)
++		omap_device_disable_idle_on_suspend(pdev);
++
+ 	oh->mux = omap_hwmod_mux_init(bdata->pads, bdata->pads_cnt);
+ 
+ 	uart->pdev = pdev;
+-- 
+1.7.11.2
+

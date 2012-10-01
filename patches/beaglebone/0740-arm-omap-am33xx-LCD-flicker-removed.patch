@@ -1,0 +1,28 @@
+From 1ec6b0ba54db6c272250fcc935db4b8d0ee6f933 Mon Sep 17 00:00:00 2001
+From: "Philip, Avinash" <avinashphilip@ti.com>
+Date: Mon, 23 Jan 2012 13:01:52 +0530
+Subject: [PATCH 0740/1092] arm:omap:am33xx - LCD flicker removed.
+
+Backlight frequency is reduced to remove LCD flicker issue.
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index eb0d844..3ffacb8 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -130,7 +130,7 @@ static const struct display_panel disp_panel = {
+ /* LCD backlight platform Data */
+ #define AM335X_BACKLIGHT_MAX_BRIGHTNESS        100
+ #define AM335X_BACKLIGHT_DEFAULT_BRIGHTNESS    100
+-#define AM335X_PWM_PERIOD_NANO_SECONDS        (10000 * 10)
++#define AM335X_PWM_PERIOD_NANO_SECONDS        (1000000 * 10)
+ 
+ #define PWM_DEVICE_ID   "ecap.0"
+ 
+-- 
+1.7.11.2
+

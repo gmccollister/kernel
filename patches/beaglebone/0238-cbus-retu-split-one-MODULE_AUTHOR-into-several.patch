@@ -1,0 +1,27 @@
+From a27a6a239f23023a8c0ac2bd0228638d967836ba Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:16 -0700
+Subject: [PATCH 0238/1092] cbus: retu: split one MODULE_AUTHOR into several
+
+it's easier to read anyways.
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 7f7a31b..ae2e691 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -478,4 +478,6 @@ module_exit(retu_exit);
+ 
+ MODULE_DESCRIPTION("Retu ASIC control");
+ MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Juha Yrjölä, David Weinehall, and Mikko Ylinen");
++MODULE_AUTHOR("Juha Yrjölä");
++MODULE_AUTHOR("David Weinehall");
++MODULE_AUTHOR("Mikko Ylinen");
+-- 
+1.7.11.2
+

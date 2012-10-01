@@ -1,0 +1,54 @@
+From 59f9f9b9fc28de84cfad349db2463ae481234b48 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Mon, 26 Apr 2010 18:21:22 -0700
+Subject: [PATCH 0239/1092] cbus: retu: don't assing ret inside the if ()
+
+better coding style.
+
+Change:
+	if ((ret = driver_register(&retu_driver)))
+into:
+	ret = driver_register(&retu_driver);
+	if (ret)
+
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/cbus/retu.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index ae2e691..8382694 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -354,7 +354,8 @@ static int __devinit retu_probe(struct device *dev)
+ 		return -ENODEV;
+ 	}
+ 
+-	if ((ret = gpio_request(retu_irq_pin, "RETU irq")) < 0) {
++	ret = gpio_request(retu_irq_pin, "RETU irq");
++	if (ret < 0) {
+ 		printk(KERN_ERR PFX "Unable to reserve IRQ GPIO\n");
+ 		return ret;
+ 	}
+@@ -453,13 +454,16 @@ static int __init retu_init(void)
+ 
+ 	init_completion(&device_release);
+ 
+-	if ((ret = driver_register(&retu_driver)) < 0)
++	ret = driver_register(&retu_driver);
++	if (ret < 0)
+ 		return ret;
+ 
+-	if ((ret = platform_device_register(&retu_device)) < 0) {
++	ret = platform_device_register(&retu_device);
++	if (ret < 0) {
+ 		driver_unregister(&retu_driver);
+ 		return ret;
+ 	}
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.11.2
+

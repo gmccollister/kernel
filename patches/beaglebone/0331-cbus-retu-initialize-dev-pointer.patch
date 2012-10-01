@@ -1,0 +1,29 @@
+From 1af4a02e7d62511dd560a34744c7759b1083e1fc Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <balbi@ti.com>
+Date: Tue, 14 Jun 2011 16:56:32 +0300
+Subject: [PATCH 0331/1092] cbus: retu: initialize dev pointer
+
+without it we have a kernel oops when
+booting n8x0.
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/cbus/retu.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cbus/retu.c b/drivers/cbus/retu.c
+index 4b5af58..3f0578b 100644
+--- a/drivers/cbus/retu.c
++++ b/drivers/cbus/retu.c
+@@ -455,6 +455,7 @@ static int __init retu_probe(struct platform_device *pdev)
+ 	retu->irq_base	= pdata->irq_base;
+ 	retu->irq_end	= pdata->irq_end;
+ 	retu->devid	= pdata->devid;
++	retu->dev	= &pdev->dev;
+ 	the_retu	= retu;
+ 
+ 	mutex_init(&retu->mutex);
+-- 
+1.7.11.2
+

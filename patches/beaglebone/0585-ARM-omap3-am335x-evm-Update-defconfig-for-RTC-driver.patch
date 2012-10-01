@@ -1,0 +1,41 @@
+From b26d09a9131c39e1802be637353b9472fa5c901a Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Mon, 10 Oct 2011 20:44:33 +0530
+Subject: [PATCH 0585/1092] ARM:omap3:am335x evm: Update defconfig for RTC
+ driver
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/configs/am335x_evm_defconfig | 1 +
+ drivers/rtc/Kconfig                   | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/am335x_evm_defconfig b/arch/arm/configs/am335x_evm_defconfig
+index f1f5ab8..9b41170 100644
+--- a/arch/arm/configs/am335x_evm_defconfig
++++ b/arch/arm/configs/am335x_evm_defconfig
+@@ -1786,6 +1786,7 @@ CONFIG_RTC_INTF_DEV=y
+ #
+ # on-CPU RTC drivers
+ #
++CONFIG_RTC_DRV_OMAP=y
+ # CONFIG_DMADEVICES is not set
+ # CONFIG_AUXDISPLAY is not set
+ # CONFIG_UIO is not set
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 53eb4e5..34a7129 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -733,7 +733,7 @@ config RTC_DRV_DAVINCI
+ 
+ config RTC_DRV_OMAP
+ 	tristate "TI OMAP1"
+-	depends on ARCH_OMAP15XX || ARCH_OMAP16XX || ARCH_OMAP730 || ARCH_DAVINCI_DA8XX
++	depends on ARCH_OMAP15XX || ARCH_OMAP16XX || ARCH_OMAP730 || ARCH_DAVINCI_DA8XX || SOC_OMAPAM33XX
+ 	help
+ 	  Say "yes" here to support the real time clock on TI OMAP1 and
+ 	  DA8xx/OMAP-L13x chips.  This driver can also be built as a
+-- 
+1.7.11.2
+

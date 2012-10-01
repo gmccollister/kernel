@@ -1,0 +1,56 @@
+From edb478763a99cf8f8f67d3179f192bc3f5b55e2e Mon Sep 17 00:00:00 2001
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Date: Wed, 17 Aug 2011 20:54:10 +0530
+Subject: [PATCH 0593/1092] arm:omap:am33xx: Add support for UART3 on IA EVM
+
+IA EVM has UART3 as console. provide support for the same
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index fa250e0..7ebffc0 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -485,6 +485,13 @@ static struct pinmux_config mmc1_pin_mux[] = {
+ 	{NULL, 0},
+ };
+ 
++/* Module pin mux for uart3 */
++static struct pinmux_config uart3_pin_mux[] = {
++	{"spi0_cs1.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},
++	{"ecap0_in_pwm0_out.uart3_txd", AM33XX_PULL_ENBL},
++	{NULL, 0},
++};
++
+ /*
+ * @pin_mux - single module pin-mux structure which defines pin-mux
+ *			details for all its pins.
+@@ -699,6 +706,13 @@ static void usb1_init(int evm_id, int profile)
+ 	return;
+ }
+ 
++/* setup uart3 */
++static void uart3_init(int evm_id, int profile)
++{
++	setup_pin_mux(uart3_pin_mux);
++	return;
++}
++
+ /* NAND partition information */
+ static struct mtd_partition am335x_nand_partitions[] = {
+ /* All the partition sizes are listed in terms of NAND block size */
+@@ -1018,6 +1032,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
+ 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{evm_nand_init, DEV_ON_DGHTR_BRD, PROFILE_ALL},
+ 	{spi1_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
++	{uart3_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
+ 	{NULL, 0, 0},
+ };
+ 
+-- 
+1.7.11.2
+

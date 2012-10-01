@@ -1,0 +1,36 @@
+From 7e058e1fd0f6fce5d2a7b4757ff415d0e3b6b326 Mon Sep 17 00:00:00 2001
+From: Bin Liu <b-liu@ti.com>
+Date: Tue, 28 Aug 2012 14:03:59 +0530
+Subject: [PATCH 1056/1092] net: ethernet: fix kernel OOPS when remove
+ davinci_mdio module
+
+davinci mdio device is not unregistered from mdiobus when removing
+the module, which causes BUG_ON() when free the device from mdiobus.
+
+Calling mdiobus_unregister() before mdiobus_free() fixes the issue.
+
+Signed-off-by: Bin Liu <b-liu@ti.com>
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+---
+ drivers/net/ethernet/ti/davinci_mdio.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/ti/davinci_mdio.c b/drivers/net/ethernet/ti/davinci_mdio.c
+index aa2413a..a208380 100644
+--- a/drivers/net/ethernet/ti/davinci_mdio.c
++++ b/drivers/net/ethernet/ti/davinci_mdio.c
+@@ -396,8 +396,10 @@ static int __devexit davinci_mdio_remove(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct davinci_mdio_data *data = dev_get_drvdata(dev);
+ 
+-	if (data->bus)
++	if (data->bus) {
++		mdiobus_unregister(data->bus);
+ 		mdiobus_free(data->bus);
++	}
+ 
+ 	if (data->clk)
+ 		clk_put(data->clk);
+-- 
+1.7.11.2
+
